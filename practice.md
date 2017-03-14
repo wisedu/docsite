@@ -25,7 +25,7 @@ function emToPixels(ems) {
 
 普通的写法：
 
-```
+```js
 //isVisible
 if(!el.offsetWidth || !el.offsetHeight) {
     ...
@@ -34,7 +34,7 @@ if(!el.offsetWidth || !el.offsetHeight) {
 
 看起来更有意义了
 
-```
+```js
 if(!isVisible(el)) {
     ...
 }
@@ -49,14 +49,14 @@ function isVisible(el) {
 
 通过给变量名
 
-```
+```js
 //isVisible
 return a * b + (c / d);
 ```
 
 分开写，更加容易让人理解
 
-```
+```js
 var multiplier = a * b;
 var divisor = c / d;
 return multiplier + divisor;
@@ -66,7 +66,7 @@ return multiplier + divisor;
 
 普通的写法：
 
-```
+```js
 class Box {
     setState(state) {
         this.state = state;
@@ -80,7 +80,7 @@ class Box {
 
 推荐的写法
 
-```
+```js
 class Box {
     open() {
         this.state = 'open';
@@ -124,17 +124,17 @@ class Box {
 
 * 建议的命名方式：变量＝小写 用 \_ 分割；函数＝驼峰 动词＋名词；提高辨识度
 
-  ```
+  ```js
   var data_rows = getRows();
   ```
 
-* 私有变量／函数 加 前缀
-  _;全局变量使用全大写_
+* 私有变量／函数 加 前缀  
+  _;全局变量使用全大写_  
   分割
 
 > 不要使用模糊的词语，比如：handleLinks\(\), manageObjects\(\).
 
-```
+```js
 const _TAG_PARAM = {
     "fe-req-form": _getReqControls,
     "fe-res-table": _getResControls,
@@ -153,29 +153,19 @@ function _getReqControls(element) {
 * 模块命名 使用模块的拼音首字母
 * html元素钩子使用 data-action= ，data-action的值为中文汉字，对动作进行说明
 
-  ```
-  <
-  a href="javascript:void(0)" class="bh-btn bh-btn-primary" id="addKind"
-  >
+  ```html
+  <a href="javascript:void(0)" class="bh-btn bh-btn-primary" id="addKind">
   新增种类
-  <
-  /a
-  >
-  <
-  script
-  >
-
+  </a>
+  <script>
   $("#addKind").click(function() {
   });
-
-  <
-  /script
-  >
+  </script>
   ```
 
   > eventMap 中 data-action 对应的方法命名应该以action开头，eventMap中由于data-action为中文，所以不需要再添加额外的注释
   >
-  > ```
+  > ```js
   > <
   > button data-action="新增种类"
   > >
