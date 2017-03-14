@@ -122,9 +122,7 @@ class Box {
   var data_rows = getRows();
   ```
 
-* 私有变量／函数 加 前缀  
-  _;全局变量使用全大写_  
-  分割
+* 私有变量／函数 加 “\_”前缀_;全局变量使用全大写 _分割
 
 > 不要使用模糊的词语，比如：handleLinks\(\), manageObjects\(\).
 
