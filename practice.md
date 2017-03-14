@@ -40,10 +40,7 @@ if(!isVisible(el)) {
 }
 
 function isVisible(el) {
-    return el.offsetWidth 
-&
-&
- el.offsetHeight;
+    return el.offsetWidth && el.offsetHeight;
 }
 ```
 
@@ -71,7 +68,6 @@ class Box {
     setState(state) {
         this.state = state;
     }
-
     getState() {
         return this.state;
     }
@@ -85,11 +81,9 @@ class Box {
     open() {
         this.state = 'open';
     }
-
     close() {
         this.state = 'closed';
     }
-
     isOpen() {
         return this.state === 'open';
     }
@@ -194,11 +188,9 @@ function _getReqControls(element) {
 
 一个好的栗子🌰：
 
-```
+```js
 var ids = [];
-for(var i = 0; i 
-<
- things.length; i++) {
+for(var i = 0; i < things.length; i++) {
   ids.push(things[i].id);
 }
 ```
@@ -214,10 +206,7 @@ var ids = things.map(function(thing) {
 ### 适当情况下，减少使用语法技巧 {#-}
 
 ```
-imTricky 
-&
-&
- doMagic();
+imTricky && doMagic();
 ```
 
 这样看起来负担小一些
