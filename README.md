@@ -56,48 +56,17 @@ input type="text" name="title"/
 * HTML5中规定可以省略的闭合类标签，实际使用中不允许省略，例如：
 
 ```
-<
-!-- good --
->
-<
-ul
->
-<
-li
->
-1st
-<
-/li
->
-<
-li
->
-2se
-<
-/li
->
-<
-/ul
->
-<
-!-- bad --
->
-<
-ul
->
-<
-li
->
-1st
-    
-<
-li
->
-2se
+<!-- good -->
+<ul>
+    <li>1st</li>
+    <li>2se</li>
+</ul>
 
-<
-/ul
->
+<!-- bad -->
+<ul>
+    <li>1st
+    <li>2se
+</ul>
 ```
 
 * 自定义属性以data-
@@ -106,12 +75,7 @@ li
 * 按钮避免ie9-10回车默认触发事件（ie11没有默认回车事件问题），增加type=button：
 
 ```
-<
-button type=“button”
->
-<
-button
->
+<button type="button"><button>
 ```
 
   
