@@ -159,25 +159,13 @@ function _getReqControls(element) {
 
   > eventMap 中 data-action 对应的方法命名应该以action开头，eventMap中由于data-action为中文，所以不需要再添加额外的注释
   >
-  > ```js
-  > <
-  > button data-action="新增种类"
-  > >
-  > 新增种类
-  > <
-  > /button
-  > >
-  > <
-  > script
-  > >
-  >
+  > ```html
+  > <button data-action="新增种类">新增种类</button>
+  > <script>
   > this.eventMap = {
   >   '[data-action="新增种类"]': this.actionAddKind
   > };
-  >
-  > <
-  > /script
-  > >
+  > </script>
   > ```
 
 * css的命名应当添加模块名的缩写作为前缀，以免在css合并打包后，不同模块间的css相互影响
@@ -197,7 +185,7 @@ for(var i = 0; i < things.length; i++) {
 
 下面的方法是等价的，并且少定义几个名字哦
 
-```
+```js
 var ids = things.map(function(thing) {
   return thing.id;
 });
@@ -205,13 +193,13 @@ var ids = things.map(function(thing) {
 
 ### 适当情况下，减少使用语法技巧 {#-}
 
-```
+```js
 imTricky && doMagic();
 ```
 
 这样看起来负担小一些
 
-```
+```js
 if(imTricky) {
     doMagic();
 }
