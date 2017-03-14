@@ -38,24 +38,16 @@
 * 不允许出现style属性
 * 对于无需闭合的标签（如input,br,img,hr），不允许使用闭合,例如
 
-```
-<
-!-- good --
->
-<
-input type="text" name="title"
->
-<
-!-- bad --
->
-<
-input type="text" name="title"/
->
+```html
+<!-- good -->
+<input type="text" name="title">
+<!-- bad -->
+<input type="text" name="title"/>
 ```
 
 * HTML5中规定可以省略的闭合类标签，实际使用中不允许省略，例如：
 
-```
+```html
 <!-- good -->
 <ul>
     <li>1st</li>
@@ -74,7 +66,7 @@ input type="text" name="title"/
   命名，强制使用小写字母
 * 按钮避免ie9-10回车默认触发事件（ie11没有默认回车事件问题），增加type=button：
 
-```
+```html
 <button type="button"><button>
 ```
 
