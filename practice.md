@@ -1,2 +1,2 @@
-&lt;%= method %&gt;
+{% method %}
 
