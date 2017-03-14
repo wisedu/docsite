@@ -1,7 +1,7 @@
 # Summary
 
 * [Introduction](README.md)
-* [样式](chapter1.md)
+* [样式](style.md)
 * [emapForm](emapform.md)
   * [垂直水平表单](emapform/formv.md)
   * [表格表单](emapform/formh.md)
