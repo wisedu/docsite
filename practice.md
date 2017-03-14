@@ -1,2 +1,2 @@
-&lt;%%&gt;
+&lt;% method %&gt;
 
