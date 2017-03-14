@@ -6,21 +6,19 @@
 
 代码的意义没有被表达，如下：
 
-```
+```js
 //emToPixels
 var width = (value - 0.5) * 16;
-
 ```
 
 给它起个好名字，一目了然
 
-```
+```js
 var width = emToPixels(value);
 
 function emToPixels(ems) {
     return (ems - 0.5) * 16;
 }
-
 ```
 
 ### 表达式替换为函数 {#-}
@@ -32,7 +30,6 @@ function emToPixels(ems) {
 if(!el.offsetWidth || !el.offsetHeight) {
     ...
 }
-
 ```
 
 看起来更有意义了
@@ -48,7 +45,6 @@ function isVisible(el) {
 &
  el.offsetHeight;
 }
-
 ```
 
 通过给变量名
@@ -56,7 +52,6 @@ function isVisible(el) {
 ```
 //isVisible
 return a * b + (c / d);
-
 ```
 
 分开写，更加容易让人理解
@@ -65,7 +60,6 @@ return a * b + (c / d);
 var multiplier = a * b;
 var divisor = c / d;
 return multiplier + divisor;
-
 ```
 
 ### Class 和 module 接口 {#class-module-}
@@ -82,7 +76,6 @@ class Box {
         return this.state;
     }
 }
-
 ```
 
 推荐的写法
@@ -101,7 +94,6 @@ class Box {
         return this.state === 'open';
     }
 }
-
 ```
 
 ### 编写纯函数 {#-}
@@ -131,10 +123,11 @@ class Box {
 ## 命名 {#-}
 
 * 建议的命名方式：变量＝小写 用 \_ 分割；函数＝驼峰 动词＋名词；提高辨识度
-  ```
-  var data_rows = getRows();
 
   ```
+  var data_rows = getRows();
+  ```
+
 * 私有变量／函数 加 前缀
   _;全局变量使用全大写_
   分割
@@ -155,11 +148,11 @@ function _getReqControls(element) {
     ...
     return controls;
 }
-
 ```
 
 * 模块命名 使用模块的拼音首字母
 * html元素钩子使用 data-action= ，data-action的值为中文汉字，对动作进行说明
+
   ```
   <
   a href="javascript:void(0)" class="bh-btn bh-btn-primary" id="addKind"
@@ -202,6 +195,7 @@ function _getReqControls(element) {
   > /script
   > >
   > ```
+
 * css的命名应当添加模块名的缩写作为前缀，以免在css合并打包后，不同模块间的css相互影响
 
 ## 语法 {#-}
@@ -217,7 +211,6 @@ for(var i = 0; i
  things.length; i++) {
   ids.push(things[i].id);
 }
-
 ```
 
 下面的方法是等价的，并且少定义几个名字哦
@@ -226,7 +219,6 @@ for(var i = 0; i
 var ids = things.map(function(thing) {
   return thing.id;
 });
-
 ```
 
 ### 适当情况下，减少使用语法技巧 {#-}
@@ -236,7 +228,6 @@ imTricky
 &
 &
  doMagic();
-
 ```
 
 这样看起来负担小一些
@@ -245,9 +236,7 @@ imTricky
 if(imTricky) {
     doMagic();
 }
-
 ```
 
-  
 
 
