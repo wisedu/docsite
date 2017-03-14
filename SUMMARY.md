@@ -15,3 +15,5 @@
 * [场景模板页](template.md)
 * [ubase框架](ubase.md)
 * [开源项目](opensource.md)
+* [习惯](practice.md)
+
