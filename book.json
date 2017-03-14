@@ -1,0 +1,11 @@
+{
+    "plugins": [
+        "duoshuo"
+    ],
+    "pluginsConfig": {
+        "duoshuo": {
+            "short_name": "res",
+            "theme": "default"
+        }
+    }
+}
