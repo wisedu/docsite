@@ -3,7 +3,7 @@
 * [Introduction](README.md)
   * [css单词断词、换行](wordbreak.md)
   * [css三角形](csstriangle.md)
-  * [aligncenter](aligncenter.md)
+  * [垂直居中](aligncenter.md)
 * [样式](style.md)
   * [布局](style/layout.md)
   * [组件](style/csscom.md)
