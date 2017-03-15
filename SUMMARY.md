@@ -2,7 +2,7 @@
 
 * [Introduction](README.md)
   * [css单词断词、换行](wordbreak.md)
-  * [csstriangle](csstriangle.md)
+  * [css三角形](csstriangle.md)
 * [样式](style.md)
   * [布局](style/layout.md)
   * [组件](style/csscom.md)
