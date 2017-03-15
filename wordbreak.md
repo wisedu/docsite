@@ -8,7 +8,7 @@ word-wrap 当行尾放不下时，决定单词内是否允许换行
 * normal: 单词太长，换行显示，再超过一行就溢出显示。 
 * break-word: 当单词太长时，先尝试换行，换行后还是太长，单词内还可以换行。
 
-```
+```css
 word-break: keep-all;
 word-wrap: break-word;
 white-space: pre-wrap;
