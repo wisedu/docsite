@@ -13,7 +13,7 @@ white-space
 * pre-wrap: 保留所有的空格和回车，但是允许折行。 
 * pre-line: 会合并空格，且允许折行
 
-```css
+```css 
 word-break: keep-all;
 word-wrap: break-word;
 white-space: pre-wrap;
