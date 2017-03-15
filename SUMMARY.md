@@ -19,4 +19,5 @@
 * [ubase框架](ubase.md)
 * [开源项目](opensource.md)
 * [习惯](practice.md)
+  * [开发的规范](practice/standard.md)
 
