@@ -1,7 +1,7 @@
 # Summary
 
 * [Introduction](README.md)
-  * [wordbreak](wordbreak.md)
+  * [css单词断词、换行](wordbreak.md)
 * [样式](style.md)
   * [布局](style/layout.md)
   * [组件](style/csscom.md)
