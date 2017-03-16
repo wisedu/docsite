@@ -1,9 +1,6 @@
 # Summary
 
 * [Introduction](README.md)
-  * [css单词断词、换行](wordbreak.md)
-  * [css三角形](csstriangle.md)
-  * [垂直居中](aligncenter.md)
 * [样式](style.md)
   * [布局](style/layout.md)
   * [组件](style/csscom.md)
@@ -18,6 +15,8 @@
 * [场景模板页](template.md)
 * [ubase框架](ubase.md)
 * [开源项目](opensource.md)
-* [习惯](practice.md)
+* [实践](practice.md)
   * [开发的规范](practice/standard.md)
-
+  * [css单词断词、换行](practice/wordbreak.md)
+  * [css三角形](practice/csstriangle.md)
+  * [垂直居中](practice/aligncenter.md)
