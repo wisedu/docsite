@@ -6,11 +6,13 @@
 			<a href="http://res.wisedu.com/examples/templates/#/C_A_B" target="_blank">
 			<img src="./assets/Snip20170316_7.png">
 			</a>
+			查询-A-表格
 		</td>
 		<td>
 			<a href="http://res.wisedu.com/examples/templates/#/C_A_K" target="_blank">
 			<img src="./assets/Snip20170316_8.png">
 			</a>
+			查询-A-卡片
 		</td>
 	</tr>
 	<tr>
@@ -18,11 +20,13 @@
 			<a href="http://res.wisedu.com/examples/templates/#/C_A_L" target="_blank">
 			<img src="./assets/Snip20170316_9.png">
 			</a>
+			查询-A-列表
 		</td>
 		<td>
 			<a href="http://res.wisedu.com/examples/templates/#/C_C_B" target="_blank">
 			<img src="./assets/Snip20170316_10.png">
 			</a>
+			查询-C-表格
 		</td>
 	</tr>
 	<tr>
@@ -30,11 +34,13 @@
 			<a href="http://res.wisedu.com/examples/templates/#/C_C_K" target="_blank">
 			<img src="./assets/Snip20170316_11.png">
 			</a>
+			查询-C-卡片
 		</td>
 		<td>
 			<a href="http://res.wisedu.com/examples/templates/#/C_C_L" target="_blank">
 			<img src="./assets/Snip20170316_12.png">
 			</a>
+			查询-C-列表
 		</td>
 	</tr>
 	<tr>
@@ -42,11 +48,13 @@
 			<a href="http://res.wisedu.com/examples/templates/#/T_A_B" target="_blank">
 			<img src="./assets/Snip20170316_14.png">
 			</a>
+			统计-A-饼图
 		</td>
 		<td>
 			<a href="http://res.wisedu.com/examples/templates/#/T_A_Z" target="_blank">
 			<img src="./assets/Snip20170316_15.png">
 			</a>
+			统计-A-柱状图
 		</td>
 	</tr>
 </table>
