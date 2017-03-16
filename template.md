@@ -1,11 +1,9 @@
 # 场景模板页
-![](/assets/Snip20170316_7.png)
+
 <table>
 	<tr>
-		<td>
-		![](/assets/Snip20170316_7.png)
-		</td>
-		<td>![](/assets/Snip20170316_8.png)</td>
+		<td><img src="/assets/Snip20170316_7.png"></td>
+		<td><img src="/assets/Snip20170316_8.png"></td>
 	</tr>
 	<tr>
 		<td>![](/assets/Snip20170316_9.png)</td>
