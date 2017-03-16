@@ -12,6 +12,7 @@
   * [表格表单](emapform/formh.md)
   * [只读表单](emapform/readonly.md)
   * [校验](emapform/vaildate.md)
+* [emapAdvancedQuery](emapadvancedquery.md)
 * [场景模板页](template.md)
 * [ubase框架](ubase.md)
 * [开源项目](opensource.md)
@@ -20,5 +21,4 @@
   * [css单词断词、换行](practice/wordbreak.md)
   * [css三角形](practice/csstriangle.md)
   * [垂直居中](practice/aligncenter.md)
-* [emapAdvancedQuery](emapadvancedquery.md)
 
