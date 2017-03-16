@@ -2,7 +2,9 @@
 
 <table>
 	<tr>
-		<td>![](/assets/Snip20170316_7.png)</td>
+		<td>
+		![](/assets/Snip20170316_7.png)
+		</td>
 		<td>![](/assets/Snip20170316_8.png)</td>
 	</tr>
 	<tr>
