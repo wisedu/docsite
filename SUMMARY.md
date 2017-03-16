@@ -20,3 +20,5 @@
   * [css单词断词、换行](practice/wordbreak.md)
   * [css三角形](practice/csstriangle.md)
   * [垂直居中](practice/aligncenter.md)
+* [emapAdvancedQuery](emapadvancedquery.md)
+
