@@ -3,7 +3,7 @@
 <table>
 	<tr>
 		<td>
-			<a href="http://res.wisedu.com/examples/templates/#/C_A_B)">
+			<a href="http://res.wisedu.com/examples/templates/#/C_A_B)" target="_blank">
 			<img src="./assets/Snip20170316_7.png">
 			</a>
 		</td>
