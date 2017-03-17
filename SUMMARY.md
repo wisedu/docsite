@@ -16,6 +16,8 @@
   * [高级搜索](query/advancequery.md)
   * [无关键字](query/notext.md)
   * [条件搜索](query/filterquery.md)
+  * [高级搜索2](query/advance2.md)
+  * [条件构造器](query/rulesconstructor.md)
 * [场景模板页](template.md)
 * [ubase框架](ubase.md)
 * [开源项目](opensource.md)
