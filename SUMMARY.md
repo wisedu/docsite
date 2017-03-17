@@ -14,6 +14,7 @@
   * [校验](emapform/vaildate.md)
 * [Query](query.md)
   * [高级搜索](query/advancequery.md)
+  * [filterQuery](query/filterquery.md)
 * [场景模板页](template.md)
 * [ubase框架](ubase.md)
 * [开源项目](opensource.md)
