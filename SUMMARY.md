@@ -13,7 +13,7 @@
   * [只读表单](emapform/readonly.md)
   * [校验](emapform/vaildate.md)
 * [Query](query.md)
-  * [标准功能](query/advancequery.md)
+  * [高级搜索](query/advancequery.md)
 * [场景模板页](template.md)
 * [ubase框架](ubase.md)
 * [开源项目](opensource.md)
