@@ -13,7 +13,7 @@
   * [只读表单](emapform/readonly.md)
   * [校验](emapform/vaildate.md)
 * [emapAdvancedQuery](emapadvancedquery.md)
-  * [标准样式](emapadvancedquery/standard.md)
+  * [标准功能](emapadvancedquery/standard.md)
 * [场景模板页](template.md)
 * [ubase框架](ubase.md)
 * [开源项目](opensource.md)
