@@ -1,11 +1,28 @@
 {
     "plugins": [
-        "duoshuo"
+        "duoshuo","github","anchors","expandable-chapters","baidu","github-buttons","-sharing"
     ],
     "pluginsConfig": {
         "duoshuo": {
             "short_name": "res",
             "theme": "default"
-        }
+        },
+        "github": {
+            "url": "https://github.com/wisedu"
+        },
+        "sitemap": {
+            "hostname": "http://res.wisedu.com/"
+        },
+        "baidu":{
+        	"token":"151eb7bb5d324da7f71a846c3ee2d62f"
+        },
+        "github-buttons": {
+	      "repo": "wisedu/docsite",
+	      "types": [
+	        "star",
+	        "watch"
+	      ],
+	      "size": "small"
+	    }
     }
 }

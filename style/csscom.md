@@ -79,15 +79,15 @@
 
 <div class="bh-btn-grouped">
     <button type="button" class="bh-btn bh-btn-default" disabled onclick="alert('hello')">Disable</button>
-    <button type="button" class="bh-btn bh-btn-primary" disabled id="disable_on">Primary</button>
-    <button type="button" class="bh-btn bh-btn-success" disabled id="disable_delegate">Success</button>
+    <button type="button" class="bh-btn bh-btn-primary" disabled >Primary</button>
+    <button type="button" class="bh-btn bh-btn-success" disabled >Success</button>
 </div>
 
 ```html
 <div class="bh-btn-grouped">
     <button type="button" class="bh-btn bh-btn-default" disabled onclick="alert('hello')">Disable</button>
-    <button type="button" class="bh-btn bh-btn-primary" disabled id="disable_on">Primary</button>
-    <button type="button" class="bh-btn bh-btn-success" disabled id="disable_delegate">Success</button>
+    <button type="button" class="bh-btn bh-btn-primary" disabled >Primary</button>
+    <button type="button" class="bh-btn bh-btn-success" disabled >Success</button>
 </div>
 ```
 
@@ -300,13 +300,13 @@
             <i class="bh-choice-helper"></i>
             考察干部
         </label>
-        <label class="bh-radio-label" disabled="">
-            <input type="radio" name="nl" value="1" data-caption="关心下一代">
+        <label class="bh-radio-label" >
+            <input type="radio" name="nl" disabled value="1" data-caption="关心下一代">
             <i class="bh-choice-helper"></i>
             关心下一代
         </label>
-        <label class="bh-radio-label" disabled="" checked="">
-            <input type="radio" name="nl" value="1" data-caption="关心下一代">
+        <label class="bh-radio-label" >
+            <input type="radio" name="nl" disabled checked value="1" data-caption="关心下一代">
             <i class="bh-choice-helper"></i>
             关心下一代
         </label>
@@ -326,19 +326,19 @@
 <div>
     <div class="bh-radio bh-radio-group-v">
         <label class="bh-radio-label">
-            <input type="radio" name="SHHD" value="0" data-caption="考察干部">
+            <input type="radio" name="SHHD_V" value="0" data-caption="考察干部">
             <i class="bh-choice-helper"></i>
             考察干部
         </label>
     
-        <label class="bh-radio-label" disabled="">
-            <input type="radio" name="SHHD" value="1" data-caption="关心下一代">
+        <label class="bh-radio-label" >
+            <input type="radio" name="SHHD_V" disabled value="1" data-caption="关心下一代">
             <i class="bh-choice-helper"></i>
             关心下一代
         </label>
     
-        <label class="bh-radio-label" disabled="" checked="">
-            <input type="radio" name="SHHD" value="1" data-caption="关心下一代">
+        <label class="bh-radio-label" >
+            <input type="radio" name="SHHD_V" disabled checked value="1" data-caption="关心下一代">
             <i class="bh-choice-helper"></i>
             关心下一代
         </label>
@@ -369,19 +369,43 @@
     </div>
     <div class="bh-checkbox">
         <label class="bh-checkbox-label">
-            <input type="checkbox" name="SHHD" value="1" disabled="" data-caption="关心下一代">
+            <input type="checkbox" name="SHHD" value="1" disabled data-caption="关心下一代">
             <i class="bh-choice-helper"></i>
             不可用
         </label>
     </div>
     <div class="bh-checkbox">
         <label class="bh-checkbox-label">
-            <input type="checkbox" name="SHHD" value="1" disabled="" checked="" data-caption="关心下一代">
+            <input type="checkbox" name="SHHD" value="1" disabled checked data-caption="关心下一代">
             <i class="bh-choice-helper"></i>
             已选、不可用
         </label>
     </div>
 </div>
+
+```html
+<div class="bh-checkbox">
+    <label class="bh-checkbox-label">
+        <input type="checkbox" name="SHHD" value="0" data-caption="考察干部">
+        <i class="bh-choice-helper"></i>
+        可选
+    </label>
+</div>
+<div class="bh-checkbox">
+    <label class="bh-checkbox-label">
+        <input type="checkbox" name="SHHD" value="1" disabled data-caption="关心下一代">
+        <i class="bh-choice-helper"></i>
+        不可用
+    </label>
+</div>
+<div class="bh-checkbox">
+    <label class="bh-checkbox-label">
+        <input type="checkbox" name="SHHD" value="1" disabled checked data-caption="关心下一代">
+        <i class="bh-choice-helper"></i>
+        已选、不可用
+    </label>
+</div>
+```
 
 #### checkbox group 水平排列
 
@@ -393,17 +417,25 @@
             可选
         </label>
         <label class="bh-checkbox-label">
-            <input type="checkbox" name="SHHD" disabled="" value="1" data-caption="关心下一代">
+            <input type="checkbox" name="SHHD" disabled value="1" data-caption="关心下一代">
             <i class="bh-choice-helper"></i>
             不可用
         </label>
         <label class="bh-checkbox-label">
-            <input type="checkbox" name="SHHD" disabled="" checked="" value="1" data-caption="关心下一代">
+            <input type="checkbox" name="SHHD" disabled checked value="1" data-caption="关心下一代">
             <i class="bh-choice-helper"></i>
             已选、不可用
         </label>
     </div>
 </div>
+
+```html
+<div class="bh-checkbox bh-checkbox-group-h">
+    <label class="bh-checkbox-label">...</label>
+    <label class="bh-checkbox-label">...</label>
+    <label class="bh-checkbox-label">...</label>
+</div>
+```
 
 #### checkbox group 竖直排列
 
@@ -429,7 +461,13 @@
     </div>
 </div>
 
-
+```html
+<div class="bh-checkbox bh-checkbox-group-v">
+    <label class="bh-checkbox-label">...</label>
+    <label class="bh-checkbox-label">...</label>
+    <label class="bh-checkbox-label">...</label>
+</div>
+```
 
 
 ### 开关 - bh-switch
