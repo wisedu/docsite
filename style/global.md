@@ -54,7 +54,7 @@
 }
 </style>
 
-## 文字
+### 文字
 
 <h1>H1 这是标题1 </h1>
 <h2>H2 这是标题2 </h2>
@@ -77,7 +77,7 @@
 ```
 
 
-## 边距
+### 边距
 
 bh-m和bh-p定义margin和padding，预定义4 8 16 24 32五种距离
 <div class="boxmargin bh-mb-16 bh-mh-24">
@@ -173,8 +173,8 @@ pb = padding bottom，表示底部内边距
 | 顶部内边距 | .bh-pb-4 | .bh-pb-8 | .bh-pb-16 | .bh-pb-24 | .bh-pb-32 | 
 
 
-## 颜色
-### 字体色
+### 颜色
+#### 字体色
 
 <div class="bh-clearfix">
     <div class="bh-pull-left bh-border box bh-p-8 bh-color-primary">bh-color-primary</div>
@@ -233,7 +233,7 @@ pb = padding bottom，表示底部内边距
 
 
 
-### 背景色
+#### 背景色
 
 <div class="bh-clearfix">
     <div class="bh-pull-left bh-border box bh-p-8 bh-bg-primary bh-color-primary-5">bh-bg-primary</div>
@@ -289,7 +289,7 @@ pb = padding bottom，表示底部内边距
 ```
 
 
-### 边框色
+#### 边框色
 
 <div class="bh-clearfix bh-mb-4">
     <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-primary">bh-bColor-primary</div>
@@ -350,7 +350,7 @@ pb = padding bottom，表示底部内边距
 ```
 
 
-## 边框
+### 边框
 
 * .bh-border 添加边框
 * .bh-border-h 添加左右边框
@@ -377,7 +377,7 @@ pb = padding bottom，表示底部内边距
 ```
 
 
-## 浮动 & 清除浮动
+### 浮动 & 清除浮动
 
 使用浮动后，会使父容器高度为0，清除浮动后才可以占满空间
 
@@ -386,7 +386,7 @@ pb = padding bottom，表示底部内边距
 * .bh-pull-left 左浮动
 * .bh-pull-right 右浮动
 
-### 未清除浮动的例子
+#### 未清除浮动的例子
 
 <div class="bh-bg-info-3  bh-p-8">
   <button class="bh-btn bh-btn-default bh-pull-left">Example Button floated left</button>
@@ -402,7 +402,7 @@ pb = padding bottom，表示底部内边距
 </div>
 ```
 
-### 正确清除浮动的姿势
+#### 正确清除浮动的姿势
 
 <div class="bh-bg-info-3 bh-clearfix bh-p-8">
   <button class="bh-btn bh-btn-default bh-pull-left">Example Button floated left</button>
@@ -420,7 +420,7 @@ pb = padding bottom，表示底部内边距
 
 
 
-## 文字对其 & 居中
+### 文字对其 & 居中
 
 * .bh-center-block 容器水平居中
 * .bh-text-center 文字水平居中
@@ -443,7 +443,7 @@ pb = padding bottom，表示底部内边距
 <div class="bh-text-nowrap">如果很长我也不换行</div>
 ```
 
-## 截断
+### 截断
 
 * .bh-str-cut 单行文字超长截断并出现点点点
 
@@ -459,7 +459,7 @@ hello，地名、科技词汇也很长。我们很难去界定它。目前这是
 </div>
 ```
 
-## 其他公共样式
+### 其他公共样式
 
 * .bh-l-inline 将块级元素转成行内元素
 * .bh-hide 隐藏元素
