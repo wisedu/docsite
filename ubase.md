@@ -20,7 +20,7 @@
 * [模板示例页](http://res.wisedu.com/FS/feType)
 
   * 在config.js中配置modules.  
-```javascript  
+```js  
     "MODULES": [{
 
     title: "模块名称",
