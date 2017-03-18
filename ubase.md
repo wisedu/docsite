@@ -70,7 +70,7 @@ app/
 
 模块中的所有事件处理都通过eventMap来维护，eventMap中key为jquery选择器，value为绑定的事件处理函数，默认绑定的是click事件，如需绑定其他事件，可以在key后@相应的事件. 在事件处理函数中可通过event.currentTarget获取到对应的dom元素
 
-```
+```js
 eventMap: function() {
     return {
         "#retirementInfoTable .j-row-edit": this.editCb,
@@ -80,7 +80,7 @@ eventMap: function() {
 },
 ```
 
-```
+```js
 editCb: function(event){
   var wid = $(event.currentTarget).attr('data-x-wid');//通过这种方式可以给事件传递参数
 }
