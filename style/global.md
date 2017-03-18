@@ -17,7 +17,40 @@
 .bh-border.bh-color-grey-4, .bh-border.bh-color-grey-5{
 	background-color: rgba(0,0,0,0.25);
 }
+.boxmargin{
+	float:left;
+	border:8px solid #f4b865;
+}
+.boxborder{
+	width:120px;
+	height: 75px;
+	border:1px solid #333;
+}
+.boxpadding{
+	border:8px solid #93d36e;
+	width: 100%;
+    height: 100%;
+}
+.box-border-mp-h{
+	border-top: none;
+	border-bottom: none;
+}
+.box-border-mp-v{
+	border-left: none;
+	border-right: none;
+}
+.box-border-mp-t{
+	border-left: none;
+	border-right: none;
+	border-bottom: none;
+}
+.box-border-mp-b{
+	border-top: none;
+	border-left: none;
+	border-right: none;
+}
 </style>
+
 ## 文字
 
 <h1>H1 这是标题1 </h1>
@@ -43,23 +76,72 @@
 ## 边距
 
 bh-m和bh-p定义margin和padding，预定义4 8 16 24 32五种距离
-* bh-mh(margin horizontal缩写)表示左右外边距
-* bh-mv(margin Vertical缩写)表示上下外边距
-* bh-mb表示底部外边距
-* bh-ph表示左右内边距
-* bh-pv表示上下内边距
-* bh-pt表示顶部内边距
-* bh-pb表示底部内边距。
+* mh = margin horizontal，表示左右外边距
+* mv = margin vertical，表示上下外边距
+* mt = margin top，表示底部外边距
+* mb = margin bottom，表示底部外边距
+* ph = padding horizontal，表示左右内边距
+* pv = padding vertical，表示上下内边距
+* pt = padding top，表示顶部内边距
+* pb = padding bottom，表示底部内边距。
+
+
+<div class="boxmargin bh-m-8">
+	<div class="boxborder">
+		<div class="boxpadding"></div>
+	</div>
+</div>
+
+```html
+<div class="bh-m-8 bh-p-8"></div>
+```
+
+<div class="boxmargin bh-m-16 box-border-mp-h">
+	<div class="boxborder">
+		<div class="boxpadding box-border-mp-h"></div>
+	</div>
+</div>
+
+<div class="boxmargin bh-m-8 box-border-mp-v">
+	<div class="boxborder">
+		<div class="boxpadding box-border-mp-v"></div>
+	</div>
+</div>
+
+<div class="boxmargin bh-m-8 box-border-mp-t">
+	<div class="boxborder">
+		<div class="boxpadding box-border-mp-t"></div>
+	</div>
+</div>
+
+<div class="boxmargin bh-m-16 box-border-mp-b">
+	<div class="boxborder">
+		<div class="boxpadding box-border-mp-b"></div>
+	</div>
+</div>
+
+
+<div class="bh-clearfix"></div>
 
 
 
-| | | |
-| | | |
-
+| 距离 | 4px | 8px | 16px | 24px | 32px | 
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| 外边距 | .bh-m-4 | .bh-m-8 | .bh-m-16 | .bh-m-24 | .bh-m-32 | 
+| 左右外边距 | .bh-mh-4 | .bh-mh-8 | .bh-mh-16 | .bh-mh-24 | .bh-mh-32 | 
+| 上下外边距 | .bh-mv-4 | .bh-mv-8 | .bh-mv-16 | .bh-mv-24 | .bh-mv-32 | 
+| 顶部外边距 | .bh-mt-4 | .bh-mt-8 | .bh-mt-16 | .bh-mt-24 | .bh-mt-32 | 
+| 底部外边距 | .bh-mb-4 | .bh-mb-8 | .bh-mb-16 | .bh-mb-24 | .bh-mb-32 | 
+| 内边距 | .bh-p-4 | .bh-p-8 | .bh-p-16 | .bh-p-24 | .bh-p-32 | 
+| 左右内边距 | .bh-ph-4 | .bh-ph-8 | .bh-ph-16 | .bh-ph-24 | .bh-ph-32 | 
+| 上下内边距 | .bh-pv-4 | .bh-pv-8 | .bh-pv-16 | .bh-pv-24 | .bh-pv-32 | 
+| 顶部内边距 | .bh-pt-4 | .bh-pt-8 | .bh-pt-16 | .bh-pt-24 | .bh-pt-32 | 
+| 顶部内边距 | .bh-pb-4 | .bh-pb-8 | .bh-pb-16 | .bh-pb-24 | .bh-pb-32 | 
 
 
 ## 颜色
 ### 字体色
+
 <div class="bh-clearfix">
     <div class="bh-pull-left bh-border bh-p-8 bh-color-primary">bh-color-primary</div>
     <div class="bh-pull-left bh-border bh-p-8 bh-color-primary-2">bh-color-primary-2</div>
@@ -117,6 +199,7 @@ bh-m和bh-p定义margin和padding，预定义4 8 16 24 32五种距离
 
 
 ### 背景色
+
 <div class="bh-clearfix">
     <div class="bh-pull-left bh-border bh-p-8 bh-bg-primary bh-color-primary-5">bh-bg-primary</div>
     <div class="bh-pull-left bh-border bh-p-8 bh-bg-primary-2">bh-bg-primary-2</div>
@@ -172,6 +255,7 @@ bh-m和bh-p定义margin和padding，预定义4 8 16 24 32五种距离
 
 
 ### 边框色
+
 <div class="bh-clearfix bh-mb-4">
     <div class="bh-pull-left bh-border bh-p-8 bh-bColor-primary">bh-bColor-primary</div>
     <div class="bh-pull-left bh-border bh-p-8 bh-bColor-primary-2">bh-bColor-primary-2</div>
