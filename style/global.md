@@ -387,6 +387,7 @@ pb = padding bottom，表示底部内边距
 * .bh-pull-right 右浮动
 
 ### 未清除浮动的例子
+
 <div class="bh-bg-info-3  bh-p-8">
   <button class="bh-btn bh-btn-default bh-pull-left">Example Button floated left</button>
   <button class="bh-btn bh-btn-default bh-pull-right">Example Button floated right</button>
@@ -402,11 +403,13 @@ pb = padding bottom，表示底部内边距
 ```
 
 ### 正确清除浮动的姿势
+
 <div class="bh-bg-info-3 bh-clearfix bh-p-8">
   <button class="bh-btn bh-btn-default bh-pull-left">Example Button floated left</button>
   <button class="bh-btn bh-btn-default bh-pull-right">Example Button floated right</button>
 </div>
-应该在第二行显示出来才对
+
+<p>应该在第二行显示出来才对</p>
 
 ```html
 <div class="bh-bg-info-3 bh-clearfix bh-p-8">
@@ -416,17 +419,28 @@ pb = padding bottom，表示底部内边距
 ```
 
 
-## 居中
+
+## 文字对其 & 居中
+
 * .bh-center-block 容器水平居中
 * .bh-text-center 文字水平居中
+* .bh-text-left 文字左对齐
+* .bh-text-right 文字右对齐
+* .bh-text-nowrap 文字不换行
 
 内容需要有宽度才可以居中哦
-<p>
-	<div class="boxborder bh-center-block bh-text-center">文字</div>
-</p>
+<div class="bh-border bh-center-block bh-text-center" style="width:120px">文字</div>
+<div class="bh-clearfix">
+	<div class="box bh-m-16 bh-border bh-pull-left bh-text-left">文字</div>
+	<div class="box bh-m-16 bh-border bh-pull-left bh-text-right">文字</div>
+	<div class="box bh-m-16 bh-border bh-pull-left bh-text-nowrap">如果很长我也不换行，真的不换行</div>
+</div>
 
 ```html
 <div class="bh-center-block bh-text-center" style="width:120px">文字</div>
+<div class="bh-text-left">文字</div>
+<div class="bh-text-right">文字</div>
+<div class="bh-text-nowrap">如果很长我也不换行</div>
 ```
 
 ## 截断
