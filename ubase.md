@@ -90,7 +90,7 @@ editCb: function(event){
 
 目录名BS.js主要负责与后端API交互并进行数据处理, 异步请求使用jquery的Deferred对象做链式处理。
 
-```
+```js
 getStudentInfo: function(params) {
     var def = $.Deferred();
 
@@ -109,7 +109,7 @@ getStudentInfo: function(params) {
 
 utils.goto实现路由跳转，第一个参数为跳转后的路由，如果需要在新的tab页打开，则第二个参数置为true
 
-```
+```js
 utils.goto('module1/detail/1', true);
 ```
 
@@ -117,7 +117,7 @@ utils.goto('module1/detail/1', true);
 
 在页面中插入html的时候，如果需要重置页面的页脚位置，可以将html方法的第二个参数置为true
 
-```
+```js
 this.$rootElement.html(mainView.render(), true);
 ```
 
@@ -125,7 +125,7 @@ this.$rootElement.html(mainView.render(), true);
 
 路由参数采用restful风格，一般在路由跳转或新开浏览器tab页的时候使用
 
-```
+```js
 initialize: function() {
     var routeParams = this.getRouterParams();
     var type = routeParams[0];
@@ -156,7 +156,7 @@ initialize: function() {
 
 统一通过utils.getEcharts\(\)获取echarts对象，然后做后续图表初始化
 
-```
+```js
 utils.getEcharts().done(function(ec) {
     var myChart = ec.init($obj);//$obj为原生dom对象
     myChart.setOption(option);
@@ -167,7 +167,7 @@ utils.getEcharts().done(function(ec) {
 
 如果app是通过iframe的方式嵌入的，而且嵌入后希望隐藏APP的header和footer，只显示中间内容区域，则在url中添加min=1参数（注意：该参数需要在\#路由前添加）如：
 
-```
+```js
 http://res.wisedu.com/FE/HRMS/个人填报单页版/index.html?min=1#/txsbb
 ```
 
