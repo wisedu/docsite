@@ -12,12 +12,6 @@
 	font-size: 12px;
 	margin: 5px;
 }
-.bh-border{
-	width:120px;
-	height: 55px;
-	font-size: 12px;
-	margin: 5px;
-}
 .bh-border.bh-color-primary-4, .bh-border.bh-color-primary-5,
 .bh-border.bh-color-info-4, .bh-border.bh-color-info-5,
 .bh-border.bh-color-success-4, .bh-border.bh-color-success-5,
@@ -183,47 +177,47 @@ pb = padding bottom，表示底部内边距
 ### 字体色
 
 <div class="bh-clearfix">
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-primary">bh-color-primary</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-primary-2">bh-color-primary-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-primary-3">bh-color-primary-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-primary-4">bh-color-primary-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-primary-5">bh-color-primary-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-primary">bh-color-primary</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-primary-2">bh-color-primary-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-primary-3">bh-color-primary-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-primary-4">bh-color-primary-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-primary-5">bh-color-primary-5</div>
 </div>
 <div class="bh-clearfix">
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-info">bh-color-info</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-info-2">bh-color-info-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-info-3">bh-color-info-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-info-4">bh-color-info-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-info-5">bh-color-info-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-info">bh-color-info</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-info-2">bh-color-info-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-info-3">bh-color-info-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-info-4">bh-color-info-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-info-5">bh-color-info-5</div>
 </div>
 <div class="bh-clearfix">
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-success">bh-color-success</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-success-2">bh-color-success-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-success-3">bh-color-success-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-success-4">bh-color-success-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-success-5">bh-color-success-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-success">bh-color-success</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-success-2">bh-color-success-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-success-3">bh-color-success-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-success-4">bh-color-success-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-success-5">bh-color-success-5</div>
 </div>
 
 <div class="bh-clearfix">
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-warning">bh-color-warning</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-warning-2">bh-color-warning-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-warning-3">bh-color-warning-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-warning-4">bh-color-warning-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-warning-5">bh-color-warning-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-warning">bh-color-warning</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-warning-2">bh-color-warning-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-warning-3">bh-color-warning-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-warning-4">bh-color-warning-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-warning-5">bh-color-warning-5</div>
 </div>
 <div class="bh-clearfix">
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-danger">bh-color-danger</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-danger-2">bh-color-danger-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-danger-3">bh-color-danger-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-danger-4">bh-color-danger-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-danger-5">bh-color-danger-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-danger">bh-color-danger</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-danger-2">bh-color-danger-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-danger-3">bh-color-danger-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-danger-4">bh-color-danger-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-danger-5">bh-color-danger-5</div>
 </div>
 <div class="bh-clearfix">
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-grey">bh-color-grey</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-grey-2">bh-color-grey-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-grey-3">bh-color-grey-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-grey-4">bh-color-grey-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-color-grey-5">bh-color-grey-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-grey">bh-color-grey</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-grey-2">bh-color-grey-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-grey-3">bh-color-grey-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-grey-4">bh-color-grey-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-color-grey-5">bh-color-grey-5</div>
 </div>
 
 使用示例，在class中使用
@@ -242,46 +236,46 @@ pb = padding bottom，表示底部内边距
 ### 背景色
 
 <div class="bh-clearfix">
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-primary bh-color-primary-5">bh-bg-primary</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-primary-2">bh-bg-primary-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-primary-3">bh-bg-primary-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-primary-4">bh-bg-primary-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-primary-5">bh-bg-primary-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-primary bh-color-primary-5">bh-bg-primary</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-primary-2">bh-bg-primary-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-primary-3">bh-bg-primary-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-primary-4">bh-bg-primary-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-primary-5">bh-bg-primary-5</div>
 </div>
 <div class="bh-clearfix">
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-info bh-color-info-5">bh-bg-info</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-info-2">bh-bg-info-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-info-3">bh-bg-info-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-info-4">bh-bg-info-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-info-5">bh-bg-info-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-info bh-color-info-5">bh-bg-info</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-info-2">bh-bg-info-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-info-3">bh-bg-info-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-info-4">bh-bg-info-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-info-5">bh-bg-info-5</div>
 </div>
 <div class="bh-clearfix">
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-success bh-color-success-5">bh-bg-success</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-success-2">bh-bg-success-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-success-3">bh-bg-success-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-success-4">bh-bg-success-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-success-5">bh-bg-success-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-success bh-color-success-5">bh-bg-success</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-success-2">bh-bg-success-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-success-3">bh-bg-success-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-success-4">bh-bg-success-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-success-5">bh-bg-success-5</div>
 </div>
 <div class="bh-clearfix">
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-warning bh-color-warning-5">bh-bg-warning</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-warning-2">bh-bg-warning-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-warning-3">bh-bg-warning-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-warning-4">bh-bg-warning-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-warning-5">bh-bg-warning-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-warning bh-color-warning-5">bh-bg-warning</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-warning-2">bh-bg-warning-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-warning-3">bh-bg-warning-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-warning-4">bh-bg-warning-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-warning-5">bh-bg-warning-5</div>
 </div>
 <div class="bh-clearfix">
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-danger bh-color-danger-5">bh-bg-danger</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-danger-2">bh-bg-danger-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-danger-3">bh-bg-danger-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-danger-4">bh-bg-danger-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-danger-5">bh-bg-danger-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-danger bh-color-danger-5">bh-bg-danger</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-danger-2">bh-bg-danger-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-danger-3">bh-bg-danger-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-danger-4">bh-bg-danger-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-danger-5">bh-bg-danger-5</div>
 </div>
 <div class="bh-clearfix">
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-grey bh-color-grey-5">bh-bg-grey</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-grey-2">bh-bg-grey-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-grey-3">bh-bg-grey-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-grey-4">bh-bg-grey-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bg-grey-5">bh-bg-grey-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-grey bh-color-grey-5">bh-bg-grey</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-grey-2">bh-bg-grey-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-grey-3">bh-bg-grey-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-grey-4">bh-bg-grey-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bg-grey-5">bh-bg-grey-5</div>
 </div>
 
 使用示例，在class中使用
@@ -298,51 +292,51 @@ pb = padding bottom，表示底部内边距
 ### 边框色
 
 <div class="bh-clearfix bh-mb-4">
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-primary">bh-bColor-primary</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-primary-2">bh-bColor-primary-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-primary-3">bh-bColor-primary-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-primary-4">bh-bColor-primary-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-primary-5">bh-bColor-primary-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-primary">bh-bColor-primary</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-primary-2">bh-bColor-primary-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-primary-3">bh-bColor-primary-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-primary-4">bh-bColor-primary-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-primary-5">bh-bColor-primary-5</div>
 </div>
 
 <div class="bh-clearfix bh-mb-4">
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-info">bh-bColor-info</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-info-2">bh-bColor-info-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-info-3">bh-bColor-info-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-info-4">bh-bColor-info-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-info-5">bh-bColor-info-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-info">bh-bColor-info</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-info-2">bh-bColor-info-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-info-3">bh-bColor-info-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-info-4">bh-bColor-info-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-info-5">bh-bColor-info-5</div>
 </div>
 
 <div class="bh-clearfix bh-mb-4">
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-success">bh-bColor-success</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-success-2">bh-bColor-success-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-success-3">bh-bColor-success-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-success-4">bh-bColor-success-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-success-5">bh-bColor-success-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-success">bh-bColor-success</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-success-2">bh-bColor-success-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-success-3">bh-bColor-success-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-success-4">bh-bColor-success-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-success-5">bh-bColor-success-5</div>
 </div>
 
 <div class="bh-clearfix bh-mb-4">
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-warning">bh-bColor-warning</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-warning-2">bh-bColor-warning-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-warning-3">bh-bColor-warning-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-warning-4">bh-bColor-warning-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-warning-5">bh-bColor-warning-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-warning">bh-bColor-warning</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-warning-2">bh-bColor-warning-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-warning-3">bh-bColor-warning-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-warning-4">bh-bColor-warning-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-warning-5">bh-bColor-warning-5</div>
 </div>
 
 <div class="bh-clearfix bh-mb-4">
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-danger">bh-bColor-danger</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-danger-2">bh-bColor-danger-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-danger-3">bh-bColor-danger-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-danger-4">bh-bColor-danger-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-danger-5">bh-bColor-danger-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-danger">bh-bColor-danger</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-danger-2">bh-bColor-danger-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-danger-3">bh-bColor-danger-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-danger-4">bh-bColor-danger-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-danger-5">bh-bColor-danger-5</div>
 </div>
 
 <div class="bh-clearfix">
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-grey">bh-bColor-grey</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-grey-2">bh-bColor-grey-2</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-grey-3">bh-bColor-grey-3</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-grey-4">bh-bColor-grey-4</div>
-    <div class="bh-pull-left bh-border bh-p-8 bh-bColor-grey-5">bh-bColor-grey-5</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-grey">bh-bColor-grey</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-grey-2">bh-bColor-grey-2</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-grey-3">bh-bColor-grey-3</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-grey-4">bh-bColor-grey-4</div>
+    <div class="bh-pull-left bh-border box bh-p-8 bh-bColor-grey-5">bh-bColor-grey-5</div>
 </div>
 
 使用示例，在class中使用
@@ -366,8 +360,21 @@ pb = padding bottom，表示底部内边距
 * .bh-border-t 添加上边框
 * .bh-border-b 添加下边框
 
-<div class="box bh-center-block bh-border-h bh-bColor-primary">文字</div>
+<div class="box bh-m-16 bh-border bh-pull-left bh-bColor-primary bh-text-center">文字</div>
+<div class="box bh-m-16 bh-border-h bh-pull-left bh-bColor-info bh-text-center">文字</div>
+<div class="box bh-m-16 bh-border-v bh-pull-left bh-bColor-success bh-text-center">文字</div>
+<div class="box bh-m-16 bh-border-l bh-border-r bh-pull-left bh-bColor-warning bh-text-center">文字</div>
+<div class="box bh-m-16 bh-border-t bh-border-b bh-pull-left bh-bColor-danger bh-text-center">文字</div>
 
+<div class="bh-clearfix"></div>
+
+```html
+<div class="bh-border bh-bColor-primary">文字</div>
+<div class="bh-border-h bh-bColor-info">文字</div>
+<div class="bh-border-v bh-bColor-success">文字</div>
+<div class="bh-border-l bh-border-r bh-bColor-warning">文字</div>
+<div class="bh-border-t bh-border-b bh-bColor-danger">文字</div>
+```
 
 
 ## 浮动 & 清除浮动
@@ -422,11 +429,24 @@ pb = padding bottom，表示底部内边距
 <div class="bh-center-block bh-text-center" style="width:120px">文字</div>
 ```
 
+## 截断
 
+* .bh-str-cut 单行文字超长截断并出现点点点
+
+<p>
+	<div class="bh-str-cut bh-border">
+	hello，地名、科技词汇也很长。我们很难去界定它。目前这是世界上最长的正式英文单词：pneumonoultramicroscopicsilicovolcanoconiosis
+	</div>
+</p>
+
+```html
+<div class="bh-str-cut" style="width:300px">
+hello，地名、科技词汇也很长。我们很难去界定它。目前这是世界上最长的正式英文单词：pneumonoultramicroscopicsilicovolcanoconiosis
+</div>
+```
 
 ## 其他公共样式
 
 * .bh-l-inline 将块级元素转成行内元素
 * .bh-hide 隐藏元素
 * .bh-show 显示元素
-* .bh-str-cut 单行文字超长截断并出现点点点
