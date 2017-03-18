@@ -15,11 +15,7 @@
 
 ## 快速入门 {#quick-start}
 
-* 生成APP目录结构，进入项目待存放目录，打开命令行执行：yo um，选择ubase选项-
-  &gt;
-  输入项目名称-
-  &gt;
-  回车
+* 生成APP目录结构，进入项目待存放目录，打开命令行执行：yo um，选择ubase选项-&gt;输入项目名称-&gt;回车
 * 生成APP页面， 进入第一步生成的modules文件夹，打开命令行执行：yo um，选择页面类型-
   &gt;
   输入页面名称（名称由字母组成）-
@@ -29,13 +25,15 @@
   回车
 * [模板示例页](http://res.wisedu.com/FS/feType)
 
-    * 在config.js中配置modules.
-    ```javascript
-    "MODULES": [{
-          title: "模块名称",
-          route: "modulename"
-        }]
+  * 在config.js中配置modules.
+    \`\`\`javascript
+    "MODULES": \[{
+    ```
+    title: "模块名称",
+    route: "modulename"
+    ```
 
+      }\]
 
 * 当前目录命令行下执行gulp命令.
 * 打开浏览器进入
@@ -70,7 +68,6 @@ app/
 │       └── ···
 ├── config.js
 └── index.html
-
 ```
 
 一个模块至少存在 目录名.js 目录名BS.js 目录名IndexPage.html 三个文件，如需定制样式可以自行添加 目录名.css，模板文件的命名规则：目录名+自定义名称+Page.html
@@ -87,14 +84,12 @@ eventMap: function() {
         ".index-tip@mouseover": this.mouseoverCb
     };
 },
-
 ```
 
 ```
 editCb: function(event){
   var wid = $(event.currentTarget).attr('data-x-wid');//通过这种方式可以给事件传递参数
 }
-
 ```
 
 ### 异步数据获取方式 {#-}
@@ -114,7 +109,6 @@ getStudentInfo: function(params) {
 
     return def.promise();
 }
-
 ```
 
 ### 路由跳转 {#-}
@@ -123,7 +117,6 @@ utils.goto实现路由跳转，第一个参数为跳转后的路由，如果需�
 
 ```
 utils.goto('module1/detail/1', true);
-
 ```
 
 ### 页脚位置置底 {#-}
@@ -132,7 +125,6 @@ utils.goto('module1/detail/1', true);
 
 ```
 this.$rootElement.html(mainView.render(), true);
-
 ```
 
 ## 路由参数 {#route-params}
@@ -156,7 +148,6 @@ initialize: function() {
             this.initIndexPage();
     }
 },
-
 ```
 
 ## 子页面 {#sub-page}
@@ -176,7 +167,6 @@ utils.getEcharts().done(function(ec) {
     var myChart = ec.init($obj);//$obj为原生dom对象
     myChart.setOption(option);
 });
-
 ```
 
 ## APP嵌入模式 {#embed}
@@ -185,7 +175,6 @@ utils.getEcharts().done(function(ec) {
 
 ```
 http://res.wisedu.com/FE/HRMS/个人填报单页版/index.html?min=1#/txsbb
-
 ```
 
 ## 技术选型 {#technology}
