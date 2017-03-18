@@ -53,83 +53,10 @@ bh-m和bh-p定义margin和padding，预定义4 8 16 24 32五种距离
 
 
 
+| | | |
+| | | |
 
-<table border="1" class="bh-text-center bh-text-caption">
-    <tbody>
-    <tr>
-        <th>距离</th>
-        <th>外边距</th>
-        <th>左右外边距</th>
-        <th>上下外边距</th>
-        <th>底部外边距</th>
-        <th>内边距</th>
-        <th>左右内边距</th>
-        <th>上下内边距</th>
-        <th>顶部内边距</th>
-        <th>底部内边距</th>
-    </tr>
-    <tr>
-        <th>4px</th>
-        <td>.bh-m-4</td>
-        <td>.bh-mh-4</td>
-        <td>.bh-mv-4</td>
-        <td>.bh-mb-4</td>
-        <td>.bh-p-4</td>
-        <td>.bh-ph-4</td>
-        <td>.bh-pv-4</td>
-        <td>.bh-pt-4</td>
-        <td>.bh-pb-4</td>
-    </tr>
-    <tr>
-        <th>8px</th>
-        <td>.bh-m-8</td>
-        <td>.bh-mh-8</td>
-        <td>.bh-mv-8</td>
-        <td>.bh-mb-8</td>
-        <td>.bh-p-8</td>
-        <td>.bh-ph-8</td>
-        <td>.bh-pv-8</td>
-        <td>.bh-pt-8</td>
-        <td>.bh-pb-8</td>
-    </tr>
-    <tr>
-        <th>16px</th>
-        <td>.bh-m-16</td>
-        <td>.bh-mh-16</td>
-        <td>.bh-mv-16</td>
-        <td>.bh-mb-16</td>
-        <td>.bh-p-16</td>
-        <td>.bh-ph-16</td>
-        <td>.bh-pv-16</td>
-        <td>.bh-pt-16</td>
-        <td>.bh-pb-16</td>
-    </tr>
-    <tr>
-        <th>24px</th>
-        <td>.bh-m-24</td>
-        <td>.bh-mh-24</td>
-        <td>.bh-mv-24</td>
-        <td>.bh-mb-24</td>
-        <td>.bh-p-24</td>
-        <td>.bh-ph-24</td>
-        <td>.bh-pv-24</td>
-        <td>.bh-pt-24</td>
-        <td>.bh-pb-24</td>
-    </tr>
-    <tr>
-        <th>32px</th>
-        <td>.bh-m-32</td>
-        <td>.bh-mh-32</td>
-        <td>.bh-mv-32</td>
-        <td>.bh-mb-32</td>
-        <td>.bh-p-32</td>
-        <td>.bh-ph-32</td>
-        <td>.bh-pv-32</td>
-        <td>.bh-pt-32</td>
-        <td>.bh-pb-32</td>
-    </tr>
-    </tbody>
-</table>
+
 
 ## 颜色
 ### 字体色
