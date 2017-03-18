@@ -16,26 +16,22 @@
 ## 快速入门 {#quick-start}
 
 * 生成APP目录结构，进入项目待存放目录，打开命令行执行：yo um，选择ubase选项-&gt;输入项目名称-&gt;回车
-* 生成APP页面， 进入第一步生成的modules文件夹，打开命令行执行：yo um，选择页面类型-
-  &gt;
-  输入页面名称（名称由字母组成）-
-  &gt;
-  回答是否纸质弹框页面-
-  &gt;
-  回车
+* 生成APP页面， 进入第一步生成的modules文件夹，打开命令行执行：yo um，选择页面类型-&gt;输入页面名称（名称由字母组成）-&gt; 回答是否纸质弹框页面 -&gt; 回车
 * [模板示例页](http://res.wisedu.com/FS/feType)
 
-  * 在config.js中配置modules.
-    \`\`\`javascript
+  * 在config.js中配置modules.  
+    \`\`\`javascript  
     "MODULES": \[{
+
     ```
     title: "模块名称",
     route: "modulename"
     ```
 
-      }\]
+    }\]
 
 * 当前目录命令行下执行gulp命令.
+
 * 打开浏览器进入
   [http://localhost:9001](http://localhost:9001/)
   查看.
