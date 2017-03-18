@@ -20,15 +20,14 @@
 * [模板示例页](http://res.wisedu.com/FS/feType)
 
   * 在config.js中配置modules.  
-    \`\`\`javascript  
-    "MODULES": \[{
+```javascript  
+    "MODULES": [{
 
-    ```
     title: "模块名称",
     route: "modulename"
-    ```
 
-    }\]
+    }]
+```
 
 * 当前目录命令行下执行gulp命令.
 
