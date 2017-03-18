@@ -3,6 +3,9 @@
 <link rel="stylesheet" href="http://res.wisedu.com/fe_components/jqwidget/blue/bh-1.2.min.css">
 <link rel="stylesheet" href="http://res.wisedu.com/fe_components/jqwidget/blue/bh-scenes-1.2.min.css">
 <style>
+.book-summary{
+	font-size:14px;
+}
 .bh-border{
 	width:120px;
 	height: 55px;
@@ -61,6 +64,7 @@
 <h6>H6 这是标题6 </h6>
 <p><span class="bh-text-caption bh-color-caption">这是标准说明文字 </span></p>
 <p><span class="bh-text-caption-large bh-color-caption">这是大号的默认说明文字</span></p>
+
 ```html
 <h1>H1 这是标题1 </h1> 
 <h2>H2 这是标题2 </h2> 
@@ -76,52 +80,82 @@
 ## 边距
 
 bh-m和bh-p定义margin和padding，预定义4 8 16 24 32五种距离
-* mh = margin horizontal，表示左右外边距
-* mv = margin vertical，表示上下外边距
-* mt = margin top，表示底部外边距
-* mb = margin bottom，表示底部外边距
-* ph = padding horizontal，表示左右内边距
-* pv = padding vertical，表示上下内边距
-* pt = padding top，表示顶部内边距
-* pb = padding bottom，表示底部内边距。
-
-
-<div class="boxmargin bh-m-8">
+<div class="boxmargin bh-mb-16 bh-mh-24">
 	<div class="boxborder">
-		<div class="boxpadding"></div>
+		<div class="boxpadding">内容</div>
 	</div>
 </div>
 
 ```html
-<div class="bh-m-8 bh-p-8"></div>
+<div class="bh-m-8 bh-p-8">内容</div>
+m = margin，表示外边距
+p = padding，表示内边距。
 ```
 
-<div class="boxmargin bh-m-16 box-border-mp-h">
+<div class="bh-clearfix"></div>
+
+
+<div class="boxmargin box-border-mp-h bh-mb-16 bh-mh-24">
 	<div class="boxborder">
-		<div class="boxpadding box-border-mp-h"></div>
+		<div class="boxpadding box-border-mp-h">内容</div>
 	</div>
 </div>
 
-<div class="boxmargin bh-m-8 box-border-mp-v">
+```html
+<div class="bh-mh-8 bh-ph-8">内容</div>
+mh = margin horizontal，表示左右外边距
+ph = padding horizontal，表示左右内边距
+```
+
+<div class="bh-clearfix"></div>
+
+<div class="boxmargin bh-mb-16 box-border-mp-v bh-mh-32">
 	<div class="boxborder">
-		<div class="boxpadding box-border-mp-v"></div>
+		<div class="boxpadding box-border-mp-v">内容</div>
 	</div>
 </div>
 
-<div class="boxmargin bh-m-8 box-border-mp-t">
-	<div class="boxborder">
-		<div class="boxpadding box-border-mp-t"></div>
-	</div>
-</div>
-
-<div class="boxmargin bh-m-16 box-border-mp-b">
-	<div class="boxborder">
-		<div class="boxpadding box-border-mp-b"></div>
-	</div>
-</div>
+```html
+<div class="bh-mv-8 bh-pv-8">内容</div>
+mv = margin vertical，表示上下外边距
+pv = padding vertical，表示上下内边距
+```
 
 
 <div class="bh-clearfix"></div>
+
+
+<div class="boxmargin bh-mb-16 box-border-mp-t bh-mh-32">
+	<div class="boxborder">
+		<div class="boxpadding box-border-mp-t">内容</div>
+	</div>
+</div>
+
+```html
+<div class="bh-mt-8 bh-pt-8">内容</div>
+mt = margin top，表示底部外边距
+pt = padding top，表示顶部内边距
+```
+
+<div class="bh-clearfix"></div>
+
+
+<div class="boxmargin bh-mb-16 box-border-mp-b bh-mh-32">
+	<div class="boxborder">
+		<div class="boxpadding box-border-mp-b">内容</div>
+	</div>
+</div>
+
+```html
+<div class="bh-mb-8 bh-pb-8">内容</div>
+mb = margin bottom，表示底部外边距
+pb = padding bottom，表示底部内边距
+```
+
+<div class="bh-clearfix"></div>
+
+除了以上组合外，你还可以随意组合，不过请注意，同一方向上的 margin 或 padding，最大值生效
+
 
 
 
@@ -187,6 +221,7 @@ bh-m和bh-p定义margin和padding，预定义4 8 16 24 32五种距离
 </div>
 
 使用示例，在class中使用
+
 ```html
 <div class="bh-color-primary">bh-color-primary</div>
 <div class="bh-color-primary-2">bh-color-primary-2</div>
@@ -244,6 +279,7 @@ bh-m和bh-p定义margin和padding，预定义4 8 16 24 32五种距离
 </div>
 
 使用示例，在class中使用
+
 ```html
 <div class="bh-bg-primary bh-color-primary-5">bh-bg-primary</div>
 <div class="bh-bg-primary-2">bh-bg-primary-2</div>
@@ -305,6 +341,7 @@ bh-m和bh-p定义margin和padding，预定义4 8 16 24 32五种距离
 </div>
 
 使用示例，在class中使用
+
 ```html
 <div class="bh-bColor-primary">bh-bColor-primary</div>
 <div class="bh-bColor-primary-2">bh-bColor-primary-2</div>
@@ -313,3 +350,40 @@ bh-m和bh-p定义margin和padding，预定义4 8 16 24 32五种距离
 <div class="bh-bColor-primary-5">bh-bColor-primary-5</div>
 ```
 
+## 浮动 & 清除浮动
+
+使用浮动后，会使父容器高度为0，清除浮动后才可以占满空间
+
+* .bh-clearfix 清除浮动
+* .bh-clearfix-child 清除容器内子元素的浮动
+* .bh-pull-left 左浮动
+* .bh-pull-right 右浮动
+
+
+<div class="bh-bg-info-3 bh-clearfix bh-p-8">
+  <button class="bh-btn bh-btn-default bh-pull-left">Example Button floated left</button>
+  <button class="bh-btn bh-btn-default bh-pull-right">Example Button floated right</button>
+</div>
+
+```html
+<div class="bh-bg-info-3 bh-clearfix bh-p-8">
+  <button class="bh-btn bh-btn-default bh-pull-left">Example Button floated left</button>
+  <button class="bh-btn bh-btn-default bh-pull-right">Example Button floated right</button>
+</div>
+```
+
+## 其他公共样式
+
+.bh-center-block 容器水平居中
+.bh-center-h 内容水平居中
+.bh-l-inline 将块级元素转成行内元素
+.bh-border 添加边框
+.bh-border-h 添加左右边框
+.bh-border-l 添加左边框
+.bh-border-r 添加右边框
+.bh-border-v 添加上下边框
+.bh-border-t 添加上边框
+.bh-border-b 添加下边框
+.bh-hide 隐藏元素
+.bh-show 显示元素
+.bh-str-cut 单行文字超长截断并出现点点点
