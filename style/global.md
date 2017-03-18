@@ -6,6 +6,12 @@
 .book-summary{
 	font-size:14px;
 }
+.box{
+	width:120px;
+	height: 55px;
+	font-size: 12px;
+	margin: 5px;
+}
 .bh-border{
 	width:120px;
 	height: 55px;
@@ -70,7 +76,7 @@
 <h2>H2 这是标题2 </h2> 
 <h3>H3 这是标题3 </h3> 
 <h4>H4 这是标题4 </h4> 
-<h1>H5 这是标题5 </h5> 
+<h5>H5 这是标题5 </h5> 
 <h6>H6 这是标题6 </h6> 
 <span class="bh-text-caption bh-color-caption">这是默认说明文字</span>
 <span class="bh-text-caption-large bh-color-caption">这是大号的默认说明文字</span>
@@ -289,7 +295,6 @@ pb = padding bottom，表示底部内边距
 ```
 
 
-
 ### 边框色
 
 <div class="bh-clearfix bh-mb-4">
@@ -350,6 +355,21 @@ pb = padding bottom，表示底部内边距
 <div class="bh-bColor-primary-5">bh-bColor-primary-5</div>
 ```
 
+
+## 边框
+
+* .bh-border 添加边框
+* .bh-border-h 添加左右边框
+* .bh-border-l 添加左边框
+* .bh-border-r 添加右边框
+* .bh-border-v 添加上下边框
+* .bh-border-t 添加上边框
+* .bh-border-b 添加下边框
+
+<div class="box bh-center-block bh-border-h bh-bColor-primary">文字</div>
+
+
+
 ## 浮动 & 清除浮动
 
 使用浮动后，会使父容器高度为0，清除浮动后才可以占满空间
@@ -359,11 +379,27 @@ pb = padding bottom，表示底部内边距
 * .bh-pull-left 左浮动
 * .bh-pull-right 右浮动
 
+### 未清除浮动的例子
+<div class="bh-bg-info-3  bh-p-8">
+  <button class="bh-btn bh-btn-default bh-pull-left">Example Button floated left</button>
+  <button class="bh-btn bh-btn-default bh-pull-right">Example Button floated right</button>
+</div>
+我应该在第二行显示出来才对
+<div class="bh-clearfix"></div>
 
+```html
+<div class="bh-bg-info-3 bh-p-8">
+  <button class="bh-btn bh-btn-default bh-pull-left">Example Button floated left</button>
+  <button class="bh-btn bh-btn-default bh-pull-right">Example Button floated right</button>
+</div>
+```
+
+### 正确清除浮动的姿势
 <div class="bh-bg-info-3 bh-clearfix bh-p-8">
   <button class="bh-btn bh-btn-default bh-pull-left">Example Button floated left</button>
   <button class="bh-btn bh-btn-default bh-pull-right">Example Button floated right</button>
 </div>
+应该在第二行显示出来才对
 
 ```html
 <div class="bh-bg-info-3 bh-clearfix bh-p-8">
@@ -372,18 +408,25 @@ pb = padding bottom，表示底部内边距
 </div>
 ```
 
+
+## 居中
+* .bh-center-block 容器水平居中
+* .bh-text-center 文字水平居中
+
+内容需要有宽度才可以居中哦
+<p>
+	<div class="boxborder bh-center-block bh-text-center">文字</div>
+</p>
+
+```html
+<div class="bh-center-block bh-text-center" style="width:120px">文字</div>
+```
+
+
+
 ## 其他公共样式
 
-.bh-center-block 容器水平居中
-.bh-center-h 内容水平居中
-.bh-l-inline 将块级元素转成行内元素
-.bh-border 添加边框
-.bh-border-h 添加左右边框
-.bh-border-l 添加左边框
-.bh-border-r 添加右边框
-.bh-border-v 添加上下边框
-.bh-border-t 添加上边框
-.bh-border-b 添加下边框
-.bh-hide 隐藏元素
-.bh-show 显示元素
-.bh-str-cut 单行文字超长截断并出现点点点
+* .bh-l-inline 将块级元素转成行内元素
+* .bh-hide 隐藏元素
+* .bh-show 显示元素
+* .bh-str-cut 单行文字超长截断并出现点点点
