@@ -45,6 +45,73 @@
 </div>
 ```
 
+### 小圆
+
+<div class="bh-mb-16 scenes-circle-box bh-clearfix">
+    <div class="bh-mh-8 sc-circle sc-circle-primary">1</div>
+    <div class="bh-mh-8 sc-circle sc-circle-success">2</div>
+    <div class="bh-mh-8 sc-circle sc-circle-info">3</div>
+    <div class="bh-mh-8 sc-circle sc-circle-warning">4</div>
+    <div class="bh-mh-8 sc-circle sc-circle-danger">5</div>
+    <div class="bh-mh-8 sc-circle sc-circle-no">6</div>
+</div>
+
+```html
+<div class="bh-mh-8 sc-circle sc-circle-primary">1</div>
+<div class="bh-mh-8 sc-circle sc-circle-success">2</div>
+<div class="bh-mh-8 sc-circle sc-circle-info">3</div>
+<div class="bh-mh-8 sc-circle sc-circle-warning">4</div>
+<div class="bh-mh-8 sc-circle sc-circle-danger">5</div>
+<div class="bh-mh-8 sc-circle sc-circle-no">6</div>
+```
+
+### 标签 - bh-tag
+
+<div class="fontsize12">
+	<lable class="bh-tag bh-tag-primary">正方型</lable>
+    <lable class="bh-tag bh-tag-success">正方型</lable>
+    <lable class="bh-tag bh-tag-info">正方型</lable>
+    <lable class="bh-tag bh-tag-warning">正方型</lable>
+    <lable class="bh-tag bh-tag-danger">正方型</lable>
+    <lable class="bh-tag bh-tag-round bh-tag-primary">椭圆形</lable>
+    <lable class="bh-tag bh-tag-round bh-tag-success">椭圆形</lable>
+    <lable class="bh-tag bh-tag-round bh-tag-info">椭圆形</lable>
+    <lable class="bh-tag bh-tag-round bh-tag-warning">椭圆形</lable>
+    <lable class="bh-tag bh-tag-round bh-tag-danger">椭圆形</lable>
+    <lable class="bh-tag bh-tag-round bh-tag-default">椭圆形</lable>
+</div>
+<div class="bh-mv-16 fontsize12">
+    <lable class="bh-tag bh-tag-primary bh-tag-active">
+    	<span>标签2</span>
+    	<i class="iconfont icon-close"></i>
+    </lable>
+    <label class="bh-tag bh-tag-round bh-tag-primary bh-tag-add">
+    	<i class="iconfont icon-add"></i>
+    </label>
+</div>
+
+```html
+<lable class="bh-tag bh-tag-primary">正方型</lable>
+<lable class="bh-tag bh-tag-success">正方型</lable>
+<lable class="bh-tag bh-tag-info">正方型</lable>
+<lable class="bh-tag bh-tag-warning">正方型</lable>
+<lable class="bh-tag bh-tag-danger">正方型</lable>
+<lable class="bh-tag bh-tag-round bh-tag-primary">椭圆形</lable>
+<lable class="bh-tag bh-tag-round bh-tag-success">椭圆形</lable>
+<lable class="bh-tag bh-tag-round bh-tag-info">椭圆形</lable>
+<lable class="bh-tag bh-tag-round bh-tag-warning">椭圆形</lable>
+<lable class="bh-tag bh-tag-round bh-tag-danger">椭圆形</lable>
+<lable class="bh-tag bh-tag-round bh-tag-default">椭圆形</lable>
+
+<lable class="bh-tag bh-tag-primary bh-tag-active">
+	<span>标签2</span>
+	<i class="iconfont icon-close"></i>
+</lable>
+<label class="bh-tag bh-tag-round bh-tag-primary bh-tag-add">
+	<i class="iconfont icon-add"></i>
+</label>
+```
+
 ### 按钮
 
 #### 标准按钮
@@ -532,52 +599,77 @@
 ```
 
 
-### 标签 - bh-tag
+### 分页样式
 
-<div class="fontsize12">
-	<lable class="bh-tag bh-tag-primary">正方型</lable>
-    <lable class="bh-tag bh-tag-success">正方型</lable>
-    <lable class="bh-tag bh-tag-info">正方型</lable>
-    <lable class="bh-tag bh-tag-warning">正方型</lable>
-    <lable class="bh-tag bh-tag-danger">正方型</lable>
-    <lable class="bh-tag bh-tag-round bh-tag-primary">椭圆形</lable>
-    <lable class="bh-tag bh-tag-round bh-tag-success">椭圆形</lable>
-    <lable class="bh-tag bh-tag-round bh-tag-info">椭圆形</lable>
-    <lable class="bh-tag bh-tag-round bh-tag-warning">椭圆形</lable>
-    <lable class="bh-tag bh-tag-round bh-tag-danger">椭圆形</lable>
-    <lable class="bh-tag bh-tag-round bh-tag-default">椭圆形</lable>
-</div>
-<div class="bh-mv-16 fontsize12">
-    <lable class="bh-tag bh-tag-primary bh-tag-active">
-    	<span>标签2</span>
-    	<i class="iconfont icon-close"></i>
-    </lable>
-    <label class="bh-tag bh-tag-round bh-tag-primary bh-tag-add">
-    	<i class="iconfont icon-add"></i>
-    </label>
-</div>
+<p>
+	<div class="clearfix" style="margin-bottom: 24px;">
+        <ul class="bh-pagination bh-pull-left">
+            <li class="bh-disabled">
+                <a href="#" aria-label="Previous">
+                    <span aria-hidden="true">«</span>
+                </a>
+            </li>
+            <li><a href="#">1</a></li>
+            <li class="bh-disabled"><a href="#">2</a></li>
+            <li><a href="#">3</a></li>
+            <li class="bh-active"><a href="#">4</a></li>
+            <li><a href="#">5</a></li>
+            <li>
+                <a href="#" aria-label="Next">
+                    <span aria-hidden="true">»</span>
+                </a>
+            </li>
+        </ul>
+        <div class="bh-pagination-skip bh-pull-left">
+            <span class="bh-pull-left bh-mv-2">跳转至</span><input type="text" class="bh-form-control bh-pull-left"><span class="bh-pull-left bh-mv-2">页</span>
+            <a class="bh-btn bh-btn-default bh-btn-xs">GO</a>
+        </div>
+
+        <div class="bh-pagination-total bh-pull-right">
+            共9页，88条记录，每页显示<select class="bh-form-control">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+        </select>条
+        </div>
+        <div class="bh-clearfix"></div>
+    </div>
+</p>
 
 ```html
-<lable class="bh-tag bh-tag-primary">正方型</lable>
-<lable class="bh-tag bh-tag-success">正方型</lable>
-<lable class="bh-tag bh-tag-info">正方型</lable>
-<lable class="bh-tag bh-tag-warning">正方型</lable>
-<lable class="bh-tag bh-tag-danger">正方型</lable>
-<lable class="bh-tag bh-tag-round bh-tag-primary">椭圆形</lable>
-<lable class="bh-tag bh-tag-round bh-tag-success">椭圆形</lable>
-<lable class="bh-tag bh-tag-round bh-tag-info">椭圆形</lable>
-<lable class="bh-tag bh-tag-round bh-tag-warning">椭圆形</lable>
-<lable class="bh-tag bh-tag-round bh-tag-danger">椭圆形</lable>
-<lable class="bh-tag bh-tag-round bh-tag-default">椭圆形</lable>
-
-<lable class="bh-tag bh-tag-primary bh-tag-active">
-	<span>标签2</span>
-	<i class="iconfont icon-close"></i>
-</lable>
-<label class="bh-tag bh-tag-round bh-tag-primary bh-tag-add">
-	<i class="iconfont icon-add"></i>
-</label>
+<div class="clearfix bh-mb-24">
+    <ul class="bh-pagination bh-pull-left">
+        <li class="bh-disabled">
+            <a href="#" aria-label="Previous">
+                <span aria-hidden="true">«</span>
+            </a>
+        </li>
+        <li><a href="#">1</a></li>
+        <li class="bh-disabled"><a href="#">2</a></li>
+        <li><a href="#">3</a></li>
+        <li class="bh-active"><a href="#">4</a></li>
+        <li><a href="#">5</a></li>
+        <li>
+            <a href="#" aria-label="Next">
+                <span aria-hidden="true">»</span>
+            </a>
+        </li>
+    </ul>
+    <div class="bh-pagination-skip bh-pull-left">
+        <span class="bh-pull-left bh-mv-2">跳转至</span><input type="text" class="bh-form-control bh-pull-left"><span class="bh-pull-left bh-mv-2">页</span>
+        <a class="bh-btn bh-btn-default bh-btn-xs">GO</a>
+    </div>
+    <div class="bh-pagination-total bh-pull-right">
+        共9页，88条记录，每页显示<select class="bh-form-control">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+    </select>条
+    </div>
+    <div class="bh-clearfix"></div>
+</div>
 ```
+
 
 ### 下拉菜单 - Dropdown
 
