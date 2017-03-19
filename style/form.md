@@ -1,8 +1,99 @@
 # 表单样式
 
-### 文本
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/jqwidget/blue/bh-1.2.min.css">
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/jqwidget/blue/bh-scenes-1.2.min.css">
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/iconfont/iconfont.css">
+
+<style>
+.book-summary{
+	font-size:14px;
+}
+.bh-btn-grouped{
+	margin-left: 4px;
+	margin-right: 4px;
+}
+.fontsize12{
+	font-size: 12px;
+}
+</style>
+
+### 输入组件
+
+<form class="bh-form-vertical fontsize12 bh-clearfix">
+    <div class="bh-form-group bh-col-md-8 bh-required">
+        <label class="bh-form-label">字段名称：</label>
+        <div>
+            <input type="text" class="bh-form-control" placeholder="提示文字">
+        </div>
+    </div>
+    <div class="bh-form-group bh-col-md-8">
+        <label class="bh-form-label">字段名称：</label>
+        <div>
+            <select class="bh-form-control">
+            	<option>第一项</option>
+            	<option>第二项</option>
+            </select>
+        </div>
+    </div>
+    <div class="bh-form-group bh-col-md-8">
+        <label class="bh-form-label">字段名称：</label>
+        <div>
+            <select class="bh-form-control" multiple style="height: 50px">
+            	<option>第一项</option>
+            	<option>第二项</option>
+            </select>
+        </div>
+    </div>
+    <div class="bh-form-group bh-col-md-8 bh-required">
+        <label class="bh-form-label">字段名称：</label>
+        <div class="bh-form-control-warning">
+            <input type="text" class="bh-form-control" disabled placeholder="提示文字">
+            <div class="bh-text-caption bh-color-warning"><i class="md md-warning"></i>警告提示文字</div>
+        </div>
+    </div>
+    <div class="bh-form-group bh-col-md-8 bh-required">
+        <label class="bh-form-label">字段名称：</label>
+        <div class="bh-form-control-danger">
+            <input type="text" class="bh-form-control" readonly placeholder="提示文字">
+            <div class="bh-text-caption bh-color-danger"><i class="md md-warning"></i>错误提示文字</div>
+        </div>
+    </div>
+    <div class="bh-form-group bh-col-md-8">
+        <label class="bh-form-label">字段名称：</label>
+        <div>
+            <textarea class="bh-form-control" rows="3" placeholder="提示文字"></textarea>
+        </div>
+    </div>
+</form>
+
+```html
+<input type="text" class="bh-form-control" disabled placeholder="提示文字">
+<input type="text" class="bh-form-control" readonly placeholder="提示文字">
+<select class="bh-form-control">
+	<option>第一项</option>
+	<option>第二项</option>
+</select>
+<select class="bh-form-control" multiple style="height: 50px">
+	<option>第一项</option>
+	<option>第二项</option>
+</select>
+<textarea class="bh-form-control" rows="3" placeholder="提示文字"></textarea>
+```
 
 
+#### 后缀
+
+<div class="bh-input-group fontsize12">
+    <input type="text" class="bh-form-control" placeholder="Username">
+    <div class="bh-input-group-addon">万</div>
+</div>
+
+```html
+<div class="bh-input-group">
+    <input type="text" class="bh-form-control" placeholder="Username">
+    <div class="bh-input-group-addon">万</div>
+</div>
+```
 
 ### 单选
 #### radio 单例 普通、不可用、已选不可用
