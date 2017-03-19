@@ -15,7 +15,9 @@
 	margin-left: 4px;
 	margin-right: 4px;
 }
-
+.fontsize12{
+	font-size: 12px;
+}
 </style>
 
 
@@ -244,7 +246,7 @@
 ### 单选
 #### radio 单例 普通、不可用、已选不可用
 
-<div>
+<div class="fontsize12">
     <div class="bh-radio">
         <label class="bh-radio-label">
             <input type="radio" name="SHHD" value="0" data-caption="考察干部">
@@ -294,7 +296,7 @@
 
 #### radio group 横向排列
 
-<div>
+<div class="fontsize12">
     <div class="bh-radio bh-radio-group-h">
         <label class="bh-radio-label">
             <input type="radio" name="nl" value="0" data-caption="考察干部">
@@ -324,7 +326,7 @@
 
 #### radio group 竖直排列
 
-<div>
+<div class="fontsize12">
     <div class="bh-radio bh-radio-group-v">
         <label class="bh-radio-label">
             <input type="radio" name="SHHD_V" value="0" data-caption="考察干部">
@@ -360,7 +362,7 @@
 
 #### checkbox 单例 普通、不可用、已选不可用
 
-<div>
+<div class="fontsize12">
     <div class="bh-checkbox">
         <label class="bh-checkbox-label">
             <input type="checkbox" name="SHHD" value="0" data-caption="考察干部">
@@ -410,7 +412,7 @@
 
 #### checkbox group 水平排列
 
-<div>
+<div class="fontsize12">
     <div class="bh-checkbox bh-checkbox-group-h">
         <label class="bh-checkbox-label">
             <input type="checkbox" name="SHHD" value="0" data-caption="考察干部">
@@ -440,7 +442,7 @@
 
 #### checkbox group 竖直排列
 
-<div>
+<div class="fontsize12">
     <div class="bh-checkbox bh-checkbox-group-v">
         <label class="bh-checkbox-label">
             <input type="checkbox" name="SHHD" value="0" data-caption="考察干部">
@@ -473,14 +475,14 @@
 
 ### 开关 - bh-switch
 
-<div class="bh-switch">
+<div class="bh-switch fontsize12">
     <label class="bh-switch-label">默认</label>
     <input type="checkbox">
     <label class="bh-switch-helper"></label>
     <label class="bh-switch-text" open-text="打开" close-text="关闭"></label>
 </div>
 
-<div class="bh-switch">
+<div class="bh-switch fontsize12">
     <label class="bh-switch-label">默认打开</label>
     <input type="checkbox" checked="">
     <label class="bh-switch-helper"></label>
@@ -488,14 +490,14 @@
 </div>
 
 
-<div class="bh-switch">
+<div class="bh-switch fontsize12">
     <label class="bh-switch-label">禁用</label>
     <input type="checkbox" disabled="">
     <label class="bh-switch-helper"></label>
     <label class="bh-switch-text" open-text="打开" close-text="关闭"></label>
 </div>
 
-<div class="bh-switch">
+<div class="bh-switch fontsize12">
     <label class="bh-switch-label">禁用打开</label>
     <input type="checkbox" disabled="" checked="">
     <label class="bh-switch-helper"></label>
@@ -532,7 +534,7 @@
 
 ### 标签 - bh-tag
 
-<div>
+<div class="fontsize12">
 	<lable class="bh-tag bh-tag-primary">正方型</lable>
     <lable class="bh-tag bh-tag-success">正方型</lable>
     <lable class="bh-tag bh-tag-info">正方型</lable>
@@ -545,7 +547,7 @@
     <lable class="bh-tag bh-tag-round bh-tag-danger">椭圆形</lable>
     <lable class="bh-tag bh-tag-round bh-tag-default">椭圆形</lable>
 </div>
-<div class="bh-mv-16">
+<div class="bh-mv-16 fontsize12">
     <lable class="bh-tag bh-tag-primary bh-tag-active">
     	<span>标签2</span>
     	<i class="iconfont icon-close"></i>
