@@ -8,8 +8,13 @@
 .book-summary{
 	font-size:14px;
 }
-.fontsize12{
+.bhclass,.bhclass section{
 	font-size: 12px!important;
+	line-height: 20px;
+}
+.bhclass h3{
+	font-size: 16px;line-height: 16px;
+	margin: 0;
 }
 .bh-btn-grouped{
 	margin-left: 4px;
@@ -38,7 +43,7 @@
 ### 人物卡片
 
 <p>
-	<div class="bh-row bh-mv-24 fontsize12">
+	<div class="bh-row bh-mv-24 bhclass">
 	    <div class="sc-panel-user-1 bh-mh-8">
 	        <div class="sc-panel-user-1-image">
 	            <img src="http://res.wisedu.com/scenes/public/images/demo/userPanel.jpg">
@@ -110,11 +115,11 @@
 ### 事物卡片
 
 <p>
-	<div class="bh-row bh-mv-24 fontsize12">
+	<div class="bh-row bh-mv-24 bhclass">
         <!--事物卡片 操作项上滑 正常状态-->
         <div class="sc-panel-thing-1 bh-mh-8">
             <div class="sc-panel-thing-1-image">
-                <img src="http://res.wisedu.com/scenes/public/images/demo/userPanel.jpg">
+                <img src="http://res.wisedu.com/scenes/public/images/demo/user1.png">
             </div>
             <div class="sc-panel-thing-1-container bh-animate-all bh-animate-fast">
                 <div class="sc-panel-thing-1-description">
@@ -140,7 +145,7 @@
         <!--事物卡片 操作项上滑 正常状态-->
         <div class="sc-panel-thing-1 sc-active bh-mh-8">
             <div class="sc-panel-thing-1-image">
-                <img src="http://res.wisedu.com/scenes/public/images/demo/userPanel.jpg">
+                <img src="http://res.wisedu.com/scenes/public/images/demo/user2.png">
             </div>
             <div class="sc-panel-thing-1-container bh-animate-all bh-animate-fast">
                 <div class="sc-panel-thing-1-description">
@@ -200,7 +205,7 @@
 ### 事物无图片
 
 <p>
-	<div class="bh-row bh-mv-24 fontsize12">
+	<div class="bh-row bh-mv-24 bhclass">
         <!--事物卡片无图 操作项上滑 正常状态-->
         <div class="sc-panel-thingNoImg-1 bh-mh-8">
             <div class="sc-panel-thingNoImg-1-container bh-animate-all bh-animate-fast">
@@ -271,6 +276,8 @@
 </p>
 
 ```html
+选中样式：sc-active
+默认灰色样式：sc-default
 <div class="sc-panel-thingNoImg-1 sc-active sc-default bh-mh-8">
     <div class="sc-panel-thingNoImg-1-container bh-animate-all bh-animate-fast">
         <!--中间内容-->
@@ -300,20 +307,20 @@
 ### 对角线卡片
 
 <p>
-	<div class="bh-row bh-mv-24">
-	    <div class="bh-card bh-card-lv1" style="width: 272px;">
+	<div class="bh-row bh-mv-24 bh-clearfix">
+	    <div class="bh-card bh-card-lv1 bh-pull-left bh-m-8" style="width: 272px;">
 	        <div class="sc-panel-diagonalStrips sc-panel-warning">
 	            <div class="sc-panel-diagonalStrips-bar">待审核</div>
 	            <div class="sc-panel-diagonalStrips-text">生源核对</div>
 	        </div>
 	    </div>
-    	<div class="bh-card bh-card-lv1" style="width: 272px;">
+    	<div class="bh-card bh-card-lv1 bh-pull-left bh-m-8" style="width: 272px;">
 	        <div class="sc-panel-diagonalStrips sc-panel-success">
 	            <div class="sc-panel-diagonalStrips-bar">已完成</div>
 	            <div class="sc-panel-diagonalStrips-text">推荐表</div>
 	        </div>
 	    </div>
-    	<div class="bh-card bh-card-lv1" style="width: 272px;">
+    	<div class="bh-card bh-card-lv1 bh-pull-left bh-m-8" style="width: 272px;">
 	        <div class="sc-panel-diagonalStrips">
 	            <div class="sc-panel-diagonalStrips-bar">未填写</div>
 	            <div class="sc-panel-diagonalStrips-text">就业意向登记</div>
@@ -341,4 +348,82 @@
             <div class="sc-panel-diagonalStrips-text">就业意向登记</div>
         </div>
     </div>
+```
+
+### 提示信息卡片
+
+<p>
+	<div class="sc-panel-list bh-card bh-card-lv1 bhclass">
+        <div class="sc-panel-list-header">
+            <h3>校园活动</h3>
+            <div class="sc-panel-list-caption">更多<i class="iconfont icon-keyboardarrowright"></i></div>
+        </div>
+        <section class="sc-panel-list-section sc-panel-list-prompt">
+            <div>
+                <img src="http://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
+                <div class="bh-color-grey-3">最近没有任何校园活动</div>
+            </div>
+        </section>
+    </div>
+</p>
+
+```html
+<div class="sc-panel-list bh-card bh-card-lv1">
+    <div class="sc-panel-list-header">
+        <h3>校园活动</h3>
+        <div class="sc-panel-list-caption">更多<i class="iconfont icon-keyboardarrowright"></i></div>
+    </div>
+    <section class="sc-panel-list-section sc-panel-list-prompt">
+        <div>
+            <img src="http://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
+            <div class="bh-color-grey-3">最近没有任何校园活动</div>
+        </div>
+    </section>
+</div>
+```
+
+<p>
+	<div class="sc-panel-list bh-card bh-card-lv1 bhclass">
+        <div class="sc-panel-list-header">
+            <h3>校园活动</h3>
+            <div class="sc-panel-list-caption">更多<i class="iconfont icon-keyboardarrowright"></i></div>
+        </div>
+        <section class="sc-panel-list-section bh-pv-8 bh-ph-16">
+            <div class="sc-panel-list-section-left">
+                <h3 class="bh-str-cut">个人年度计划总结PPT汇报演示个人年度计划总结PPT汇报演示</h3>
+                <div class="bh-color-grey-3">10月1日</div>
+            </div>
+            <img class="sc-panel-list-section-right" src="http://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
+        </section>
+        <section class="sc-panel-list-section bh-pv-8 bh-ph-16">
+            <div class="sc-panel-list-section-left">
+                <h3 class="bh-str-cut">个人年度计划总结PPT汇报演示个人年度计划总结PPT汇报演示</h3>
+                <div class="bh-color-grey-3">10月1日</div>
+            </div>
+            <img class="sc-panel-list-section-right" src="http://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
+        </section>
+    </div>
+</p>
+
+```html
+<div class="sc-panel-list bh-card bh-card-lv1">
+    <div class="sc-panel-list-header">
+        <h3>校园活动</h3>
+        <div class="sc-panel-list-caption">更多<i class="iconfont icon-keyboardarrowright"></i></div>
+    </div>
+    <section class="sc-panel-list-section bh-pv-8 bh-ph-16">
+        <div class="sc-panel-list-section-left">
+            <h3 class="bh-str-cut">个人年度计划总结PPT汇报演示个人年度计划总结PPT汇报演示</h3>
+            <div class="bh-color-grey-3">10月1日</div>
+        </div>
+        <img class="sc-panel-list-section-right" src="http://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
+    </section>
+    <section class="sc-panel-list-section bh-pv-8 bh-ph-16">
+        <div class="sc-panel-list-section-left">
+            <h3 class="bh-str-cut">个人年度计划总结PPT汇报演示个人年度计划总结PPT汇报演示</h3>
+            <div class="bh-color-grey-3">10月1日</div>
+        </div>
+        <img class="sc-panel-list-section-right" src="http://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
+    </section>
+</div>
 ```
