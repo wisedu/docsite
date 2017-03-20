@@ -66,6 +66,8 @@
     </div>
 </form>
 
+<!--sec data-title="代码示例" data-id="section0" data-show=true data-collapse=true ces-->
+
 ```html
 <input type="text" class="bh-form-control" disabled placeholder="提示文字">
 <input type="text" class="bh-form-control" readonly placeholder="提示文字">
@@ -80,6 +82,7 @@
 <textarea class="bh-form-control" rows="3" placeholder="提示文字"></textarea>
 ```
 
+<!--endsec-->
 
 #### 后缀
 
@@ -88,12 +91,16 @@
     <div class="bh-input-group-addon">万</div>
 </div>
 
+<!--sec data-title="代码示例" data-id="section1" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-input-group">
     <input type="text" class="bh-form-control" placeholder="Username">
     <div class="bh-input-group-addon">万</div>
 </div>
 ```
+
+<!--endsec-->
 
 ### 单选
 #### radio 单例 普通、不可用、已选不可用
@@ -122,6 +129,8 @@
     </div>
 </div>
 
+<!--sec data-title="代码示例" data-id="section2" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-radio">
     <label class="bh-radio-label">
@@ -146,6 +155,8 @@
 </div>
 ```
 
+<!--endsec-->
+
 #### radio group 横向排列
 
 <div class="fontsize12">
@@ -168,6 +179,8 @@
     </div>
 </div>
 
+<!--sec data-title="代码示例" data-id="section3" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-radio bh-radio-group-h">
     <label class="bh-radio-label">...</label>
@@ -175,6 +188,8 @@
     <label class="bh-radio-label">...</label>
 </div>
 ```
+
+<!--endsec-->
 
 #### radio group 竖直排列
 
@@ -200,6 +215,8 @@
     </div>
 </div>
 
+<!--sec data-title="代码示例" data-id="section4" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-radio bh-radio-group-v">
     <label class="bh-radio-label">...</label>
@@ -208,6 +225,7 @@
 </div>
 ```
 
+<!--endsec-->
 
 
 ### 多选 - bh-checkbox
@@ -238,6 +256,8 @@
     </div>
 </div>
 
+<!--sec data-title="代码示例" data-id="section5" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-checkbox">
     <label class="bh-checkbox-label">
@@ -262,6 +282,8 @@
 </div>
 ```
 
+<!--endsec-->
+
 #### checkbox group 水平排列
 
 <div class="fontsize12">
@@ -284,6 +306,8 @@
     </div>
 </div>
 
+<!--sec data-title="代码示例" data-id="section6" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-checkbox bh-checkbox-group-h">
     <label class="bh-checkbox-label">...</label>
@@ -291,6 +315,8 @@
     <label class="bh-checkbox-label">...</label>
 </div>
 ```
+
+<!--endsec-->
 
 #### checkbox group 竖直排列
 
@@ -316,6 +342,8 @@
     </div>
 </div>
 
+<!--sec data-title="代码示例" data-id="section7" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-checkbox bh-checkbox-group-v">
     <label class="bh-checkbox-label">...</label>
@@ -323,6 +351,8 @@
     <label class="bh-checkbox-label">...</label>
 </div>
 ```
+
+<!--endsec-->
 
 
 ### 开关 - bh-switch
@@ -356,6 +386,8 @@
     <label class="bh-switch-text" open-text="打开" close-text="关闭"></label>
 </div>
 
+<!--sec data-title="代码示例" data-id="section8" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-switch">
     <label class="bh-switch-label">默认</label>
@@ -382,3 +414,5 @@
     <label class="bh-switch-text" open-text="打开" close-text="关闭"></label>
 </div>
 ```
+
+<!--endsec-->

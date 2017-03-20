@@ -33,6 +33,8 @@
     出错的提示文字
 </div>
 
+<!--sec data-title="代码示例" data-id="section0" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-alert bh-alert-success">
    成功的提示文字
@@ -45,6 +47,8 @@
 </div>
 ```
 
+<!--endsec-->
+
 ### 小圆
 
 <div class="bh-mb-16 scenes-circle-box bh-clearfix">
@@ -56,6 +60,8 @@
     <div class="bh-mh-8 sc-circle sc-circle-no">6</div>
 </div>
 
+<!--sec data-title="代码示例" data-id="section1" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-mh-8 sc-circle sc-circle-primary">1</div>
 <div class="bh-mh-8 sc-circle sc-circle-success">2</div>
@@ -64,6 +70,8 @@
 <div class="bh-mh-8 sc-circle sc-circle-danger">5</div>
 <div class="bh-mh-8 sc-circle sc-circle-no">6</div>
 ```
+
+<!--endsec-->
 
 ### 标签 - bh-tag
 
@@ -90,6 +98,8 @@
     </label>
 </div>
 
+<!--sec data-title="代码示例" data-id="section2" data-show=true data-collapse=true ces-->
+
 ```html
 <lable class="bh-tag bh-tag-primary">正方型</lable>
 <lable class="bh-tag bh-tag-success">正方型</lable>
@@ -111,6 +121,8 @@
 	<i class="iconfont icon-add"></i>
 </label>
 ```
+
+<!--endsec-->
 
 ### 按钮
 
@@ -137,6 +149,8 @@
     小号尺寸：.bh-btn-small
 </div>
 
+<!--sec data-title="代码示例" data-id="section3" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-btn-grouped">
     <button type="button" class="bh-btn bh-btn-default bh-btn-large">Button</button>
@@ -144,6 +158,8 @@
     <button type="button" class="bh-btn bh-btn-success bh-btn-small">Success</button>
 </div>
 ```
+
+<!--endsec-->
 
 #### 禁用状态 Disable（所有普通按钮通用）
 
@@ -153,6 +169,8 @@
     <button type="button" class="bh-btn bh-btn-success" disabled >Success</button>
 </div>
 
+<!--sec data-title="代码示例" data-id="section4" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-btn-grouped">
     <button type="button" class="bh-btn bh-btn-default" disabled onclick="alert('hello')">Disable</button>
@@ -160,6 +178,8 @@
     <button type="button" class="bh-btn bh-btn-success" disabled >Success</button>
 </div>
 ```
+
+<!--endsec-->
 
 #### 带图标按钮
 
@@ -193,6 +213,8 @@
     小号尺寸：.bh-btn-small
 </div>
 
+<!--sec data-title="代码示例" data-id="section5" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-btn-grouped">
     <button type="button" class="bh-btn bh-btn-default bh-btn-large">
@@ -203,6 +225,8 @@
         <i class="iconfont icon-cameraalt"></i>Success</button>
 </div>
 ```
+
+<!--endsec-->
 
 #### 圆形按钮
 
@@ -218,6 +242,8 @@
     </button>
 </div>
 
+<!--sec data-title="代码示例" data-id="section6" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-btn-grouped">
     <button type="button" class="bh-btn bh-btn-circle bh-btn-primary">
@@ -231,6 +257,8 @@
     </button>
 </div>
 ```
+
+<!--endsec-->
 
 #### 卡片操作按钮
 
@@ -257,6 +285,8 @@
     </button>
 </div>
 
+<!--sec data-title="代码示例" data-id="section7" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-btn-grouped">
     <button type="button" class="bh-btn bh-btn-default bh-btn-small bh-btn-icon">
@@ -280,6 +310,8 @@
 </div>
 ```
 
+<!--endsec-->
+
 #### 左右按钮分组
 
 <div class="bh-btn-grouped">
@@ -294,6 +326,8 @@
         <button type="button" class="bh-btn bh-btn-default"><i class="iconfont"></i>查看统计</button>
     </div>
 </div>
+
+<!--sec data-title="代码示例" data-id="section8" data-show=true data-collapse=true ces-->
 
 ```html
 <div class="bh-btn-grouped">
@@ -310,6 +344,7 @@
 </div>
 ```
 
+<!--endsec-->
 
 ### 分页样式
 
@@ -348,6 +383,8 @@
     </div>
 </p>
 
+<!--sec data-title="代码示例" data-id="section9" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="clearfix bh-mb-24">
     <ul class="bh-pagination bh-pull-left">
@@ -382,6 +419,8 @@
 </div>
 ```
 
+<!--endsec-->
+
 
 ### 下拉菜单 - Dropdown
 
@@ -401,6 +440,8 @@
 	</div>
 </div>
 
+<!--sec data-title="代码示例" data-id="section10" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-dropdown" bh-dropdown-role="bhDropdown">
     <button class="bh-btn bh-btn-default bh-btn-larger" type="button" bh-dropdown-role="bhDropdownBtn" >
@@ -416,6 +457,8 @@
     </ul>
 </div>
 ```
+
+<!--endsec-->
 
 <div class="bh-btn-grouped">
 	<div class="bh-dropdown bh-dropdown-primary bh-dropdown-right bh-clearfix" bh-dropdown-role="bhDropdown">
@@ -434,6 +477,10 @@
 	</div>
 </div>
 
+设置该样式，使其展开：bh-dropdown-open
+
+<!--sec data-title="代码示例" data-id="section11" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-dropdown bh-dropdown-primary bh-dropdown-right bh-clearfix" bh-dropdown-role="bhDropdown">
     <button class="bh-btn bh-btn-default bh-btn-small bh-btn-primary" type="button" bh-dropdown-role="bhDropdownBtn" >
@@ -444,8 +491,9 @@
         ...
     </ul>
 </div>
-设置该样式，使其展开：bh-dropdown-open
 ```
+
+<!--endsec-->
 
 <div class="bh-btn-grouped">
     <div class="bh-dropdown bh-dropdown-up" bh-dropdown-role="bhDropdown">
@@ -464,12 +512,17 @@
     </div>
 </div>
 
+<!--sec data-title="代码示例" data-id="section12" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-dropdown bh-dropdown-up" bh-dropdown-role="bhDropdown">
     ...
 </div>
 
 ```
+
+<!--endsec-->
+
 <div class="bh-btn-grouped">
     <div class="bh-dropdown bh-dropdown-right-up" bh-dropdown-role="bhDropdown">
         <button class="bh-btn bh-btn-default" type="button" bh-dropdown-role="bhDropdownBtn" >
@@ -487,8 +540,12 @@
     </div>
 </div>
 
+<!--sec data-title="代码示例" data-id="section13" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-dropdown bh-dropdown-right-up" bh-dropdown-role="bhDropdown">
     ...
 </div>
 ```
+
+<!--endsec-->

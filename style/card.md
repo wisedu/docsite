@@ -32,13 +32,20 @@
 	<div class="bh-card bh-card-lv4 bh-pull-left bh-m-16" style="width:120px;height: 75px">四级卡片</div>
 </div>
 
+
+注意：卡片一定需要设置宽度和高度，否则内容超长时，就会将卡片撑开，导致页面不对其
+
+<!--sec data-title="代码示例" data-id="section0" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="bh-card bh-card-lv1" style="width:120px;height: 75px">一级卡片</div>
 <div class="bh-card bh-card-lv2" style="width:120px;height: 75px">二级卡片</div>
 <div class="bh-card bh-card-lv3" style="width:120px;height: 75px">三级卡片</div>
 <div class="bh-card bh-card-lv4" style="width:120px;height: 75px">四级卡片</div>
-卡片需要设置宽度和高度
 ```
+
+<!--endsec-->
+
 
 ### 人物卡片
 
@@ -85,8 +92,11 @@
 	</div>
 </p>
 
-```html
 选中样式：sc-active
+
+<!--sec data-title="代码示例" data-id="section1" data-show=true data-collapse=true ces-->
+
+```html
 <div class="sc-panel-user-1 bh-mh-8 sc-active">
     <!--左边照片-->
     <div class="sc-panel-user-1-image">
@@ -111,6 +121,8 @@
     </div>
 </div>
 ```
+
+<!--endsec-->
 
 ### 事物卡片
 
@@ -170,8 +182,12 @@
     </div>
 </p>
 
-```html
 选中样式：sc-active
+
+<!--sec data-title="代码示例" data-id="section2" data-show=true data-collapse=true ces-->
+
+```html
+
 <div class="sc-panel-thing-1 bh-mh-8 sc-active">
 	<!--左边照片-->
     <div class="sc-panel-thing-1-image">
@@ -201,6 +217,8 @@
     </div>
 </div>
 ```
+
+<!--endsec-->
 
 ### 事物无图片
 
@@ -275,9 +293,12 @@
     </div>
 </p>
 
+* 选中样式：sc-active
+* 默认灰色样式：sc-default
+
+<!--sec data-title="代码示例" data-id="section3" data-show=true data-collapse=true ces-->
+
 ```html
-选中样式：sc-active
-默认灰色样式：sc-default
 <div class="sc-panel-thingNoImg-1 sc-active sc-default bh-mh-8">
     <div class="sc-panel-thingNoImg-1-container bh-animate-all bh-animate-fast">
         <!--中间内容-->
@@ -304,6 +325,8 @@
 </div>
 ```
 
+<!--endsec-->
+
 ### 对角线卡片
 
 <p>
@@ -329,6 +352,8 @@
 	</div>
 </p>
 
+<!--sec data-title="代码示例" data-id="section4" data-show=true data-collapse=true ces-->
+
 ```html
     <div class="bh-card bh-card-lv1" style="width: 272px;">
         <div class="sc-panel-diagonalStrips sc-panel-warning">
@@ -350,6 +375,8 @@
     </div>
 ```
 
+<!--endsec-->
+
 ### 提示信息卡片
 
 <p>
@@ -367,6 +394,8 @@
     </div>
 </p>
 
+<!--sec data-title="代码示例" data-id="section5" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="sc-panel-list bh-card bh-card-lv1">
     <div class="sc-panel-list-header">
@@ -381,6 +410,8 @@
     </section>
 </div>
 ```
+
+<!--endsec-->
 
 <p>
 	<div class="sc-panel-list bh-card bh-card-lv1 bhclass">
@@ -405,6 +436,8 @@
     </div>
 </p>
 
+<!--sec data-title="代码示例" data-id="section6" data-show=true data-collapse=true ces-->
+
 ```html
 <div class="sc-panel-list bh-card bh-card-lv1">
     <div class="sc-panel-list-header">
@@ -427,3 +460,5 @@
     </section>
 </div>
 ```
+
+<!--endsec-->
