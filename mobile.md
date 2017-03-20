@@ -1,7 +1,5 @@
 # 移动框架与组件
 
-[https://wisedu.github.io/bh-mint-ui2-doc/\#!/zh-cn2](https://wisedu.github.io/bh-mint-ui2-doc/#!/zh-cn2)
-
 说明: 本文档用于指导前端 H5 App 的开发，如需开发其他其他功能组件比如小卡片等，不适用本文档
 
 ## 0. 前期准备:
