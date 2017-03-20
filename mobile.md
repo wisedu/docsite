@@ -20,7 +20,7 @@
 如果无法正常出现版本号，请去完成前期准备的第二步，安装 Node 和 NPM 环境 通过 npm 安装 vue 脚手架命令行工具
 
 ```
-npm i -g vue-cli --registry=https://registry.npm.taobao.org
+$ npm i -g vue-cli --registry=https://registry.npm.taobao.org
 ```
 
 退出命令行，重新进入，检查有没有安装成功
@@ -40,7 +40,7 @@ $ vue init wisedu/bh-mobile-template ${your_project}
 进入上一步创建的文件夹，运行命令
 
 ```
-npm run dev
+$ npm run dev
 ```
 
 命令运行后，会去下载相关的依赖, 然后启动项目 项目启动在8080端口上，如果希望项目启动在，其他端口上，请修改 webpack.config.js顶部的 PORT
