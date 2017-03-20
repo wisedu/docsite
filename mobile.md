@@ -63,7 +63,7 @@ my-project
 ├── src //项目源代码，开发人员编写的源代码都在这个目录下
 │   └── components //页面级别的公用组件, 例如在某个项目里共同使用的用户信息展示, 某些共用的复杂弹窗等等
 │   └── pages //业务模块文件夹, 按照业务逻辑区分的业务模块文件夹
-│   └── vuex //vuex 用于放置 vuex 相关的文件(mutation, store, action, getter)
+│   └── vuex //用于放置 vuex 相关的文件(mutation, store, action, getter)
 │   └── assets //图片资源
 │   └── App.vue
 │   └── main.js //入口
