@@ -54,7 +54,9 @@ npm run dev
 
 ```
 项目启动在8080端口上，如果希望项目启动在，其他端口上，请修改 webpack.config.js的 port
+
 ![](/assets/Snip20170320_39.png)
+
 可以通过chrome 开发者工具，模拟出手机的屏幕方便开发
 
 ## 3、项目基本结构
