@@ -136,11 +136,11 @@ Hybrid SDK 是前端应用调用客户端原生能力的桥梁，是对原生能
 
 如果想了解具体有哪些 SDK 可以调用，需要的参数，请查看SDK 文档
 
-1. 代码调试
+## 6. 代码调试
 
 请开发 App 的负责人和后端沟通解决跨域的问题，否则调试只能在 pc 浏览器的 chrome 下进行，其他真机或者手机浏览器调试都不行
 
-6.1 pc 浏览器调试
+### 6.1 pc 浏览器调试
 
 chrome 打开开发者工具，点击模拟手机，即可调试应用
 
@@ -152,7 +152,7 @@ deploy
 如果服务端不支持跨域，需要打开浏览器时禁掉跨域  
  mac: open -a "Google Chrome" --args --disable-web-security --user-data-dir windows:[http://stackoverflow.com/a/34779264/1433270需要先完全退出浏览器再使用才可生效](http://stackoverflow.com/a/34779264/1433270需要先完全退出浏览器再使用才可生效)
 
-6.2 手机浏览器
+### 6.2 手机浏览器
 
 直接使用手机浏览器访问，本机 ip:端口，然后Android 可以借助远程 debug 工具调试手机网页[http://wiki.jikexueyuan.com/project/chrome-](http://wiki.jikexueyuan.com/project/chrome-) devtools/remote-debugging-on-android.html
 
@@ -170,7 +170,7 @@ ios 可以利用 safari 进行调试
 
    Simulator”即可打开一个iOS设备的模拟器，并且模拟器里面Safari打开的页面，也是能通过上个步骤中MAC上的Safari调试。 \(示意图\)
 
-6.3 应用内真机调试
+### 6.3 应用内真机调试
 
 1. Android 下载开发版的移动门户可以实现和6.2一样的远程调试 webview[https://www.pgyer.com/go1G](https://www.pgyer.com/go1G)
 
@@ -178,7 +178,7 @@ ios 可以利用 safari 进行调试
 
    内调试你开发的小应用了
 
-3. 打包上线
+## 7. 打包上线
 
 ```
 应用开发完成后，需要打包上线，框架层面提供命令打包
