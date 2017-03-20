@@ -81,9 +81,12 @@ my-project
 ```
 ### 3.2、目录规范
 
-1. pages 目录下有一个业务建一个子文件夹, 文件夹以驼峰命名, 业务的主入口文件与文件夹名相同(避免 sourceMap 无法区别文件问题), 其他文件也以驼峰命名
-2. components 目录下也分别建子文件夹, 文件夹以驼峰命名, 业务的主入口文件与文件夹名相同(避免 sourceMap 无法区别文件问题), 其他文件也以驼峰命名
-3. vuex 目录下的命名规范见下文vuex 命名规范vuex 涉及的概念比较多 (mutation, store, action, getter), 文件和文件夹命名依旧驼峰1. store.js 用于暴露最终的 store 对象2. action.js 用于集合所有的 action3. mutation 和 store 为了防止出现歧义, 原则上都必须分模块, 即使页面只有一个 vuex 的模块, 也需要在 vuex/module目录下建立一个独立的文件存放 相应的 mutation 和 store
+* pages 目录下有一个业务建一个子文件夹, 文件夹以驼峰命名, 业务的主入口文件与文件夹名相同(避免 sourceMap 无法区别文件问题), 其他文件也以驼峰命名
+* components 目录下也分别建子文件夹, 文件夹以驼峰命名, 业务的主入口文件与文件夹名相同(避免 sourceMap 无法区别文件问题), 其他文件也以驼峰命名
+* vuex 目录下的命名规范见下文vuex 命名规范vuex 涉及的概念比较多 (mutation, store, action, getter), 文件和文件夹命名依旧驼峰
+* store.js 用于暴露最终的 store 对象
+* action.js 用于集合所有的 action
+* mutation 和 store 为了防止出现歧义, 原则上都必须分模块, 即使页面只有一个 vuex 的模块, 也需要在 vuex/module目录下建立一个独立的文件存放 相应的 mutation 和 store
 
 ## 4、组件相关
 
