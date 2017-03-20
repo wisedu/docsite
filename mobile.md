@@ -76,10 +76,12 @@ my-project
 
 ## 4、组件相关
 
-资料:
-1. [官网](http://mint-ui.github.io)
-2. [文档地址](http://mint-ui.github.io/docs/#!/zh-cn2)
-3. demo [示例](http://elemefe.github.io/mint-ui/#/)
+向 mintUI 致敬
+
+基于 mintUI 2.0的基础上 做了主题和组件的扩展
+
+* [项目站点](https://github.com/wisedu/bh-mint-ui2) 
+* [文档地址](https://wisedu.github.io/bh-mint-ui2-doc/#!/zh-cn2)
 
 ### 4.1、 组件引入方法
 
@@ -138,8 +140,8 @@ Simulator”即可打开一个iOS设备的模拟器，并且模拟器里面Safar
 
 ### 6.3、应用内真机调试
 
-1. Android 下载开发版的移动门户可以实现和6.2一样的远程调试 webview [https://www.pgyer.com/lDDL](https://www.pgyer.com/lDDL)
-2. 开发者可以让测试人员在应用管理平台建立一个测试 App，在应用管理平台上你将该应用的 ip 指向你本地, 这时候你就可以在 app
+* Android 下载开发版的移动门户可以实现和6.2一样的远程调试 webview [https://www.pgyer.com/lDDL](https://www.pgyer.com/lDDL)
+* 开发者可以让测试人员在应用管理平台建立一个测试 App，在应用管理平台上你将该应用的 ip 指向你本地, 这时候你就可以在 app
 内调试你开发的小应用了
 
 ## 7、打包上线
