@@ -94,8 +94,7 @@ my-project
 
 基于 mintUI 2.0的基础上 做了主题和组件的扩展
 
-* [项目站点](https://github.com/wisedu/bh-mint-ui2) 
-* [文档地址](https://wisedu.github.io/bh-mint-ui2-doc/#!/zh-cn2)
+
 
 ### 4.1、 组件引入方法
 
@@ -104,7 +103,8 @@ my-project
 
 ### 4.2、组件使用方法
 
-请参考组件的[文档地址](http://mint-ui.github.io/docs/#!/zh-cn2)
+* [项目站点](https://github.com/wisedu/bh-mint-ui2) 
+* [文档地址](https://wisedu.github.io/bh-mint-ui2-doc/#!/zh-cn2)
 
 ## 5、Hybrid SDK 相关 
 
