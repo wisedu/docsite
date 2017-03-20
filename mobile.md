@@ -111,6 +111,7 @@ my-project
 * 文档地址 https://wisedu.github.io/bh-mint-ui2-doc/#!/zh-cn2
 
 手机查看请扫码
+
 ![](/assets/1489992182.png)
 
 ## 5、Hybrid SDK 相关 
