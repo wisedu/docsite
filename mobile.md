@@ -3,10 +3,11 @@
 说明: 本文档用于指导前端 H5 App 的开发，如需开发其他其他功能组件比如小卡片等，不适用本文档
 
 ## 前期准备
-1. Vue 的基本概念[vue文档](https://cn.vuejs.org/)
-2. es6 开发基本知识 [es6 基本文档](http://es6.ruanyifeng.com/)
-3. Node 环境(Node >=4.0.0, npm >= 3.0.0)[下载地址](https://nodejs.org/zh-cn/)
-4. 移动门户[App](https://www.pgyer.com/VGkN)
+* Vue 的基本概念[vue文档](https://cn.vuejs.org/)
+* es6 开发基本知识 [es6 基本文档](http://es6.ruanyifeng.com/)
+* Node 环境(Node >=4.0.0, npm >= 3.0.0)[下载地址](https://nodejs.org/zh-cn/)
+* 移动门户[App](https://www.pgyer.com/VGkN)
+* 示例代码
 
 ## 1、搭建脚手架
 
