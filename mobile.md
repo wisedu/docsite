@@ -19,8 +19,6 @@
 
 如果无法正常出现版本号，请去完成前期准备的第二步，安装 Node 和 NPM 环境 通过 npm 安装 vue 脚手架命令行工具
 
-
-
 ```
 npm i -g vue-cli --registry=https://registry.npm.taobao.org
 $ vue init wisedu/bh-mobile-template ${your_project}
