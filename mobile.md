@@ -128,7 +128,6 @@ my-project
   }
 ```
 
-
 ### 4.2、组件使用方法
 
 * 项目站点 https://github.com/wisedu/bh-mint-ui2
