@@ -9,7 +9,7 @@
 1. Vue 的基本概念vue 文档  
 2. es6 开发基本知识es6 基本文档  
 3. Node 环境\(Node &gt;=4.0.0, npm &gt;= 3.0.0\)下载地址4. window 的 zip 环境  
- 5. 移动门户 Apphttps://www.pgyer.com/VGkN
+   1. 移动门户 App[https://www.pgyer.com/VGkN](https://www.pgyer.com/VGkN)
 
 ## 1. 搭建脚手架
 
@@ -19,12 +19,17 @@
 
 如果无法正常出现版本号，请去完成前期准备的第二步，安装 Node 和 NPM 环境 通过 npm 安装 vue 脚手架命令行工具
 
+
+
 ```
-退出命令行，重新进入，检查有没有安装成功
 npm i -g vue-cli --registry=https://registry.npm.taobao.org
 $ vue init wisedu/bh-mobile-template ${your_project}
 npm run dev
 ```
+
+退出命令行，重新进入，检查有没有安装成功
+
+
 
 如果没有正确弹出版本号，请尝试用管理员身份启动命令行或者 rtx 联系孙正斌
 
@@ -32,14 +37,12 @@ npm run dev
 
 ```
 命令会在当前的文件夹下生成一个文件夹，这个文件夹就是我们的项目文件夹
-
 ```
 
-2. 运行项目
+1. 运行项目
 
 ```
 进入上一步创建的文件夹，运行命令
-
 ```
 
 命令运行后，会去下载相关的依赖, 然后启动项目 项目启动在8080端口上，如果希望项目启动在，其他端口上，请修改 webpack.config.js顶部的 PORT
@@ -48,20 +51,18 @@ npm run dev
 
 可以通过chrome 开发者工具，模拟出手机的屏幕方便开发
 
-3. 项目基本结构
+1. 项目基本结构
 
 3.1 目录说明/doc
 
 ```
 放置项目的文档，包括后端文档，设计文档等，方便多人开发这个项目的时候共享文档
-
 ```
 
 /sr
 
 ```
 项目源代码，开发人员编写的源代码都在这个目录下
-
 ```
 
 /src/components
@@ -115,14 +116,13 @@ vuex 涉及的概念比较多 \(mutation, store, action, getter\), 文件和文�
 
 ```
 具体的使用方法，可以参考附件中的示例代码
-
 ```
 
 4.2 组件使用方法
 
 请参考组件的文档地址
 
-5. Hybrid SDK 相关5.1 介绍
+1. Hybrid SDK 相关5.1 介绍
 
 Hybrid SDK 是前端应用调用客户端原生能力的桥梁，是对原生能力的封装，比如你想调起原生的图片浏览器，新开一个 webview 页面，设置原生的头，隐藏原生的头等，都会涉及到 Hybrid SDK
 
@@ -134,7 +134,7 @@ Hybrid SDK 是前端应用调用客户端原生能力的桥梁，是对原生能
 
 如果想了解具体有哪些 SDK 可以调用，需要的参数，请查看SDK 文档
 
-6. 代码调试
+1. 代码调试
 
 请开发 App 的负责人和后端沟通解决跨域的问题，否则调试只能在 pc 浏览器的 chrome 下进行，其他真机或者手机浏览器调试都不行
 
@@ -145,15 +145,14 @@ chrome 打开开发者工具，点击模拟手机，即可调试应用
 ```
 npm run
 deploy
-
 ```
 
 如果服务端不支持跨域，需要打开浏览器时禁掉跨域  
- mac: open -a "Google Chrome" --args --disable-web-security --user-data-dir windows:http://stackoverflow.com/a/34779264/1433270需要先完全退出浏览器再使用才可生效
+ mac: open -a "Google Chrome" --args --disable-web-security --user-data-dir windows:[http://stackoverflow.com/a/34779264/1433270需要先完全退出浏览器再使用才可生效](http://stackoverflow.com/a/34779264/1433270需要先完全退出浏览器再使用才可生效)
 
 6.2 手机浏览器
 
-直接使用手机浏览器访问，本机 ip:端口，然后Android 可以借助远程 debug 工具调试手机网页http://wiki.jikexueyuan.com/project/chrome- devtools/remote-debugging-on-android.html
+直接使用手机浏览器访问，本机 ip:端口，然后Android 可以借助远程 debug 工具调试手机网页[http://wiki.jikexueyuan.com/project/chrome-](http://wiki.jikexueyuan.com/project/chrome-) devtools/remote-debugging-on-android.html
 
 ios 可以利用 safari 进行调试
 
@@ -171,17 +170,16 @@ ios 可以利用 safari 进行调试
 
 6.3 应用内真机调试
 
-1. Android 下载开发版的移动门户可以实现和6.2一样的远程调试 webviewhttps://www.pgyer.com/go1G
+1. Android 下载开发版的移动门户可以实现和6.2一样的远程调试 webview[https://www.pgyer.com/go1G](https://www.pgyer.com/go1G)
 
 2. 开发者可以让测试人员在应用管理平台建立一个测试 App，在应用管理平台上你将该应用的 ip 指向你本地, 这时候你就可以在 app
 
    内调试你开发的小应用了
 
-7. 打包上线
+3. 打包上线
 
 ```
 应用开发完成后，需要打包上线，框架层面提供命令打包
-
 ```
 
 这个命令会在项目目录下生成一个 zip 包，zip 包的名字就是在初始化项目脚手架的时候询问的名字，这个 zip 交给项目负责任，或者放在服务器端已以 H5的形式发布或者放入应用管理平台以 Hybrid 形式发布
