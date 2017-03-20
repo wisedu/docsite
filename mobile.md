@@ -24,7 +24,7 @@ npm i -g vue-cli --registry=https://registry.npm.taobao.org
 ```
 
 退出命令行，重新进入，检查有没有安装成功
-
+![](/assets/Snip20170320_41.png)
 如果没有正确弹出版本号，请尝试用管理员身份启动命令行
 
 ### 1.2、初始化脚手架
