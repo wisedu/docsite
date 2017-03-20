@@ -21,23 +21,23 @@
 
 ```
 npm i -g vue-cli --registry=https://registry.npm.taobao.org
-$ vue init wisedu/bh-mobile-template ${your_project}
+
 npm run dev
 ```
 
 退出命令行，重新进入，检查有没有安装成功
 
-
-
 如果没有正确弹出版本号，请尝试用管理员身份启动命令行或者 rtx 联系孙正斌
 
-1.2 初始化脚手架
+### 1.2 初始化脚手架
 
 ```
+$ vue init wisedu/bh-mobile-template ${your_project}
+```
+
 命令会在当前的文件夹下生成一个文件夹，这个文件夹就是我们的项目文件夹
-```
 
-1. 运行项目
+## 2. 运行项目
 
 ```
 进入上一步创建的文件夹，运行命令
