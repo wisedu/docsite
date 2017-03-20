@@ -41,7 +41,7 @@
 更换路径中主题包的文件夹名即可：
 
 * /fe_components/jqwidget/**`blue`**/bh-1.2.min.css
-* /fe_components/jqwidget/`blue`/bh-scenes-1.2.min.css
+* /fe_components/jqwidget/**`blue`**/bh-scenes-1.2.min.css
 
 有以下颜色主题：
 
