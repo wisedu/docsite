@@ -79,7 +79,7 @@ vuex 用于放置 vuex 相关的文件\(mutation, store, action, getter\)
 
 vuex 用于放置 vuex 相关的文件\(mutation, store, action, getter\)
 
-3.2 目录规范
+### 3.2 目录规范
 
 1. pages 目录下有一个业务建一个子文件夹, 文件夹以驼峰命名, 业务的主入口文件与文件夹名相同\(避免 sourceMap 无法区别文件问题\), 其他文件也以驼峰命名
 
@@ -99,13 +99,13 @@ vuex 涉及的概念比较多 \(mutation, store, action, getter\), 文件和文�
 
    目录下建立一个独立的文件存放 相应的 mutation 和 store
 
-4. 组件相关
+## 4. 组件相关
 
 资料:
 
 移动端组件通过 npm，安装升级和使用，脚手架已经内置了组件的依赖，项目中如果需要使用组件请遵循以下流程，或组件文档
 
-4.1 组件引入方法
+### 4.1 组件引入方法
 
 在需要使用组件的\*.vue页面，通过 ES6 的 import 语法，引入组件，并在 component 区域注册需要用到的组件
 
