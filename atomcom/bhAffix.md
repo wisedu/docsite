@@ -1,4 +1,4 @@
-# 浮动组件 - bhAffix
+# bhAffix - 浮动组件
 
 ## 示例
 
