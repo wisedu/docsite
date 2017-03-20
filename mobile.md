@@ -106,13 +106,7 @@ my-project
 具体的使用方法，可以参考附件中的示例代码
 
 ```js
-  import {
-    Header,
-    Button,
-    Toast,
-    Cell,
-    Indicator
-  } from 'mint-ui';
+  import { Header, Button, Toast, Cell, Indicator } from 'mint-ui';
   import SDK from 'bh-mobile-sdk';
   import util from '../../util.js';
   import Api from '../../api';
