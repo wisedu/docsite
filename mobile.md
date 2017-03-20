@@ -107,8 +107,8 @@ my-project
 
 ### 4.2、组件使用方法
 
-* [项目站点](https://github.com/wisedu/bh-mint-ui2) 
-* [文档地址](https://wisedu.github.io/bh-mint-ui2-doc/#!/zh-cn2)
+* 项目站点 https://github.com/wisedu/bh-mint-ui2
+* 文档地址 https://wisedu.github.io/bh-mint-ui2-doc/#!/zh-cn2
 
 手机查看请扫码
 ![](/assets/1489992182.png)
