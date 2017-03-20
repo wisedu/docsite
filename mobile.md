@@ -103,7 +103,7 @@ my-project
 ### 4.1、 组件引入方法
 
 在需要使用组件的*.vue页面，通过 ES6 的 import 语法，引入组件，并在 component 区域注册需要用到的组件<br>
-具体的使用方法，可以参考附件中的示例代码，原理请参考vue官网 ttps://cn.vuejs.org
+具体的使用方法，可以参考附件中的示例代码，原理请参考vue官网 https://cn.vuejs.org
 
 ```js
   import { Header, Button, Toast, Cell, Indicator } from 'mint-ui';
