@@ -1,4 +1,4 @@
-# 样式
+# PC样式
 
 <link rel="stylesheet" href="http://res.wisedu.com/fe_components/jqwidget/blue/bh-1.2.min.css">
 <style>
@@ -40,12 +40,19 @@
 
 更换路径中主题包的文件夹名即可：
 
+如，blue 主题：
+
 * /fe_components/jqwidget/**`blue`**/bh-1.2.min.css
 * /fe_components/jqwidget/**`blue`**/bh-scenes-1.2.min.css
 
+purple 主题
+
+* /fe_components/jqwidget/**`purple`**/bh-1.2.min.css
+* /fe_components/jqwidget/**`purple`**/bh-scenes-1.2.min.css
+
 有以下颜色主题：
 
-<div>
+<div class="bh-clearfix">
 	<div class="box bh-pull-left" style="background-color: #3E50B4">blue</div>
 	<div class="box bh-pull-left" style="background-color: #734184">purple</div>
 	<div class="box bh-pull-left" style="background-color: #5677FC">lightBlue</div>
@@ -63,3 +70,31 @@
 green-olive
 red-strawberry
 yellow-fawn -->
+
+
+主题颜色的完整定义请参考：
+
+* [交互设计规范1.2](http://res.wisedu.com/ID/1.SPEC/PC/PC-SPEC-V1.1-16.05.12%40%E8%8D%86%E5%A4%A9%E9%AA%90/#g=1&p=____-type_color)
+* [平台门户颜色定义](http://res.wisedu.com/ID/2.CampuSphere/%E5%B9%B3%E5%8F%B0%E9%97%A8%E6%88%B7/Finish/PC-%E9%97%A8%E6%88%B7%E7%9A%AE%E8%82%A4%E9%85%8D%E7%BD%AE-V2.2-17.03.15%40%E8%8D%86%E5%A4%A9%E9%AA%90/#g=1&p=indigo-dark_____-_)
+
+### UBASE框架集成
+
+/config.js
+```js
+define(function(require, exports, module) {
+	var config = {
+		/*
+		 * bh前端组件版本
+		 */
+		"BH_VERSION": "1.2",
+		/*
+			资源服务器地址
+		 */
+		"RESOURCE_SERVER": SERVER_PATH,
+		"THEME": "blue",
+		...
+	};
+	return config;
+});
+```
+

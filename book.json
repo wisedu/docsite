@@ -1,6 +1,6 @@
 {
     "plugins": [
-        "duoshuo","github","anchors","expandable-chapters","baidu","github-buttons","-sharing"
+        "duoshuo","github","anchors","expandable-chapters","baidu","github-buttons","-sharing","tbfed-pagefooter"
     ],
     "pluginsConfig": {
         "duoshuo": {
@@ -23,6 +23,11 @@
 	        "watch"
 	      ],
 	      "size": "small"
-	    }
+	    },
+        "tbfed-pagefooter": {
+            "copyright":"问题反馈：<a href='http://bbs.wisedu.com' target='_blank'>http://bbs.wisedu.com</a>， wisedu",
+            "modify_label": "该文件修订时间：",
+            "modify_format": "YYYY-MM-DD"
+        }
     }
 }
