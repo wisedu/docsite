@@ -118,7 +118,6 @@ my-project
   import Api from '../../api';
   export default {
     created() {
-        this.queryConsultZone();
     },
     data () {
       return {
