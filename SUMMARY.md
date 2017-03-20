@@ -9,6 +9,7 @@
   * [卡片](style/card.md)
 * [原子组件](atomcom.md)
   * [日历](atomcom/clndr.md)
+  * [浮动组件-bhAffix](atomcom/bhAffix.md)
 * [ubase框架](ubase.md)
 * [场景模板页](template.md)
 * [移动框架与组件](mobile.md)
