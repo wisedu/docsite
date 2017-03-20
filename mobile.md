@@ -7,7 +7,7 @@
 * es6 开发基本知识 [es6 基本文档](http://es6.ruanyifeng.com/)
 * Node 环境(Node >=4.0.0, npm >= 3.0.0)[下载地址](https://nodejs.org/zh-cn/)
 * 移动门户[App](https://www.pgyer.com/VGkN)
-* 示例代码 [newOnlineConsultation.zip](assets/newOnlineConsultation.zip)
+* 示例代码 <a href="assets/newOnlineConsultation.zip" target="_blank">newOnlineConsultation.zip</a>
 
 ## 1、搭建脚手架
 
