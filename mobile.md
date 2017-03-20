@@ -105,6 +105,37 @@ my-project
 在需要使用组件的*.vue页面，通过 ES6 的 import 语法，引入组件，并在 component 区域注册需要用到的组件<br>
 具体的使用方法，可以参考附件中的示例代码
 
+```js
+  import {
+    Header,
+    Button,
+    Toast,
+    Cell,
+    Indicator
+  } from 'mint-ui';
+  import SDK from 'bh-mobile-sdk';
+  import util from '../../util.js';
+  import Api from '../../api';
+  export default {
+    created() {
+        this.queryConsultZone();
+    },
+    data () {
+      return {
+          list: []
+      }
+    },
+    methods: {
+    },
+    components: {
+      [Header.name]: Header,
+      [Button.name]: Button,
+      [Cell.name]: Cell,
+    }
+  }
+```
+
+
 ### 4.2、组件使用方法
 
 * 项目站点 https://github.com/wisedu/bh-mint-ui2
