@@ -44,9 +44,9 @@ index.html
 
 ## 调用组件
 
+大部分通用组件我们引用了jQwidget，其官方帮助文档：[http://www.jqwidgets.com/jquery-widgets-demo/](http://www.jqwidgets.com/jquery-widgets-demo/)
+
+考虑性能，我们对包尺寸有所缩减，我们仅包括了使用频率较高，并结合三方组件和我们的特色组件（bh组件）
+
 请参考本章节下面的每个组件示例
-
-通用组件我们引用了jQwidget，其官方帮助文档：http://www.jqwidgets.com/jquery-widgets-demo/
-
-
 
