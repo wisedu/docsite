@@ -46,5 +46,7 @@ index.html
 
 请参考本章节下面的每个组件示例
 
+通用组件我们引用了jQwidget，其官方帮助文档：http://www.jqwidgets.com/jquery-widgets-demo/
+
 
 
