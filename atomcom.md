@@ -2,7 +2,7 @@
 
 ### 如何获取
 
-#### 在页面引用
+##### 在页面引用
 
 ```html
 <link type="text/css" rel="stylesheet" href="http://res.wisedu.com/fe_components/iconfont/iconfont.css">
