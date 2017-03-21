@@ -2,6 +2,8 @@
 
 ### 如何获取
 
+#### 在页面引用
+
 ```html
 <link type="text/css" rel="stylesheet" href="http://res.wisedu.com/fe_components/iconfont/iconfont.css">
 <link type="text/css" rel="stylesheet" href="http://res.wisedu.com/fe_components/iconfont_2.0/iconfont.css">
@@ -12,7 +14,6 @@
 <script type="text/javascript" src="http://res.wisedu.com/fe_components/bhtc/moment/min/moment-with-locales.min.js"></script>
 <script type="text/javascript" src="http://res.wisedu.com/fe_components/bh.min.js"></script>
 <script type="text/javascript" src="http://res.wisedu.com/fe_components/emap.js"></script>
-
 ```
 
 
