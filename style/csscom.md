@@ -373,17 +373,17 @@
 	<div class="clearfix" style="margin-bottom: 24px;">
         <ul class="bh-pagination bh-pull-left">
             <li class="bh-disabled">
-                <a href="#" aria-label="Previous">
+                <a href="javascript:void(0)" aria-label="Previous">
                     <span aria-hidden="true">«</span>
                 </a>
             </li>
-            <li><a href="#">1</a></li>
-            <li class="bh-disabled"><a href="#">2</a></li>
-            <li><a href="#">3</a></li>
-            <li class="bh-active"><a href="#">4</a></li>
-            <li><a href="#">5</a></li>
+            <li><a href="javascript:void(0)">1</a></li>
+            <li class="bh-disabled"><a href="javascript:void(0)">2</a></li>
+            <li><a href="javascript:void(0)">3</a></li>
+            <li class="bh-active"><a href="javascript:void(0)">4</a></li>
+            <li><a href="javascript:void(0)">5</a></li>
             <li>
-                <a href="#" aria-label="Next">
+                <a href="javascript:void(0)" aria-label="Next">
                     <span aria-hidden="true">»</span>
                 </a>
             </li>
@@ -410,17 +410,17 @@
 <div class="clearfix bh-mb-24">
     <ul class="bh-pagination bh-pull-left">
         <li class="bh-disabled">
-            <a href="#" aria-label="Previous">
+            <a href="javascript:void(0)" aria-label="Previous">
                 <span aria-hidden="true">«</span>
             </a>
         </li>
-        <li><a href="#">1</a></li>
-        <li class="bh-disabled"><a href="#">2</a></li>
-        <li><a href="#">3</a></li>
-        <li class="bh-active"><a href="#">4</a></li>
-        <li><a href="#">5</a></li>
+        <li><a href="javascript:void(0)">1</a></li>
+        <li class="bh-disabled"><a href="javascript:void(0)">2</a></li>
+        <li><a href="javascript:void(0)">3</a></li>
+        <li class="bh-active"><a href="javascript:void(0)">4</a></li>
+        <li><a href="javascript:void(0)">5</a></li>
         <li>
-            <a href="#" aria-label="Next">
+            <a href="javascript:void(0)" aria-label="Next">
                 <span aria-hidden="true">»</span>
             </a>
         </li>
@@ -452,12 +452,12 @@
     	        默认状态
     	    </button>
     	    <ul class="bh-dropdown-menu" bh-dropdown-role="bhDropdownMenu">
-    	        <li><a href="#">Action</a></li>
-    	        <li class="bh-disabled"><a href="#">Another action</a></li>
-    	        <li><a href="#">Something else here</a></li>
-    	        <li><a href="#">Something else here</a></li>
+    	        <li><a href="javascript:void(0)">Action</a></li>
+    	        <li class="bh-disabled"><a href="javascript:void(0)">Another action</a></li>
+    	        <li><a href="javascript:void(0)">Something else here</a></li>
+    	        <li><a href="javascript:void(0)">Something else here</a></li>
     	        <li class="bh-dropdown-divider"></li>
-    	        <li><a href="#">Separated link</a></li>
+    	        <li><a href="javascript:void(0)">Separated link</a></li>
     	    </ul>
     	</div>
     </div>
@@ -471,12 +471,12 @@
         默认状态
     </button>
     <ul class="bh-dropdown-menu" bh-dropdown-role="bhDropdownMenu">
-        <li><a href="#">Action</a></li>
-        <li class="bh-disabled"><a href="#">Another action</a></li>
-        <li><a href="#">Something else here</a></li>
-        <li><a href="#">Something else here</a></li>
+        <li><a href="javascript:void(0)">Action</a></li>
+        <li class="bh-disabled"><a href="javascript:void(0)">Another action</a></li>
+        <li><a href="javascript:void(0)">Something else here</a></li>
+        <li><a href="javascript:void(0)">Something else here</a></li>
         <li class="bh-dropdown-divider"></li>
-        <li><a href="#">Separated link</a></li>
+        <li><a href="javascript:void(0)">Separated link</a></li>
     </ul>
 </div>
 ```
@@ -491,12 +491,12 @@
     	        从右上角展开状态
     	    </button>
     	    <ul class="bh-dropdown-menu bh-dropdown-open" bh-dropdown-role="bhDropdownMenu">
-    	        <li><a href="#">Action</a></li>
-    	        <li class="bh-disabled"><a href="#">Another action</a></li>
-    	        <li><a href="#">Something else here</a></li>
-    	        <li><a href="#">Something else here</a></li>
+    	        <li><a href="javascript:void(0)">Action</a></li>
+    	        <li class="bh-disabled"><a href="javascript:void(0)">Another action</a></li>
+    	        <li><a href="javascript:void(0)">Something else here</a></li>
+    	        <li><a href="javascript:void(0)">Something else here</a></li>
     	        <li class="bh-dropdown-divider"></li>
-    	        <li><a href="#">Separated link</a></li>
+    	        <li><a href="javascript:void(0)">Separated link</a></li>
     	    </ul>
     	</div>
     </div>
@@ -528,12 +528,12 @@
                 从左下角展开状态
             </button>
             <ul class="bh-dropdown-menu bh-dropdown-open" bh-dropdown-role="bhDropdownMenu">
-                <li><a href="#">Action</a></li>
-                <li class="bh-disabled"><a href="#">Another action</a></li>
-                <li><a href="#">Something else here</a></li>
-                <li><a href="#">Something else here</a></li>
+                <li><a href="javascript:void(0)">Action</a></li>
+                <li class="bh-disabled"><a href="javascript:void(0)">Another action</a></li>
+                <li><a href="javascript:void(0)">Something else here</a></li>
+                <li><a href="javascript:void(0)">Something else here</a></li>
                 <li class="bh-dropdown-divider"></li>
-                <li><a href="#">Separated link</a></li>
+                <li><a href="javascript:void(0)">Separated link</a></li>
             </ul>
         </div>
     </div>
@@ -558,12 +558,12 @@
                 Drop
             </button>
             <ul class="bh-dropdown-menu bh-dropdown-open" bh-dropdown-role="bhDropdownMenu">
-                <li><a href="#">Action</a></li>
-                <li class="bh-disabled"><a href="#">Another action</a></li>
-                <li><a href="#">Something else here</a></li>
-                <li><a href="#">Something else here</a></li>
+                <li><a href="javascript:void(0)">Action</a></li>
+                <li class="bh-disabled"><a href="javascript:void(0)">Another action</a></li>
+                <li><a href="javascript:void(0)">Something else here</a></li>
+                <li><a href="javascript:void(0)">Something else here</a></li>
                 <li class="bh-dropdown-divider"></li>
-                <li><a href="#">Separated link</a></li>
+                <li><a href="javascript:void(0)">Separated link</a></li>
             </ul>
         </div>
     </div>
