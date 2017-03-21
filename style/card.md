@@ -20,18 +20,21 @@
 	margin-left: 4px;
 	margin-right: 4px;
 }
-
+.panel{
+    margin-bottom: 72px;
+}
 </style>
 
 ### 基本卡片
 
-<div class="bh-clearfix">
-	<div class="bh-card bh-card-lv1 bh-pull-left bh-m-16" style="width:120px;height: 75px">一级卡片</div>
-	<div class="bh-card bh-card-lv2 bh-pull-left bh-m-16" style="width:120px;height: 75px">二级卡片</div>
-	<div class="bh-card bh-card-lv3 bh-pull-left bh-m-16" style="width:120px;height: 75px">三级卡片</div>
-	<div class="bh-card bh-card-lv4 bh-pull-left bh-m-16" style="width:120px;height: 75px">四级卡片</div>
-</div>
-
+<p>
+    <div class="bh-clearfix">
+    	<div class="bh-card bh-card-lv1 bh-pull-left bh-m-16" style="width:120px;height: 75px">一级卡片</div>
+    	<div class="bh-card bh-card-lv2 bh-pull-left bh-m-16" style="width:120px;height: 75px">二级卡片</div>
+    	<div class="bh-card bh-card-lv3 bh-pull-left bh-m-16" style="width:120px;height: 75px">三级卡片</div>
+    	<div class="bh-card bh-card-lv4 bh-pull-left bh-m-16" style="width:120px;height: 75px">四级卡片</div>
+    </div>
+</p>
 
 注意：卡片一定需要设置宽度和高度，否则内容超长时，就会将卡片撑开，导致页面不对其
 
