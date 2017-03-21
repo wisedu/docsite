@@ -48,63 +48,18 @@ index.html
 
 考虑性能，我们对包尺寸有所缩减，我们仅包括了使用频率较高
 
-|  |  |  |
+| 组件名 | 组件名 | 组件名 |
 | :--- | :--- | :--- |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
+| jqxButtons | jqxCalendar | jqxInput |
+| jqxComboBox | jqxDateTimeInput | jqxDataAdapter |
+| jqxDropDownList | jqxListBox | jqxLoader |
+| jqxMenu | jqxNotification | jqxNumberInput |
+| jqxPanel | jqxPopOver | jqxScrollBar |
+| jqxTabs | jqxTextArea | jqxTooltip |
+| jqxTree | jqxValidator | jqxWindow |
+| jqxProgressBar | jqxNavigationBar | jqxDragDrop |
 
-1. jqxButtons
+<mark>更多组件我们采用了三方插件 和 我们的特色组件（bh组件）</mark>
 
-2. jqxCalendar
-
-3. jqxInput
-
-4. jqxComboBox
-
-5. jqxDateTimeInput
-
-6. jqxDataAdapter
-
-7. jqxDropDownList
-
-8. jqxListBox
-
-9. jqxLoader
-
-10. jqxMenu
-
-11. jqxNotification
-
-12. jqxNumberInput
-
-13. jqxPanel
-
-14. jqxPopOver
-
-15. jqxScrollBar
-
-16. jqxTabs
-
-17. jqxTextArea
-
-18. jqxTooltip
-
-19. jqxTree
-
-20. jqxValidator
-
-21. jqxWindow
-
-22. jqxProgressBar
-
-23. jqxNavigationBar
-
-24. jqxDragDrop
-
-更多组件我们采用了三方插件 和 我们的特色组件（bh组件）
-
-请参考本章节下面的每个组件示例
+**请参考本章节下面的每个组件示例**
 
