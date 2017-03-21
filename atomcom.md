@@ -34,35 +34,12 @@
     <!-- commomlib include jquery.js jquery.nicescroll.js jquery.fileupload.js director.min.js hogan.min.js lodash.min.js globalize.js-->
     <script src="http://res.wisedu.com/fe_components/commonlib-src.js"></script>
     <!-- 此处可以放置第三方库-->
-   
-   <link rel="stylesheet" href="http://res.wisedu.com/bower_components/summernote-0.8.1/dist/summernote-bs3.min.css">
-<link rel="stylesheet" href="http://res.wisedu.com/bower_components/summernote-0.8.1/dist/summernote.css">
 
-<script src="http://res.wisedu.com/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-<script src="http://res.wisedu.com/bower_components/summernote-0.8.1/dist/summernote.js"></script>
-   
-    <script src="http://res.wisedu.com/bower_components/galleria/src/galleria.js"></script>
-    <script src="http://res.wisedu.com/fe_components/galleria/standard/galleria.wisedu.js"></script>
-    <script src="http://res.wisedu.com/bower_components/cropper/cropper.min.js"></script>
-    <script src="http://res.wisedu.com/fe_components/appcore.js"></script>
-
-    <!-- package.js 转测时开放（执行gulp buildapp 命令可以生成该文件）-->
-    <!-- <script type="text/javascript" src="./dest/package.js"></script> -->
-    
-    <!-- 全局变量pageMeta-->
-    <script type="text/javascript">
-        var pageMeta = {"datas":{},"models":[],"routes":{},"params":{"name":"贺平清","role":null}};
-        /* pageMeta.params.dwmc='植物学院'; */
-        var contextPath = "/emap";
-    </script>
-    <script src="http://res.wisedu.com/fe_components/prism/prism.src.js"></script>
 </head>
-  
 <body> 
 </body>
 
 </html>
-
 ```
 
 
