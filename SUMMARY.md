@@ -32,6 +32,7 @@
 * [ubase框架](ubase.md)
 * [场景模板页](template.md)
 * [移动框架与组件](mobile.md)
+* [bhVue组件](http://res.wisedu.com/FS/vue-doc/)
 * [emapForm](emapform.md)
   * [垂直水平表单](emapform/formv.md)
   * [表格表单](emapform/formh.md)
