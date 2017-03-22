@@ -51,3 +51,4 @@
   * [css三角形](practice/csstriangle.md)
   * [垂直居中](practice/aligncenter.md)
   * [旋转图标](practice/rotate.md)
+* [发布日志](changeLog.md)
