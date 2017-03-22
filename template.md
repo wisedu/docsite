@@ -31,6 +31,20 @@
 	</tr>
 	<tr>
 		<td>
+			<a href="http://res.wisedu.com/examples/templates/#/S_A_B" target="_blank">
+			<img src="./assets/Snip20170316_11.png">
+			</a>
+			申请-A-列表
+		</td>
+		<td>
+			<a href="http://res.wisedu.com/examples/templates/#/S_B_BX" target="_blank">
+			<img src="./assets/Snip20170316_12.png">
+			</a>
+			申请-A-表格详情
+		</td>
+	</tr>
+	<tr>
+		<td>
 			<a href="http://res.wisedu.com/examples/templates/#/C_C_K" target="_blank">
 			<img src="./assets/Snip20170316_11.png">
 			</a>
