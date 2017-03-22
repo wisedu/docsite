@@ -1,7 +1,9 @@
 # Summary
 
 * [Introduction](README.md)
-* [PC组件](com.md)
+* [PC组件及框架](com.md)
+  * [场景模板页](template.md)
+  * [ubase框架](ubase.md)
   * [样式](style.md)
     * [全局样式](style/global.md)
     * [布局](style/layout.md)
@@ -42,9 +44,7 @@
     * [高级搜索2](query/advance2.md)
     * [条件构造器](query/rulesconstructor.md)
   * [bhVue组件](http://res.wisedu.com/FS/vue-doc/)
-* [ubase框架](ubase.md)
 * [移动框架与组件](mobile.md)
-* [场景模板页](template.md)
 * [开源项目](opensource.md)
 * [实践](practice.md)
   * [开发的规范](practice/standard.md)
