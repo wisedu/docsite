@@ -2,7 +2,7 @@
 
 金智教育前端团队
 
-## 前端读物1
+## 前端读物
 
 请访问：[http://res.wisedu.com/FS/前端入门/](http://res.wisedu.com/FS/前端入门/)  
 文件前面的编号为难度等级
