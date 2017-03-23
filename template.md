@@ -71,4 +71,15 @@
 			统计-A-柱状图
 		</td>
 	</tr>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com/examples/templates/#/S_E_H" target="_blank">
+			<img src="./assets/Snip20170322_74.png">
+			</a>
+			申请-E-混合表单
+		</td>
+		<td>
+			
+		</td>
+	</tr>
 </table>
