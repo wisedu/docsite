@@ -1,7 +1,7 @@
 # Summary
 
 * [Introduction](README.md)
-* [PC组件及框架](com.md)
+* [PC组件及框架](pccom.md)
   * [场景模板页](template.md)
   * [ubase框架](ubase.md)
   * [样式](style.md)
