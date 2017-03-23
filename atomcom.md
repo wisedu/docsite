@@ -1,5 +1,9 @@
 # 原子组件
 
+### jsdoc文档
+
+http://res.wisedu.com/examples/components-v1/docs/black_hole/
+
 ### 如何获取
 
 通过以下两种方式都可以使用原子组件

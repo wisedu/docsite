@@ -43,6 +43,8 @@
     * [条件搜索](query/filterquery.md)
     * [高级搜索2](query/advance2.md)
     * [条件构造器](query/rulesconstructor.md)
+  * [emap1.1组件](http://res.wisedu.com/examples/components-v1/docs/emap/v1.1/)
+  * [emap1.2组件](http://res.wisedu.com/examples/components-v1/docs/emap/v1.2/)
   * [bhVue组件](http://res.wisedu.com/FS/vue-doc/)
 * [移动框架与组件](mobile.md)
 * [开源项目](opensource.md)
