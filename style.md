@@ -24,6 +24,18 @@
 * 360安全浏览器v8.1
 * Safari 9.1 及以上版本
 
+### 皮肤定制工具
+
+http://res.wisedu.com:9090/custom/
+
+### 字体图标库
+
+* [字体图标库1](http://res.wisedu.com/fe_components/iconfont/demo.html)
+* [字体图标库2](http://res.wisedu.com/fe_components/iconfont_2.0/demo_fontclass.html)
+* [移动字体图标库](http://res.wisedu.com/fe_components/iconfont_mobile/demo_fontclass.html)
+
+
+
 ### 如何获取
 
 引用如下文件
