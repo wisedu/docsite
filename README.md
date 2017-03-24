@@ -19,7 +19,7 @@
 
 [GilbertSun](https://github.com/GilbertSun) 我们的征途是星辰大海！！！！
 
-[lordrobert](https://github.com/lordrobert) loading...
+[lordrobert](https://github.com/lordrobert) 怒粘四海代码，笑写八荒业务
 
 [lkiarest](https://github.com/lkiarest)  觉宇宙之无穷，识盈虚之有数
 
