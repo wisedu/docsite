@@ -17,4 +17,6 @@
 
 [GilbertSun](https://github.com/GilbertSun) 我们的征途是星辰大海！！！！
 
-秦天翔：测试一楼
+[lordrobert](https://github.com/lordrobert) 我们的征途是星辰大海！！！！
+
+[lkiarest](https://github.com/lkiarest) 觉宇宙之无穷，识盈虚之有数
