@@ -18,3 +18,5 @@
 [GilbertSun](https://github.com/GilbertSun) 我们的征途是星辰大海！！！！
 
 秦天翔：测试一楼
+
+[lisiur](https://github.com/lisiur) 我牛不牛逼我不知道，但是当别人跟我说：“你死了地球照样转”的时候，我觉得地球是在硬撑着。
