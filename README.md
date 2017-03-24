@@ -11,8 +11,9 @@
 前端入门四弹：[https://zhuanlan.zhihu.com/p/21551062](https://zhuanlan.zhihu.com/p/21551062)
 
 
-
 ## 团队成员
+
+知之为知之，不知为不知，是bug也
 
 
 
