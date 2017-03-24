@@ -26,3 +26,6 @@ zhufeifei:  test
 [lisiur](https://github.com/lisiur) 我牛不牛逼我不知道，但是当别人跟我说：“你死了地球照样转”的时候，我觉得地球是在硬撑着。
 
 [litor](https://github.com/Litor)为API生，为框架死，为debug奋斗一辈子，吃符号亏，上大小写的当，最后死在需求上
+秦天翔：测试一楼
+
+[zhroeqqtw](https://github.com/zhroeqqtw) 我这边是好的啊，你清缓存刷新一下试试！
