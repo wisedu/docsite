@@ -1,43 +1,55 @@
-# ubase框架
+# ubase 应用快速开发框架
 
-## 准备工作 {#prepare}
+## Table of contents
 
-* 安装nodejs环境 -
-  [for windows](http://res.wisedu.com/FS/tools/node-v5.6.0-x64.msi) \| - [for mac](http://res.wisedu.com/FS/tools/node-v6.3.0.pkg)
-* 设置npm国内镜像，命令行执行:
-  `npm config set registry https://registry.npm.taobao.org`
-* 安装基础库，命令行执行：
-  `npm install -g gulp yo`
-* 安装ubase脚手架，命令行执行：
-  `npm install -g generator-um`
-* 下载 [node\_modules.zip](http://res.wisedu.com/FS/tools/node_modules.zip) 并解压到代码所在盘的根目录
-* 下载 [sublime text3](http://res.wisedu.com/FS/tools/sublime text new.zip) 前端编辑器，解压后直接使用，无需安装
+* [前端基础入门](#starting)
+* [准备工作](#prepare)
+* [快速入门](#quick-start)
+* [规则约定](#rule)
+* [路由参数](#route-params)
+* [子页面](#sub-page)
+* [公共页面](#common-page)
+* [路由参数](#route-params)
+* [echarts图表](#echarts)
+* [APP嵌入模式](#embed)
+* [组件使用实例](http://res.wisedu.com/component)
+* [config.js配置项说明](#config)
+* [技术选型](#technology)
+* [常见问题](#faq)
 
-## 快速入门 {#quick-start}
+## 前端基础入门
+* 请访问：http://res.wisedu.com/FS/前端入门/
+* 文件前面的编号为难度等级
+* [从零学习前端开发](https://zhuanlan.zhihu.com/p/22099626)
+* [前端入门四弹](https://zhuanlan.zhihu.com/p/21551062)
 
-* 生成APP目录结构，进入项目待存放目录，打开命令行执行：yo um，选择ubase选项-&gt;输入项目名称-&gt;回车
-* 生成APP页面， 进入第一步生成的modules文件夹，打开命令行执行：yo um，选择页面类型-&gt;输入页面名称（名称由字母组成）-&gt; 回答是否纸质弹框页面 -&gt; 回车
-* [模板示例页](http://res.wisedu.com/FS/feType)
+## 准备工作
+* 安装nodejs环境 -[for windows](http://res.wisedu.com/FS/tools/node-v5.6.0-x64.msi) | -[for mac](http://res.wisedu.com/FS/tools/node-v6.3.0.pkg)
+* 设置npm国内镜像，命令行执行: `npm config set registry https://registry.npm.taobao.org`
+* 安装基础库，命令行执行：`npm install -g gulp yo`
+* 安装ubase脚手架，命令行执行：`npm install -g generator-um`
+* 下载[node_modules.zip](http://res.wisedu.com/FS/tools/node_modules.zip)并解压到代码所在盘的根目录
+* 下载[sublime text3](http://res.wisedu.com/FS/tools/sublime%20text%20new.zip)前端编辑器，解压后直接使用，无需安装
 
-  * 在config.js中配置modules.
+## 快速入门
 
-    ```js
-    "MODULES": [{
+* 生成APP目录结构，进入项目待存放目录，打开命令行执行：yo um，选择ubase选项->输入项目名称->回车
+* 生成APP页面， 进入第一步生成的modules文件夹，打开命令行执行：yo um，选择页面类型->输入页面名称（名称由字母组成）->回答是否纸质弹框页面->回车
 
-    title: "模块名称",
-    route: "modulename"
-
+```
+* 在config.js中配置modules.
+```javascript
+"MODULES": [{
+      title: "模块名称",
+      route: "modulename"
     }]
-    ```
-
+```
 * 当前目录命令行下执行gulp命令.
+* 打开浏览器进入 http://localhost:9001 查看.
 
-* 打开浏览器进入 [http://localhost:9001](http://localhost:9001/) 查看.
+## 规则约定
 
-## 规则约定 {#rule}
-
-### 应用目录结构 {#-}
-
+### 应用目录结构
 ```
 app/
 ├── modules/
@@ -63,14 +75,11 @@ app/
 ├── config.js
 └── index.html
 ```
-
 一个模块至少存在 目录名.js 目录名BS.js 目录名IndexPage.html 三个文件，如需定制样式可以自行添加 目录名.css，模板文件的命名规则：目录名+自定义名称+Page.html
 
-### 事件绑定方式 {#-}
-
+### 事件绑定方式
 模块中的所有事件处理都通过eventMap来维护，eventMap中key为jquery选择器，value为绑定的事件处理函数，默认绑定的是click事件，如需绑定其他事件，可以在key后@相应的事件. 在事件处理函数中可通过event.currentTarget获取到对应的dom元素
-
-```js
+```javascript
 eventMap: function() {
     return {
         "#retirementInfoTable .j-row-edit": this.editCb,
@@ -79,18 +88,16 @@ eventMap: function() {
     };
 },
 ```
-
-```js
+```javascript
 editCb: function(event){
   var wid = $(event.currentTarget).attr('data-x-wid');//通过这种方式可以给事件传递参数
 }
 ```
 
-### 异步数据获取方式 {#-}
+### 异步数据获取方式
 
 目录名BS.js主要负责与后端API交互并进行数据处理, 异步请求使用jquery的Deferred对象做链式处理。
-
-```js
+```javascript
 getStudentInfo: function(params) {
     var def = $.Deferred();
 
@@ -104,28 +111,22 @@ getStudentInfo: function(params) {
     return def.promise();
 }
 ```
-
-### 路由跳转 {#-}
-
+### 路由跳转
 utils.goto实现路由跳转，第一个参数为跳转后的路由，如果需要在新的tab页打开，则第二个参数置为true
-
-```js
+```javascript
 utils.goto('module1/detail/1', true);
 ```
 
-### 页脚位置置底 {#-}
-
+### 页脚位置置底
 在页面中插入html的时候，如果需要重置页面的页脚位置，可以将html方法的第二个参数置为true
-
-```js
+```javascript
 this.$rootElement.html(mainView.render(), true);
 ```
 
-## 路由参数 {#route-params}
+## 路由参数
 
 路由参数采用restful风格，一般在路由跳转或新开浏览器tab页的时候使用
-
-```js
+```javascript
 initialize: function() {
     var routeParams = this.getRouterParams();
     var type = routeParams[0];
@@ -144,46 +145,106 @@ initialize: function() {
 },
 ```
 
-## 子页面 {#sub-page}
+## 子页面
 
 纸质弹窗、步骤条中的每个step以及业务上独立的页面需要写入单独的子页面文件夹（包括js,bs,css,html，如果有都要独立），如果子页面中还包含子页面，则在子页面的文件夹中再嵌套其子页面的文件夹。子页面在使用前需要通过pushSubView注册，子页面使用的入口方法为initialize方法, 子页面中有属性parent指向主页面。
 
-## 公共页面 {#common-page}
+## 公共页面
 
 如果某个子页面在多个模块中都有用到，则需要将其放到public/commonpage/文件夹下，然后在需要使用该子页面的模块中require该子页面即可。
 
-## echarts图表 {#echarts}
-
-统一通过utils.getEcharts\(\)获取echarts对象，然后做后续图表初始化
-
-```js
+## echarts图表
+统一通过utils.getEcharts()获取echarts对象，然后做后续图表初始化
+```javascript
 utils.getEcharts().done(function(ec) {
     var myChart = ec.init($obj);//$obj为原生dom对象
     myChart.setOption(option);
 });
 ```
 
-## APP嵌入模式 {#embed}
-
-如果app是通过iframe的方式嵌入的，而且嵌入后希望隐藏APP的header和footer，只显示中间内容区域，则在url中添加min=1参数（注意：该参数需要在\#路由前添加）如：
-
-```js
+## APP嵌入模式
+如果app是通过iframe的方式嵌入的，而且嵌入后希望隐藏APP的header和footer，只显示中间内容区域，则在url中添加min=1参数（注意：该参数需要在#路由前添加）如：
+```html
 http://res.wisedu.com/FE/HRMS/个人填报单页版/index.html?min=1#/txsbb
 ```
 
-## 技术选型 {#technology}
+## config.js配置项说明
+```javascript
+{
+    "FE_DEBUG_MODE": true, // 前端部门开发模式, 业务线对接后端真实接口时，删除该配置项
+    "DEBUG_MODE": true, // 业务线转侧时删除该配置项（注：目前未使用）
+    "RESOURCE_SERVER": "http://res.wisedu.com", //  资源服务器地址
+    "THEME": "blue", // 主题 blue purple
+    'APP_ENTRY': "", // APP默认路由
+    "APP_TITLE": "教职工招聘审核", // APP标题
+    "FOOTER_TEXT": "", // 应用底部说明文本
+    "APP_VERSION": "", // app的版本号 防止前端业务js和html文件缓存
+    "SERVER_CONFIG_API": "", // 服务器端生成配置的api 返回的数据会覆盖config.js中相同的配置项
+    "MINI_MODE": true, // 只显示主体部分内容， 去除页头和页脚 默认false
+    "HIDE_NAV":true, // 隐藏导航菜单 默认false
+    "MODULES": [{ // 需要展示的模块
+        title: "体检管理", // 模块名称
+        route: "tjgl",// 模块路由 url和route二选一
+    }, { 
+        title: "笔试", 
+        url:'http://www.baidu.com' // 配置url时，点击会在新tab页中打开， url和route二选一
+    }, {
+        title: "面试",
+        route: "mianshi",
+        buttons:['addbutton','deletebuton'] // 按钮级授权 （html中需要授权控制的按钮上添加属性data-auth，如<button data-auth="addbutton">添加</button>）
+    }, {
+        title: "招聘录用",
+        route: "zply",
+        hide: true // 配置该模块是否在页面中显示
+    }, {
+         title: "学校审核",
+         route: "sh/xxsh", // 多个模块可以复用同一份代码
+     }, {
+          title: "学院审核",
+          route: "sh/xysh",// 多个模块可以复用同一份代码
+      }],
+    "CONFIG_READY": function(config){ // 对配置的config在使用前通过该回调干预做进一步处理
+        ... 
+    },
+    "THIRD_PARTY_PLUGIN": { // 配置第三方公共模块
+        'jquery': 'http://cdn.bootcss.com/jquery/3.1.1/jquery.js',
+        'hrmsUtils': './hrmsUtils.js'
+    },
+    "AFTER_FRAMEWORK_INIT": function(){ // 外层框架初始化结束，进入模块前执行的回调
+    
+    },
+    "HEADER": {// 头部配置
+        "dropMenu": [{
+            "text": "就业资讯师",
+            "active": true
+        }, {
+            "text": "就业管理人员"
+        }],
+        "logo": "./public/images/logo.png",
+        "icons": ["icon-apps"],
+        "userImage": "./public/images/user.png",
+        "userInfo": {
+            "image": "http://res.wisedu.com/scenes/public/images/demo/user1.png",
+            "info": [
+                "01118888",
+                "张晓明  男",
+                "南京理工大学  信息化办公室",
+                "zhangxm@wisedu.com",
+                "18888888888"
+            ],
+            "logoutHref": "javascript:void(0);"
+        }
+    }
+}
+```
+## 技术选型
 
 * 模块化：requirejs
 * 路由：Director
-* 模板引擎：Hogan
-  [语法参考Mustache](http://blog.csdn.net/p569354158/article/details/8085595)
-* 图表：echarts
-  [example](http://echarts.baidu.com/examples.html)
-* 工具库：lodash
-  [API Documentation](https://lodash.com/docs)
+* 模板引擎：Hogan [语法参考Mustache](http://blog.csdn.net/p569354158/article/details/8085595)
+* 图表：echarts [example](http://echarts.baidu.com/examples.html)
+* 工具库：lodash [API Documentation](https://lodash.com/docs)
 * 滚动条美化：jquery.nicescroll
-* 组件库：jqxWidgets
-  [Documentation](http://www.jqwidgets.com/jquery-widgets-documentation/)
-
+* 组件库：jqxWidgets [Documentation](http://www.jqwidgets.com/jquery-widgets-documentation/)
 
 
