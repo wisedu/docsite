@@ -80,7 +80,7 @@
 		</td>
 		<td>
 			<a href="http://res.wisedu.com/examples/templates/#/S_C_BB" target="_blank">
-			<img src="./assets/Snip20170322_98.png">
+			<img src="./assets/Snip20170324_98.png">
 			</a>
 			申请-C-表单详情+步骤导航
 		</td>
