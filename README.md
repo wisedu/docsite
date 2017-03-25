@@ -13,7 +13,7 @@
 
 ## 团队成员
 
-@elvisqi: Going to bed at night saying we've done something wonderful... that's what matters to me
+[elvisqi](https://github.com/elvisqi): Going to bed at night saying we've done something wonderful... that's what matters to me
 
 @qdli: 真正的勇士，敢于直面惨淡的warning，敢于直面淋漓的error！！！
 
