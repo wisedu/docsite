@@ -85,4 +85,12 @@
 			申请-C-表单详情+步骤导航
 		</td>
 	</tr>
+	<tr>
+    		<td>
+    			<a href="http://res.wisedu.com/examples/templates/#/G_B_L" target="_blank">
+    			<img src="./assets/G_B_L.png">
+    			</a>
+    			管理-B-列表
+    		</td>
+    	</tr>
 </table>

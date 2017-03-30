@@ -31,9 +31,11 @@ zhufeifei:  test
 
 [litor](https://github.com/Litor)为API生，为框架死，为debug奋斗一辈子，吃符号亏，上大小写的当，最后死在需求上
 
-秦天翔：测试一楼
-
 [zhroeqqtw](https://github.com/zhroeqqtw) 我这边是好的啊，你清缓存刷新一下试试！
 
 [zenda96](https://github.com/zenda96/) 
 世界上有10种人，一种是懂二进制的人，一种是不懂二进制的人
+
+[GongYoo](https://github.com/GongYoo) 此处功能将来必改，不要写死!
+
+[liwenjie](https://github.com/liwenjie3421) what's up!
