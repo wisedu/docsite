@@ -27,6 +27,7 @@ $('#horizonEditForm').emapForm({
 | name | 数据项名称 | String | 空 |
 | caption | 显示文字 | String | 空 |
 | xtype | 显示控件类型 | Enum | text |
+| hidden | 是否隐藏 | Boolean | false |
 | placeholder | 提示文字 | String | 空 |
 | optionData | 数据选项 | Array | 空 |
 | required | 必填 | Boolean | false |
