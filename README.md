@@ -39,3 +39,5 @@ zhufeifei:  test
 [GongYoo](https://github.com/GongYoo) 此处功能将来必改，不要写死!
 
 [liwenjie](https://github.com/liwenjie3421) what's up!
+
+[wengqi](https://github.com/wengqi) 简约至上
