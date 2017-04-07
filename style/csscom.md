@@ -578,3 +578,53 @@
 ```
 
 <!--endsec-->
+
+
+
+### 纯html折叠面板 flex-panel
+
+<p>
+	<div bh-flex-panel-role="flex-panel">
+		<div bh-flex-panel-role="panel-title">
+			<h3>flex-panel-title</h3>
+		</div>
+		<div bh-flex-panel-role="panel-content-wrap" style="height:0">
+			<div bh-flex-panel-role="panel-content">
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+			</div>
+		</div>
+	</div>
+</p>
+
+<!--sec data-title="代码示例" data-id="section14" data-show=true data-collapse=true ces-->
+
+```html
+<div bh-flex-panel-role="flex-panel">
+	<div bh-flex-panel-role="panel-title">
+		<h3>flex-panel-title</h3>
+	</div>
+	<div bh-flex-panel-role="panel-content-wrap" style="height:0">
+		<div bh-flex-panel-role="panel-content">
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+		</div>
+	</div>
+</div>
+```
+
+<!--endsec-->
