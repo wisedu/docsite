@@ -1,6 +1,6 @@
 {
     "plugins": [
-        "duoshuo","github","anchors","expandable-chapters","baidu","github-buttons","-sharing","tbfed-pagefooter","sectionx"
+        "duoshuo","github","anchors","expandable-chapters","baidu-wis","github-buttons","-sharing","tbfed-pagefooter","sectionx"
     ],
     "pluginsConfig": {
         "duoshuo": {
