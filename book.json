@@ -13,7 +13,7 @@
         "sitemap": {
             "hostname": "http://res.wisedu.com/"
         },
-        "baidu":{
+        "baidu-wis":{
         	"token":"151eb7bb5d324da7f71a846c3ee2d62f"
         },
         "github-buttons": {
