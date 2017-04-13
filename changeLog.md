@@ -5,6 +5,19 @@ qiyu 2017-3-21 解决 type=confirm 时，dialog的背景无颜色
 改了ubase
 qiyu 2017-3-21 type会作为dialog的背景颜色，传递confirm导致对话框背景无颜色
  -->
+
+# 1.7.1_TR6
+
+bug
+1. 助学金】助学金审核，审核统计，关闭按钮上方给了一条半截的线条 http://jira.product.wisedu.com/browse/XG-3780
+2. 助学金】助学金管理，新增，基本信息，编辑框空格没有过滤，名额可为负数 http://jira.product.wisedu.com/browse/XG-3615
+3. 【助学金】助学金种类，新增，名额编辑框不能编辑 http://jira.product.wisedu.com/browse/XG-3774
+
+# 1.7.1_EM5
+需求：
+1.	表格组件请求数据，修改请求响应的code的判断方式，兼容老版本应用，对code不存在的情况做兼容处理，不再弹出错误提示
+
+
 # 1.7.1_TR4
 需求
 1. 添加 下拉表格querySetting的 传参方式
