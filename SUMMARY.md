@@ -10,6 +10,7 @@
     * [表单](style/form.md)
     * [组件](style/csscom.md)
     * [卡片](style/card.md)
+    * [卡片模板](style/thirdCard.md)
   * [原子组件](atomcom.md)
     * [日历](atomcom/clndr.md)
     * [bhAffix-浮动组件](atomcom/bhAffix.md)
