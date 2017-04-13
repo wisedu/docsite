@@ -49,6 +49,7 @@
   * [emap1.2组件](http://res.wisedu.com/examples/components-v1/docs/emap/v1.2/)
   * [bhVue组件](http://res.wisedu.com/FS/vue-doc/)
 * [移动框架与组件](mobile.md)
+* [微信jdk调用](wechat.md)
 * [开源项目](opensource.md)
 * [实践](practice.md)
   * [开发的规范](practice/standard.md)
