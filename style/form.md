@@ -381,19 +381,19 @@
     <div class="fontsize12">
         <div class="bh-checkbox bh-checkbox-group-v">
             <label class="bh-checkbox-label">
-                <input type="checkbox" name="SHHD" value="0" data-caption="考察干部">
+                <input type="checkbox" name="SHHD" value="0" data-caption="可选">
                 <i class="bh-choice-helper"></i>
                 可选
             </label>
         
             <label class="bh-checkbox-label">
-                <input type="checkbox" name="SHHD" disabled="" value="1" data-caption="关心下一代">
+                <input type="checkbox" name="SHHD" disabled="" value="1" data-caption="不可用">
                 <i class="bh-choice-helper"></i>
                 不可用
             </label>
         
             <label class="bh-checkbox-label">
-                <input type="checkbox" name="SHHD" disabled="" checked="" value="1" data-caption="关心下一代">
+                <input type="checkbox" name="SHHD" disabled="" checked="" value="1" data-caption="已选、不可用">
                 <i class="bh-choice-helper"></i>
                 已选、不可用
             </label>
