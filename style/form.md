@@ -228,9 +228,9 @@
     <div class="fontsize12">
         <div class="bh-radio bh-radio-group-v">
             <label class="bh-radio-label">
-                <input type="radio" name="SHHD_V" value="0" data-caption="考察干部">
+                <input type="radio" name="SHHD_V" value="0" data-caption="我是一个普通的radio">
                 <i class="bh-choice-helper"></i>
-                考察干部
+                我是一个普通的radio
             </label>
         
             <label class="bh-radio-label" >
