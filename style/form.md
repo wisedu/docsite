@@ -192,19 +192,19 @@
     <div class="fontsize12">
         <div class="bh-radio bh-radio-group-h">
             <label class="bh-radio-label">
-                <input type="radio" name="nl" value="0" data-caption="考察干部">
+                <input type="radio" name="nl" value="0" data-caption="我是一个普通的radio">
                 <i class="bh-choice-helper"></i>
-                考察干部
+                我是一个普通的radio
             </label>
             <label class="bh-radio-label" >
-                <input type="radio" name="nl" disabled value="1" data-caption="关心下一代">
+                <input type="radio" name="nl" disabled value="1" data-caption="我是一个不可用的radio，默认状态为未选中">
                 <i class="bh-choice-helper"></i>
-                关心下一代
+                我是一个不可用的radio，默认状态为未选中
             </label>
             <label class="bh-radio-label" >
-                <input type="radio" name="nl" disabled checked value="1" data-caption="关心下一代">
+                <input type="radio" name="nl" disabled checked value="1" data-caption="我是一个不可用的radio，默认状态为选中！">
                 <i class="bh-choice-helper"></i>
-                关心下一代
+                我是一个不可用的radio，默认状态为选中！
             </label>
         </div>
     </div>
