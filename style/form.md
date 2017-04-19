@@ -234,15 +234,15 @@
             </label>
         
             <label class="bh-radio-label" >
-                <input type="radio" name="SHHD_V" disabled value="1" data-caption="关心下一代">
+                <input type="radio" name="SHHD_V" disabled value="1" data-caption="我是一个不可用的radio，默认状态为未选中">
                 <i class="bh-choice-helper"></i>
-                关心下一代
+                我是一个不可用的radio，默认状态为未选中
             </label>
         
             <label class="bh-radio-label" >
-                <input type="radio" name="SHHD_V" disabled checked value="1" data-caption="关心下一代">
+                <input type="radio" name="SHHD_V" disabled checked value="1" data-caption="我是一个不可用的radio，默认状态为选中！">
                 <i class="bh-choice-helper"></i>
-                关心下一代
+                我是一个不可用的radio，默认状态为选中！
             </label>
         </div>
     </div>
