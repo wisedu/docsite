@@ -15,6 +15,15 @@
 }
 </style>
 
+
+### 页面布局
+
+* [左右结构带标题的布局](http://res.wisedu.com/examples/components-v1/bhLayout/navLeft.html)
+* [左右结构不带标题的布局](http://res.wisedu.com/examples/components-v1/bhLayout/navLeftNoTitle.html)
+* [上下结构带标题的布局](http://res.wisedu.com/examples/components-v1/bhLayout/single.html)
+* [上下结构不带标题](http://res.wisedu.com/examples/components-v1/bhLayout/singleNoTitle.html)
+
+
 ### 栅格系统
 
 系统会自动分为最多12列

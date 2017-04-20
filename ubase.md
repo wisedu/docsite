@@ -12,7 +12,6 @@
 * [路由参数](#route-params)
 * [echarts图表](#echarts)
 * [APP嵌入模式](#embed)
-* [组件使用实例](http://res.wisedu.com/component)
 * [config.js配置项说明](#config)
 * [技术选型](#technology)
 * [常见问题](#faq)
