@@ -3,6 +3,7 @@
 * [Introduction](README.md)
 * [PC组件及框架](pccom.md)
   * [场景模板页](template.md)
+  * [移动模板页](template-mobile.md)
   * [ubase框架](ubase.md)
   * [样式](style.md)
     * [全局样式](style/global.md)
