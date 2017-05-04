@@ -188,6 +188,241 @@
 	</tr>
 </table>
 
+### 学校一卡通
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=schoolOneCard&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/schoolOneCard/index.png">
+			</a>
+		</td>
+		<td>
+            <a href="http://res.wisedu.com:9191/index.html?project=schoolOneCard&key=bill" target="_blank">
+            <img src="http://res.wisedu.com:9191/templates/images/schoolOneCard/bill.png">
+            </a>
+        </td>
+        <td>
+            <a href="http://res.wisedu.com:9191/index.html?project=schoolOneCard&key=recharge" target="_blank">
+            <img src="http://res.wisedu.com:9191/templates/images/schoolOneCard/recharge.png">
+            </a>
+        </td>
+	</tr>
+</table>
+
+### 图书馆
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=library&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/library/index.png">
+			</a>
+		</td>
+	</tr>
+</table>
+
+### 校园活动
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=campus_life_share&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/campus_life_share/index.png">
+			</a>
+		</td>
+	</tr>
+</table>
+
+### 校园活动
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=campus_life&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/campus_life/index.png">
+			</a>
+		</td>
+	</tr>
+</table>
+
+### 校园活动
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=campusActive&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/campusActive/index.png">
+			</a>
+		</td>
+	</tr>
+</table>
+
+### 我的日程
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=myschedulenew&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/myschedulenew/index.png">
+			</a>
+		</td>
+		<td>
+            <a href="http://res.wisedu.com:9191/index.html?project=myschedulenew&key=scheduleInfo" target="_blank">
+            <img src="http://res.wisedu.com:9191/templates/images/myschedulenew/scheduleInfo.png">
+            </a>
+        </td>
+        <td>
+            <a href="http://res.wisedu.com:9191/index.html?project=myschedulenew&key=editSchedule" target="_blank">
+            <img src="http://res.wisedu.com:9191/templates/images/myschedulenew/editSchedule.png">
+            </a>
+        </td>
+	</tr>
+</table>
+
+### 网络报修
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=networkRepair&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/networkRepair/index.png">
+			</a>
+		</td>
+	</tr>
+</table>
+
+### 成绩查询
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=gradesQuery&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/gradesQuery/index.png">
+			</a>
+		</td>
+		<td>
+        	<a href="http://res.wisedu.com:9191/index.html?project=gradesQuery&key=gradePoint" target="_blank">
+        	<img src="http://res.wisedu.com:9191/templates/images/gradesQuery/gradePoint.png">
+        	</a>
+        </td>
+	</tr>
+</table>
+
+### 班车服务
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=busService&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/busService/index.png">
+			</a>
+		</td>
+		<td>
+        	<a href="http://res.wisedu.com:9191/index.html?project=busService&key=lineDetail" target="_blank">
+        	<img src="http://res.wisedu.com:9191/templates/images/busService/lineDetail.png">
+        	</a>
+        </td>
+        <td>
+            <a href="http://res.wisedu.com:9191/index.html?project=busService&key=directionDetail" target="_blank">
+            <img src="http://res.wisedu.com:9191/templates/images/busService/directionDetail.png">
+            </a>
+        </td>
+	</tr>
+</table>
+
+### 一卡通年度账单
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=yearbill&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/yearbill/index.png">
+			</a>
+		</td>
+	</tr>
+</table>
+
+### 考试/监考安排
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=examArrange&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/examArrange/index.png">
+			</a>
+		</td>
+		<td>
+        	<a href="http://res.wisedu.com:9191/index.html?project=examArrange&key=detail" target="_blank">
+        	<img src="http://res.wisedu.com:9191/templates/images/examArrange/detail.png">
+        	</a>
+        </td>
+	</tr>
+</table>
+
+### 校园活动
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=mobileCampusLife&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/mobileCampusLife/index.png">
+			</a>
+		</td>
+	</tr>
+</table>
+### 学校概况
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=schooloverview&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/schooloverview/2.png">
+			</a>
+		</td>
+		<td>
+            <a href="http://res.wisedu.com:9191/index.html?project=schooloverview&key=index" target="_blank">
+            <img src="http://res.wisedu.com:9191/templates/images/schooloverview/3.png">
+            </a>
+        </td>
+        <td>
+             <a href="http://res.wisedu.com:9191/index.html?project=schooloverview&key=index" target="_blank">
+             <img src="http://res.wisedu.com:9191/templates/images/schooloverview/4.png">
+             </a>
+        </td>
+	</tr>
+</table>
+
+### 教室查询
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=queryRoom&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/queryRoom/1.png">
+			</a>
+		</td>
+	</tr>
+</table>
+
+### 场地申请
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=venueApply&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/venueApply/1.png">
+			</a>
+		</td>
+	</tr>
+</table>
+
+## 公共咨询
+<table>
+	<tr>
+		<td>
+			<a href="http://res.wisedu.com:9191/index.html?project=onlineConsultation&key=index" target="_blank">
+			<img src="http://res.wisedu.com:9191/templates/images/onlineConsultation/1.png">
+			</a>
+		</td>
+		<td>
+        	<a href="http://res.wisedu.com:9191/index.html?project=onlineConsultation&key=post" target="_blank">
+        	<img src="http://res.wisedu.com:9191/templates/images/onlineConsultation/2.png">
+        	</a>
+        </td>
+        <td>
+            <a href="http://res.wisedu.com:9191/index.html?project=onlineConsultation&key=commonProblem" target="_blank">
+            <img src="http://res.wisedu.com:9191/templates/images/onlineConsultation/3.png">
+            </a>
+         </td>
+	</tr>
+</table>
+
 
 
 
