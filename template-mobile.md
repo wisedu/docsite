@@ -29,7 +29,9 @@
 
 # 移动模板页
 
-### 我的课表
+[使用说明](#源码查看说明)
+
+#### 我的课表
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=mySchoolTimetable&key=index" target="_blank">
@@ -45,7 +47,7 @@
 
 
 
-### 学校一卡通
+#### 学校一卡通
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=schoolOneCard&key=index" target="_blank">
@@ -66,7 +68,7 @@
 
 
 
-### 图书馆
+#### 图书馆
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=library&key=index" target="_blank">
@@ -77,7 +79,7 @@
 
 
 
-### 校园活动
+#### 校园活动
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=campus_life_share&key=index" target="_blank">
@@ -88,7 +90,7 @@
 
 
 
-### 校园活动
+#### 校园活动
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=campus_life&key=index" target="_blank">
@@ -99,7 +101,7 @@
 
 
 
-### 校园活动
+#### 校园活动
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=campusActive&key=index" target="_blank">
@@ -110,7 +112,7 @@
 
 
 
-### 我的日程
+#### 我的日程
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=myschedulenew&key=index" target="_blank">
@@ -131,7 +133,7 @@
 
 
 
-### 网络报修
+#### 网络报修
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=networkRepair&key=index" target="_blank">
@@ -142,7 +144,7 @@
 
 
 
-### 成绩查询
+#### 成绩查询
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=gradesQuery&key=index" target="_blank">
@@ -158,7 +160,7 @@
 
 
 
-### 班车服务
+#### 班车服务
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=busService&key=index" target="_blank">
@@ -179,7 +181,7 @@
 
 
 
-### 一卡通年度账单
+#### 一卡通年度账单
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=yearbill&key=index" target="_blank">
@@ -190,7 +192,7 @@
 
 
 
-### 考试/监考安排
+#### 考试/监考安排
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=examArrange&key=index" target="_blank">
@@ -206,7 +208,7 @@
 
 
 
-### 校园活动
+#### 校园活动
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=mobileCampusLife&key=index" target="_blank">
@@ -217,7 +219,7 @@
 
 
 
-### 学校一卡通
+#### 学校一卡通
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=schoolOneCard&key=index" target="_blank">
@@ -238,7 +240,7 @@
 
 
 
-### 图书馆
+#### 图书馆
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=library&key=index" target="_blank">
@@ -249,7 +251,7 @@
 
 
 
-### 校园活动
+#### 校园活动
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=campus_life_share&key=index" target="_blank">
@@ -260,7 +262,7 @@
 
 
 
-### 校园活动
+#### 校园活动
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=campus_life&key=index" target="_blank">
@@ -271,7 +273,7 @@
 
 
 
-### 校园活动
+#### 校园活动
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=campusActive&key=index" target="_blank">
@@ -282,7 +284,7 @@
 
 
 
-### 我的日程
+#### 我的日程
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=myschedulenew&key=index" target="_blank">
@@ -303,7 +305,7 @@
 
 
 
-### 网络报修
+#### 网络报修
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=networkRepair&key=index" target="_blank">
@@ -314,7 +316,7 @@
 
 
 
-### 成绩查询
+#### 成绩查询
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=gradesQuery&key=index" target="_blank">
@@ -330,7 +332,7 @@
 
 
 
-### 班车服务
+#### 班车服务
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=busService&key=index" target="_blank">
@@ -351,7 +353,7 @@
 
 
 
-### 一卡通年度账单
+#### 一卡通年度账单
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=yearbill&key=index" target="_blank">
@@ -362,7 +364,7 @@
 
 
 
-### 考试/监考安排
+#### 考试/监考安排
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=examArrange&key=index" target="_blank">
@@ -378,7 +380,7 @@
 
 
 
-### 校园活动
+#### 校园活动
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=mobileCampusLife&key=index" target="_blank">
@@ -389,7 +391,7 @@
 
 
 
-### 学校概况
+#### 学校概况
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=schooloverview&key=index" target="_blank">
@@ -410,7 +412,7 @@
 
 
 
-### 教室查询
+#### 教室查询
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=queryRoom&key=index" target="_blank">
@@ -421,7 +423,7 @@
 
 
 
-### 场地申请
+#### 场地申请
 <div class="templates-item">
     <div>
         <a href="http://res.wisedu.com:9191/index.html?project=venueApply&key=index" target="_blank">
