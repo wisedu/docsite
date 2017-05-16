@@ -23,6 +23,7 @@
     * [bhDialog-对话框](atomcom/bhDialog.md)
     * [flowState-流程提示条](atomcom/flowState.md)
     * [bhFormOutline-大纲列表](atomcom/bhFormOutline.md)
+    * [bhTimeLine-侧边导航菜单](atomcom/bhAsideNav.md)
     * [bhTimeLine-时间轴](atomcom/bhTimeLine.md)
     * [bhGallery-幻灯片](atomcom/bhGallery.md)
     * [bhMenu-左侧菜单栏](atomcom/bhMenu.md)
