@@ -14,6 +14,7 @@
 * [APP嵌入模式](#embed)
 * [组件使用实例](http://res.wisedu.com/component)
 * [config.js配置项说明](#config)
+* [utils方法列表](#utils)
 * [技术选型](#technology)
 * [常见问题](#faq)
 
@@ -237,6 +238,18 @@ http://res.wisedu.com/FE/HRMS/个人填报单页版/index.html?min=1#/txsbb
     }
 }
 ```
+
+## utils方法列表
+* utils.loadCompiledPage('indexPage', require) // 加载html模版 返回的为模版编译后的对象（第二个参数设置为require时， html使用的是相对当前js的相对路径）
+* utils.getEcharts() // 详见上面echarts图表
+* utils.fetch(options) // ajax请求方法
+* utils.dialog(options) // 警告提示框
+* utils.window(options) // 对话框
+* utils.getUserParams() // 后去url后面的参数
+* utils.getConfig(key) // 获取config.js中的参数值
+* utils.go(path, blank) // 路由调转 当blank为true时在新tab页打开
+* utils.refreshButtonAuth() // 刷新按钮级授权（配合config.js中modules下的buttons使用）
+
 ## 技术选型
 
 * 模块化：requirejs
