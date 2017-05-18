@@ -183,6 +183,7 @@ http://res.wisedu.com/FE/HRMS/个人填报单页版/index.html?min=1#/txsbb
     "SERVER_CONFIG_API": "", // 服务器端生成配置的api 返回的数据会覆盖config.js中相同的配置项
     "MINI_MODE": true, // 只显示主体部分内容， 去除页头和页脚 默认false
     "HIDE_NAV":true, // 隐藏导航菜单 默认false
+    "RELEASE_MODE": false, // 执行gulp build后，前端业务代码统一压缩打包成all.css和packege.js，需要在index.html手动引用这2个文件  然后配置该参数为true， 发布后如果需要看到单独的文件调试：执行 store.session('debug',  true) 刷新页面即可看到非压缩的文件
     "MODULES": [{ // 需要展示的模块
         title: "体检管理", // 模块名称
         route: "tjgl",// 模块路由 url和route二选一
