@@ -12,17 +12,14 @@
 * [路由参数](#route-params)
 * [echarts图表](#echarts)
 * [APP嵌入模式](#embed)
-* [组件使用实例](http://res.wisedu.com/component)
 * [config.js配置项说明](#config)
 * [utils方法列表](#utils)
 * [技术选型](#technology)
 * [常见问题](#faq)
 
-## 前端基础入门
-* 请访问：http://res.wisedu.com/FS/前端入门/
-* 文件前面的编号为难度等级
-* [从零学习前端开发](https://zhuanlan.zhihu.com/p/22099626)
-* [前端入门四弹](https://zhuanlan.zhihu.com/p/21551062)
+## ubase 框架做了些什么？
+
+<img src="./assets/ubase.png">
 
 ## 准备工作
 * 安装nodejs环境 -[for windows](http://res.wisedu.com/FS/tools/node-v5.6.0-x64.msi) | -[for mac](http://res.wisedu.com/FS/tools/node-v6.3.0.pkg)

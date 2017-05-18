@@ -84,23 +84,23 @@
 
 <p>
     <div class="fontsize12">
-    	<lable class="bh-tag bh-tag-primary">正方型</lable>
-        <lable class="bh-tag bh-tag-success">正方型</lable>
-        <lable class="bh-tag bh-tag-info">正方型</lable>
-        <lable class="bh-tag bh-tag-warning">正方型</lable>
-        <lable class="bh-tag bh-tag-danger">正方型</lable>
-        <lable class="bh-tag bh-tag-round bh-tag-primary">椭圆形</lable>
-        <lable class="bh-tag bh-tag-round bh-tag-success">椭圆形</lable>
-        <lable class="bh-tag bh-tag-round bh-tag-info">椭圆形</lable>
-        <lable class="bh-tag bh-tag-round bh-tag-warning">椭圆形</lable>
-        <lable class="bh-tag bh-tag-round bh-tag-danger">椭圆形</lable>
-        <lable class="bh-tag bh-tag-round bh-tag-default">椭圆形</lable>
+    	<label class="bh-tag bh-tag-primary">正方型</label>
+        <label class="bh-tag bh-tag-success">正方型</label>
+        <label class="bh-tag bh-tag-info">正方型</label>
+        <label class="bh-tag bh-tag-warning">正方型</label>
+        <label class="bh-tag bh-tag-danger">正方型</label>
+        <label class="bh-tag bh-tag-round bh-tag-primary">椭圆形</label>
+        <label class="bh-tag bh-tag-round bh-tag-success">椭圆形</label>
+        <label class="bh-tag bh-tag-round bh-tag-info">椭圆形</label>
+        <label class="bh-tag bh-tag-round bh-tag-warning">椭圆形</label>
+        <label class="bh-tag bh-tag-round bh-tag-danger">椭圆形</label>
+        <label class="bh-tag bh-tag-round bh-tag-default">椭圆形</label>
     </div>
     <div class="bh-mv-16 fontsize12">
-        <lable class="bh-tag bh-tag-primary bh-tag-active">
+        <label class="bh-tag bh-tag-primary bh-tag-active">
         	<span>标签2</span>
         	<i class="iconfont icon-close"></i>
-        </lable>
+        </label>
         <label class="bh-tag bh-tag-round bh-tag-primary bh-tag-add">
         	<i class="iconfont icon-add"></i>
         </label>
@@ -110,22 +110,22 @@
 <!--sec data-title="代码示例" data-id="section2" data-show=true data-collapse=true ces-->
 
 ```html
-<lable class="bh-tag bh-tag-primary">正方型</lable>
-<lable class="bh-tag bh-tag-success">正方型</lable>
-<lable class="bh-tag bh-tag-info">正方型</lable>
-<lable class="bh-tag bh-tag-warning">正方型</lable>
-<lable class="bh-tag bh-tag-danger">正方型</lable>
-<lable class="bh-tag bh-tag-round bh-tag-primary">椭圆形</lable>
-<lable class="bh-tag bh-tag-round bh-tag-success">椭圆形</lable>
-<lable class="bh-tag bh-tag-round bh-tag-info">椭圆形</lable>
-<lable class="bh-tag bh-tag-round bh-tag-warning">椭圆形</lable>
-<lable class="bh-tag bh-tag-round bh-tag-danger">椭圆形</lable>
-<lable class="bh-tag bh-tag-round bh-tag-default">椭圆形</lable>
+<label class="bh-tag bh-tag-primary">正方型</label>
+<label class="bh-tag bh-tag-success">正方型</label>
+<label class="bh-tag bh-tag-info">正方型</label>
+<label class="bh-tag bh-tag-warning">正方型</label>
+<label class="bh-tag bh-tag-danger">正方型</label>
+<label class="bh-tag bh-tag-round bh-tag-primary">椭圆形</label>
+<label class="bh-tag bh-tag-round bh-tag-success">椭圆形</label>
+<label class="bh-tag bh-tag-round bh-tag-info">椭圆形</label>
+<label class="bh-tag bh-tag-round bh-tag-warning">椭圆形</label>
+<label class="bh-tag bh-tag-round bh-tag-danger">椭圆形</label>
+<label class="bh-tag bh-tag-round bh-tag-default">椭圆形</label>
 
-<lable class="bh-tag bh-tag-primary bh-tag-active">
+<label class="bh-tag bh-tag-primary bh-tag-active">
 	<span>标签2</span>
 	<i class="iconfont icon-close"></i>
-</lable>
+</label>
 <label class="bh-tag bh-tag-round bh-tag-primary bh-tag-add">
 	<i class="iconfont icon-add"></i>
 </label>
@@ -574,6 +574,56 @@
 ```html
 <div class="bh-dropdown bh-dropdown-right-up" bh-dropdown-role="bhDropdown">
     ...
+</div>
+```
+
+<!--endsec-->
+
+
+
+### 纯html折叠面板 flex-panel
+
+<p>
+	<div bh-flex-panel-role="flex-panel">
+		<div bh-flex-panel-role="panel-title">
+			<h3>flex-panel-title</h3>
+		</div>
+		<div bh-flex-panel-role="panel-content-wrap" style="height:0">
+			<div bh-flex-panel-role="panel-content">
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+				<p>flex-panel-content</p>
+			</div>
+		</div>
+	</div>
+</p>
+
+<!--sec data-title="代码示例" data-id="section14" data-show=true data-collapse=true ces-->
+
+```html
+<div bh-flex-panel-role="flex-panel">
+	<div bh-flex-panel-role="panel-title">
+		<h3>flex-panel-title</h3>
+	</div>
+	<div bh-flex-panel-role="panel-content-wrap" style="height:0">
+		<div bh-flex-panel-role="panel-content">
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+			<p>flex-panel-content</p>
+		</div>
+	</div>
 </div>
 ```
 

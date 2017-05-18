@@ -63,7 +63,7 @@
 <h5>H5 这是标题5 </h5>
 <h6>H6 这是标题6 </h6>
 <p><span class="bh-text-caption bh-color-caption">这是标准说明文字 </span></p>
-<p><span class="bh-text-caption-large bh-color-caption">这是大号的默认说明文字</span></p>
+<p><span class="bh-text-caption-large bh-color-caption">这是大号的说明文字</span></p>
 
 ```html
 <h1>H1 这是标题1 </h1> 
@@ -72,8 +72,8 @@
 <h4>H4 这是标题4 </h4> 
 <h5>H5 这是标题5 </h5> 
 <h6>H6 这是标题6 </h6> 
-<span class="bh-text-caption bh-color-caption">这是默认说明文字</span>
-<span class="bh-text-caption-large bh-color-caption">这是大号的默认说明文字</span>
+<span class="bh-text-caption bh-color-caption">这是标准说明文字</span>
+<span class="bh-text-caption-large bh-color-caption">这是大号的说明文字</span>
 ```
 
 

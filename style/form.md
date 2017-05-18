@@ -116,23 +116,23 @@
     <div class="fontsize12">
         <div class="bh-radio">
             <label class="bh-radio-label">
-                <input type="radio" name="SHHD" value="0" data-caption="考察干部">
+                <input type="radio" name="single1" value="0" data-caption="我是一个普通的radio">
                 <i class="bh-choice-helper"></i>
-                考察干部
+                我是一个普通的radio
             </label>
         </div>
         <div class="bh-radio">
             <label class="bh-radio-label" >
-                <input type="radio" name="SHHD" disabled value="1" data-caption="关心下一代">
+                <input type="radio" name="single2" disabled value="1" data-caption="我是一个不可用的radio，默认状态为未选中">
                 <i class="bh-choice-helper"></i>
-                关心下一代
+                我是一个不可用的radio，默认状态为未选中
             </label>
         </div>
         <div class="bh-radio">
             <label class="bh-radio-label" >
-                <input type="radio" name="SHHD" disabled checked value="1" data-caption="关心下一代">
+                <input type="radio" name="single3" disabled checked value="1" data-caption="我是一个不可用的radio，默认状态为选中！">
                 <i class="bh-choice-helper"></i>
-                关心下一代
+                我是一个不可用的radio，默认状态为选中！
             </label>
         </div>
     </div>
@@ -142,26 +142,46 @@
 
 ```html
 <div class="bh-radio">
-    <label class="bh-radio-label">
-        <input type="radio" name="SHHD" value="0" data-caption="考察干部">
-        <i class="bh-choice-helper"></i>
-        考察干部
-    </label>
-</div>
-<div class="bh-radio">
-    <label class="bh-radio-label">
-        <input type="radio" name="SHHD" disabled value="1" data-caption="关心下一代">
-        <i class="bh-choice-helper"></i>
-        关心下一代
-    </label>
-</div>
-<div class="bh-radio">
-    <label class="bh-radio-label">
-        <input type="radio" name="SHHD" disabled checked value="1" data-caption="关心下一代">
-        <i class="bh-choice-helper"></i>
-        关心下一代
-    </label>
-</div>
+
+            <label class="bh-radio-label">
+
+                <input type="radio" name="single1" value="0" data-caption="我是一个普通的radio">
+
+                <i class="bh-choice-helper"></i>
+
+                我是一个普通的radio
+
+            </label>
+
+        </div>
+
+        <div class="bh-radio">
+
+            <label class="bh-radio-label" >
+
+                <input type="radio" name="single2" disabled value="1" data-caption="我是一个不可用的radio，默认状态为未选中">
+
+                <i class="bh-choice-helper"></i>
+
+                我是一个不可用的radio，默认状态为未选中
+
+            </label>
+
+        </div>
+
+        <div class="bh-radio">
+
+            <label class="bh-radio-label" >
+
+                <input type="radio" name="single3" disabled checked value="1" data-caption="我是一个不可用的radio，默认状态为选中！">
+
+                <i class="bh-choice-helper"></i>
+
+                我是一个不可用的radio，默认状态为选中！
+
+            </label>
+
+        </div>
 ```
 
 <!--endsec-->
@@ -172,19 +192,19 @@
     <div class="fontsize12">
         <div class="bh-radio bh-radio-group-h">
             <label class="bh-radio-label">
-                <input type="radio" name="nl" value="0" data-caption="考察干部">
+                <input type="radio" name="nl" value="0" data-caption="我是一个普通的radio">
                 <i class="bh-choice-helper"></i>
-                考察干部
+                我是一个普通的radio
             </label>
             <label class="bh-radio-label" >
-                <input type="radio" name="nl" disabled value="1" data-caption="关心下一代">
+                <input type="radio" name="nl" disabled value="1" data-caption="我是一个不可用的radio，默认状态为未选中">
                 <i class="bh-choice-helper"></i>
-                关心下一代
+                我是一个不可用的radio，默认状态为未选中
             </label>
             <label class="bh-radio-label" >
-                <input type="radio" name="nl" disabled checked value="1" data-caption="关心下一代">
+                <input type="radio" name="nl" disabled checked value="1" data-caption="我是一个不可用的radio，默认状态为选中！">
                 <i class="bh-choice-helper"></i>
-                关心下一代
+                我是一个不可用的radio，默认状态为选中！
             </label>
         </div>
     </div>
@@ -208,21 +228,21 @@
     <div class="fontsize12">
         <div class="bh-radio bh-radio-group-v">
             <label class="bh-radio-label">
-                <input type="radio" name="SHHD_V" value="0" data-caption="考察干部">
+                <input type="radio" name="SHHD_V" value="0" data-caption="我是一个普通的radio">
                 <i class="bh-choice-helper"></i>
-                考察干部
+                我是一个普通的radio
             </label>
         
             <label class="bh-radio-label" >
-                <input type="radio" name="SHHD_V" disabled value="1" data-caption="关心下一代">
+                <input type="radio" name="SHHD_V" disabled value="1" data-caption="我是一个不可用的radio，默认状态为未选中">
                 <i class="bh-choice-helper"></i>
-                关心下一代
+                我是一个不可用的radio，默认状态为未选中
             </label>
         
             <label class="bh-radio-label" >
-                <input type="radio" name="SHHD_V" disabled checked value="1" data-caption="关心下一代">
+                <input type="radio" name="SHHD_V" disabled checked value="1" data-caption="我是一个不可用的radio，默认状态为选中！">
                 <i class="bh-choice-helper"></i>
-                关心下一代
+                我是一个不可用的radio，默认状态为选中！
             </label>
         </div>
     </div>
@@ -249,21 +269,21 @@
     <div class="fontsize12">
         <div class="bh-checkbox">
             <label class="bh-checkbox-label">
-                <input type="checkbox" name="SHHD" value="0" data-caption="考察干部">
+                <input type="checkbox" name="SHHD" value="0" data-caption="可选">
                 <i class="bh-choice-helper"></i>
                 可选
             </label>
         </div>
         <div class="bh-checkbox">
             <label class="bh-checkbox-label">
-                <input type="checkbox" name="SHHD" value="1" disabled data-caption="关心下一代">
+                <input type="checkbox" name="SHHD" value="1" disabled data-caption="不可用">
                 <i class="bh-choice-helper"></i>
                 不可用
             </label>
         </div>
         <div class="bh-checkbox">
             <label class="bh-checkbox-label">
-                <input type="checkbox" name="SHHD" value="1" disabled checked data-caption="关心下一代">
+                <input type="checkbox" name="SHHD" value="1" disabled checked data-caption="已选、不可用">
                 <i class="bh-choice-helper"></i>
                 已选、不可用
             </label>
@@ -275,26 +295,46 @@
 
 ```html
 <div class="bh-checkbox">
-    <label class="bh-checkbox-label">
-        <input type="checkbox" name="SHHD" value="0" data-caption="考察干部">
-        <i class="bh-choice-helper"></i>
-        可选
-    </label>
-</div>
-<div class="bh-checkbox">
-    <label class="bh-checkbox-label">
-        <input type="checkbox" name="SHHD" value="1" disabled data-caption="关心下一代">
-        <i class="bh-choice-helper"></i>
-        不可用
-    </label>
-</div>
-<div class="bh-checkbox">
-    <label class="bh-checkbox-label">
-        <input type="checkbox" name="SHHD" value="1" disabled checked data-caption="关心下一代">
-        <i class="bh-choice-helper"></i>
-        已选、不可用
-    </label>
-</div>
+
+            <label class="bh-checkbox-label">
+
+                <input type="checkbox" name="SHHD" value="0" data-caption="可选">
+
+                <i class="bh-choice-helper"></i>
+
+                可选
+
+            </label>
+
+        </div>
+
+        <div class="bh-checkbox">
+
+            <label class="bh-checkbox-label">
+
+                <input type="checkbox" name="SHHD" value="1" disabled data-caption="不可用">
+
+                <i class="bh-choice-helper"></i>
+
+                不可用
+
+            </label>
+
+        </div>
+
+        <div class="bh-checkbox">
+
+            <label class="bh-checkbox-label">
+
+                <input type="checkbox" name="SHHD" value="1" disabled checked data-caption="已选、不可用">
+
+                <i class="bh-choice-helper"></i>
+
+                已选、不可用
+
+            </label>
+
+        </div>
 ```
 
 <!--endsec-->
@@ -305,17 +345,17 @@
     <div class="fontsize12">
         <div class="bh-checkbox bh-checkbox-group-h">
             <label class="bh-checkbox-label">
-                <input type="checkbox" name="SHHD" value="0" data-caption="考察干部">
+                <input type="checkbox" name="SHHD" value="0" data-caption="可选">
                 <i class="bh-choice-helper"></i>
                 可选
             </label>
             <label class="bh-checkbox-label">
-                <input type="checkbox" name="SHHD" disabled value="1" data-caption="关心下一代">
+                <input type="checkbox" name="SHHD" disabled value="1" data-caption="不可用">
                 <i class="bh-choice-helper"></i>
                 不可用
             </label>
             <label class="bh-checkbox-label">
-                <input type="checkbox" name="SHHD" disabled checked value="1" data-caption="关心下一代">
+                <input type="checkbox" name="SHHD" disabled checked value="1" data-caption="已选、不可用">
                 <i class="bh-choice-helper"></i>
                 已选、不可用
             </label>
@@ -341,19 +381,19 @@
     <div class="fontsize12">
         <div class="bh-checkbox bh-checkbox-group-v">
             <label class="bh-checkbox-label">
-                <input type="checkbox" name="SHHD" value="0" data-caption="考察干部">
+                <input type="checkbox" name="SHHD" value="0" data-caption="可选">
                 <i class="bh-choice-helper"></i>
                 可选
             </label>
         
             <label class="bh-checkbox-label">
-                <input type="checkbox" name="SHHD" disabled="" value="1" data-caption="关心下一代">
+                <input type="checkbox" name="SHHD" disabled="" value="1" data-caption="不可用">
                 <i class="bh-choice-helper"></i>
                 不可用
             </label>
         
             <label class="bh-checkbox-label">
-                <input type="checkbox" name="SHHD" disabled="" checked="" value="1" data-caption="关心下一代">
+                <input type="checkbox" name="SHHD" disabled="" checked="" value="1" data-caption="已选、不可用">
                 <i class="bh-choice-helper"></i>
                 已选、不可用
             </label>

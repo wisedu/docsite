@@ -13,12 +13,35 @@
 
 ## 团队成员
 
-知之为知之，不知为不知，是bug也
+[elvisqi](https://github.com/elvisqi): Going to bed at night saying we've done something wonderful... that's what matters to me
+
+@qdli: 真正的勇士，敢于直面惨淡的warning，敢于直面淋漓的error！！！
+
+张丹   知之为知之，不知为不知，是bug也
 
 [GilbertSun](https://github.com/GilbertSun) 我们的征途是星辰大海！！！！
 
-秦天翔：测试一楼
+[lordrobert](https://github.com/lordrobert) 怒粘四海代码，笑写八荒业务
+
+[lkiarest](https://github.com/lkiarest)  觉宇宙之无穷，识盈虚之有数
+
+zhufeifei:  test
 
 [lisiur](https://github.com/lisiur) 我牛不牛逼我不知道，但是当别人跟我说：“你死了地球照样转”的时候，我觉得地球是在硬撑着。
 
 [litor](https://github.com/Litor)为API生，为框架死，为debug奋斗一辈子，吃符号亏，上大小写的当，最后死在需求上
+
+[zhroeqqtw](https://github.com/zhroeqqtw) 我这边是好的啊，你清缓存刷新一下试试！
+
+[zenda96](https://github.com/zenda96/)
+世界上有10种人，一种是懂二进制的人，一种是不懂二进制的人
+
+[GongYoo](https://github.com/GongYoo) 此处功能将来必改，不要写死!
+
+[liwenjie](https://github.com/liwenjie3421) what's up!
+
+[wengqi](https://github.com/wengqi) 简约至上
+
+[qylin](https://github.com/qylin) 醉生梦死
+
+[xujiabin](https://github.com/js-nj) 插播广告，王者荣耀，微信区，黄金级别，欢迎加好友，一起开黑
