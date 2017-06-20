@@ -3,7 +3,8 @@
 ## API文档
 [http://res.wisedu.com/examples/components-v1/docs/black_hole/module-bhCollapse.html](http://res.wisedu.com/examples/components-v1/docs/black_hole/module-bhCollapse.html)
 
-## 
+## 常用api
+
 
 ## 示例
 
