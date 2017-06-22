@@ -5,6 +5,8 @@
 
 ## 说明
 前端对bhDialog封装了三个公共方法，分别是BH_UTILS.bhDialogSuccess，BH_UTILS.bhDialogWarning，BH_UTILS.bhDialogDanger，可以直接使用
+
+例如：
 ```js
 BH_UTILS.bhDialogSuccess({
     title:'这是一条提示成功的提醒',
