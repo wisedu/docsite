@@ -1,5 +1,11 @@
 # bhDialog - 对话框
 
+## API文档
+[http://res.wisedu.com/examples/components-v1/docs/black_hole/module-bhCutStr.html](http://res.wisedu.com/examples/components-v1/docs/black_hole/module-bhCutStr.html)
+
+## 说明
+前端对bhDialog封装了三个公共方法，分别是BH_UTILS.bhDialogSuccess，BH_UTILS.bhDialogWarning，BH_UTILS.bhDialogDanger，可以直接使用
+
 ## 示例
 
 <iframe width="100%" height="500" src="//jsrun.net/c4pKp/embedded/all/light/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
