@@ -24,6 +24,6 @@
     }
     var innerFrame = window.parent.document.getElementById('innerFrame');
     if (innerFrame) {
-        innerFrame.setAttribute('height', innerFrame.contentWindow.document.body.scrollHeight);
+        innerFrame.setAttribute('height', innerFrame.contentWindow.document.querySelector('html').offsetHeight + 1);
     }
 })();
