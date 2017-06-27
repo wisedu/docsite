@@ -7,4 +7,4 @@
 *****
 #### API说明
 
-<iframe width="100%" height="600" src="../black_hole/1.0/module-pagination.html" frameborder="0" id="innerFrame"></iframe>
+<iframe width="100%" height="600" src="../bh_apis/1.0/module-pagination.html" frameborder="0" id="innerFrame"></iframe>

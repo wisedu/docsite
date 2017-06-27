@@ -76,7 +76,8 @@ $('#horizonEditForm').emapForm({
 
 #### JSONParam
 
-该参数中的值将会被传递给实例化组件，用于个性化参数设置
+该参数中的值将会被传递给实例化组件，用于个性化参数设置，例如{'displayMember':'name'}
+![](/assets/ddtable1.png)
 
 ### col
 

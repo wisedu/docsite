@@ -13,8 +13,11 @@
 ###简介
 
 PC组件主要包含基础组件和业务组件两部分。
+
 基础组件包含原子组件（也叫bh组件）和jQwidget，bh组件是前端团队自主开发的组件库（部分依赖三方插件）。
+
 业务组件又叫做emap组件，在bh组件和jQwidget基础上封装的组件库。
+
 原子组件和emap组件都会在后面介绍。
 
 ###原子组件
@@ -24,7 +27,9 @@ jsdoc帮助文档：[http://res.wisedu.com/examples/components-v1/docs/black_hol
 ###emap组件
 
 jsdoc帮助文档：
+
 1.1：[http://res.wisedu.com/examples/components-v1/docs/emap/v1.1/](http://res.wisedu.com/examples/components-v1/docs/emap/v1.1/)
+
 1.2：[http://res.wisedu.com/examples/components-v1/docs/emap/v1.2/](http://res.wisedu.com/examples/components-v1/docs/emap/v1.2/)
 
 ###jQwidget
