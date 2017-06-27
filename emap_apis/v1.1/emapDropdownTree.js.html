@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapDropdownTree.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapDropdownTree.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function () {
+  var Plugin,
+    _create, _renderTree,
+    _getRecords, _getFullPath, _del_ID_PID, _treeBind, _filterLocalData, _getFatherNode, _isSelectable;
+
+  /**
+   * @module emapDropdownTree
+   * @alias 下拉树
+   * @description 下拉树
+   * @example
+   * $container.emapDropdownTree({
+   *      url: 'xxxxxxxxxx',
+   *      checkboxes: false,
+   *      search: true,
+   *      treeParams: {}
+   * });
+   */
+  Plugin = (function () {
+    function Plugin(element, options) {
+      if (WIS_EMAP_CONFIG.dropDownOneKeySelect) {
+        this.settings = $.extend({}, $.fn.emapDropdownTree.defaults, {
+          oneKeySelect: WIS_EMAP_CONFIG.dropDownOneKeySelect
+        }, options);
+      } else {
+        this.settings = $.extend({}, $.fn.emapDropdownTree.defaults, options);
+      }
+      if (this.settings.oneKeySelect) {
+        this.settings.treeParams.hasThreeStates = true;
+      }
+      this.$element = $(element);
+      _create(this.$element, this.settings);
+    }
+    /**
+     * @method getValue
+     * @description 取值
+     * @return {String} 当前下拉树选中的值，多值以逗号分隔
+     */
+    Plugin.prototype.getValue = function () {
+      return $(this.$element.data('values')).map(function () {
+        return this.value;
+      }).get().join(',');
+    };
+    /**
+     * @method getText
+     * @description 获取选中文字
+     * @return 当前下拉树选中的值的文字，多值以逗号分隔
+     */
+    Plugin.prototype.getText = function () {
+      return $(this.$element.data('values')).map(function () {
+        return this.label;
+      }).get().join(',');
+    };
+
+    /**
+     * @method setValue
+     * @description 赋值
+     * @param {Array} params - 0 val 1 val_display
+     */
+    Plugin.prototype.setValue = function (params) {
+      var val = params[0];
+      var display_val = params[1];
+      var settings = this.settings;
+      var $dom = this.$element;
+      if (val === '') {
+        this.$element.emapDropdownTree('clearSelect');
+        return this.$element.jqxDropDownButton('setContent', settings.placeholderContent);
+      }
+      if (display_val === undefined) {
+        console &amp;&amp; console.error('下拉树缺少display字段');
+      } else {
+        this.$element.jqxDropDownButton('setContent', display_val);
+        // this.settings.$tree.jqxTree('checkItem', $('#' + val, this.settings.$tree), true);
+        var val_array = val.split(',');
+        var display_array = display_val.split(',');
+        var value_data = [];
+        val_array.map(function (item, i) {
+          value_data.push({
+            value: item,
+            label: display_array[i]
+          })
+        });
+        this.$element.data('values', value_data);
+        this.$element.trigger('change');
+      }
+      // else {
+      //     if (display_val === undefined) {
+      //         console &amp;&amp; console.log('下拉树缺少display字段');
+      //     } else {
+      //         this.$element.jqxDropDownButton('setContent', display_val);
+      //         // this.settings.$tree.jqxTree('checkItem', $('#' + val, this.settings.$tree), true);
+      //         this.$element.data('values', [{
+      //             value: val,
+      //             label: display_val
+      //         }]);
+      //         this.$element.trigger('change');
+      //     }
+      // }
+    };
+
+    /**
+     * @method disable
+     * @description 禁用
+     */
+    Plugin.prototype.disable = function () {
+      this.$element.jqxDropDownButton({
+        disabled: true
+      });
+    };
+    /**
+     * @method enable
+     * @description 启用
+     */
+    Plugin.prototype.enable = function () {
+      this.$element.jqxDropDownButton({
+        disabled: false
+      });
+    };
+
+    /**
+     * @method clearSelect
+     * @description 清空选中
+     */
+    Plugin.prototype.clearSelect = function () {
+      if (this.settings.checkboxes === true) {
+        // 多选清空
+        this.settings.$tree.jqxTree('uncheckAll');
+      } else {
+        // 单选清空
+      }
+      this.$element.jqxDropDownButton('setContent', '');
+      this.$element.data('values', []);
+    };
+
+    /**
+     * @method getSource
+     * @description 获取当前下拉树的数据
+     * @return {Array} - 下拉树的数据 
+     */
+    Plugin.prototype.getSource = function () {
+      var items = this.settings.$tree.jqxTree('getItems');
+      var records = [];
+      if (!items) return [];
+      items.map(function (n) {
+        if (n.label !== $.i18n('bh-eddt-loading')) {
+          records.push(n)
+        }
+      })
+      return records;
+    };
+
+    Plugin.prototype.renderTree = function (source) {
+      this.settings.$tree.jqxTree("clear");
+      _renderTree(this.$element, $.extend({}, this.settings, {
+        url: '',
+        datas: source
+      }))
+    }
+
+    // Plugin.prototype.setSource = function (source) {
+    //     this.settings.$tree.jqxTree({
+    //         source: _getRecords(source)
+    //     })
+    // };
+
+    return Plugin;
+
+  })();
+
+  _create = function ($dom, setting) {
+    setting.treeParams.hasThreeStates = setting.treeParams.hasThreeStates === undefined ? WIS_EMAP_CONFIG.dropdownTreeHasThreeStates : setting.treeParams.hasThreeStates;
+    var Num = "";
+    // http://jira.product.wisedu.com/browse/XG-3752
+    setting.placeholderContent = '&lt;span>' + setting.placeholder + '&lt;span>';
+    for (var i = 0; i &lt; 6; i++)
+      Num += Math.floor(Math.random() * 10);
+
+    setting.$tree = $('&lt;div style="border: none;" class="dropdown-tree">&lt;/div>');
+    setting.$tree.attr("id", "tree_" + Num);
+    $dom.attr("id", "content_" + Num);
+    $dom.append(setting.$tree);
+
+    // 若有datas参数，将datas缓存， 后面前端搜索会使用
+    if (!setting.url &amp;&amp; setting.datas) {
+      setting.$tree.data('localdata', setting.datas);
+    }
+
+    if (setting.checkboxes) {
+      setting.$tree.on('checkChange', function (event) {
+
+        var $tree = $(this);
+        var Num = $tree.attr("id").substr("tree_".length);
+        var $dom = $("#content_" + Num);
+        var args = event.args;
+        var item = $tree.jqxTree('getCheckedItems', args.element);
+        var values = [];
+
+        if (setting.selectableFlag) {
+          return setting.selectableFlag = false;
+        }
+        if (!_isSelectable(args, setting, event)) {
+          return false;
+        }
+
+        //多选下拉树选中时获取全路径
+        var dropDownContent = item.map(function (cv) {
+          if (cv.label != $.i18n('bh-eddt-loading')) {
+            values.push({
+              "label": cv.label,
+              "value": cv.value
+            });
+            return _getFullPath(cv, setting.$tree).reverse().join("/");
+          }
+
+        }).join(",");
+        dropDownContent = dropDownContent.replace(/,+/g, ',').replace(/,$/, '') || setting.placeholderContent;
+
+        $dom.jqxDropDownButton('setContent', dropDownContent);
+        $dom.data({
+          "values": values
+        });
+        $dom.trigger('change');
+      });
+    } else {
+      setting.$tree.on('select', function (event) {
+        var args = event.args;
+
+        if (!_isSelectable(args, setting, event)) return;
+        var $tree = $(this);
+        var args = event.args;
+        var Num = $tree.attr("id").substr("tree_".length);
+        var $dom = $("#content_" + Num);
+        var item = $tree.jqxTree('getItem', args.element);
+        var values = [];
+        // var dropDownContent = item.label;
+        var dropDownContent = _getFullPath(item, setting.$tree).reverse().join("/");
+        var dropDownValue = item.value;
+        values.push({
+          "label": dropDownContent,
+          "value": dropDownValue
+        });
+        //qiyu 2016-6-6 外部可以干涉节点选中事件，需求人：吴涛
+        var flag = $dom.triggerHandler("select", [values, $tree, args]);
+        if (flag === undefined || flag == true) {
+          $dom.jqxDropDownButton('setContent', dropDownContent);
+          $dom.data({
+            "values": values
+          });
+          $dom.jqxDropDownButton('close');
+        }
+        $dom.trigger('change');
+      });
+    }
+
+    // 在搜索的场景中，选择空值选项的联动
+    if (setting.showBlankOption === true &amp;&amp; setting.checkboxes) {
+      var flag = false;
+      setting.$tree.on('checkChange', function (e) {
+        var args = e.args;
+        if (!args || flag) return;
+        flag = true;
+        // 勾选空值时，将其他选项取消勾选
+        var event_item = setting.$tree.jqxTree('getItem', args.element);
+        if (event_item.value === '@__blank__value' &amp;&amp; args.checked === true) {
+          setting.$tree.jqxTree('uncheckAll');
+          setting.$tree.jqxTree('checkItem', event_item);
+        } else if (event_item.value !== '@__blank__value') { // 勾选其他值时，将空值项取消勾选
+          var checked_items = setting.$tree.jqxTree('getCheckedItems');
+          if (checked_items &amp;&amp; checked_items.length > 0) {
+            var blank_item = checked_items.filter(function (item) {
+              return item.value === '@__blank__value';
+            });
+            if (blank_item.length > 0) { //空值选项在勾选时
+              setting.$tree.jqxTree('uncheckItem', blank_item[0]);
+            }
+          }
+        }
+        flag = false;
+      });
+    }
+
+    $dom.jqxDropDownButton({
+      enableBrowserBoundsDetection: true,
+      width: setting.width ? setting.width : "100%"
+    });
+
+    $dom.on('close', function () {
+      $(this).trigger('change');
+    }).on('open', function () {
+      if ($dom.data('loaded') === true) {
+        setting.treeInit = true
+      }
+      if (!setting.treeInit) {
+        _treeBind($dom, setting);
+        setting.treeInit = true;
+        setTimeout(function () { // 解决有时下拉树初始化 高度为0  不显示的问题 zhuhui 0726
+          setting.$tree.jqxTree({
+            height: '220px'
+          });
+        }, 0);
+      }
+      //TODO 打开下拉树时 重新勾选 
+    });
+
+    // 下拉树设置 placeholder zhuhi  0519
+    $dom.jqxDropDownButton('setContent', setting.placeholderContent);
+
+  };
+
+  _renderTree = function ($dom, setting) {
+    if (setting.url) {
+      var data = $.extend({
+        'pId': ''
+      }, setting.params);
+      if (setting.params &amp;&amp; setting.params.searchValue) {
+        data = setting.params;
+      }
+      var source = {
+        datatype: "json",
+        root: "datas>code>rows",
+        datafields: [{
+          name: 'id'
+        }, {
+          name: 'pId'
+        }, {
+          name: 'name'
+        }, {
+          name: 'isParent'
+        }],
+        id: 'id',
+        url: setting.url,
+        data: data,
+        //qiyu 2016-5-9 强制使用post方法，解决搜索中文没有结果。反馈人：吴涛
+        type: "POST"
+      };
+
+      //qiyu 2016-11-19 将获取mock的url提取函数，在mock文件中重新定义
+      if (typeof window.MOCK_CONFIG != 'undefined') {
+        source = getSourceMock(source);
+      }
+
+      var dataAdapter = new $.jqx.dataAdapter(source, {
+        beforeLoadComplete: function (loaded_data, original_data) {
+          var new_data = [];
+          if (setting.checkboxes == false) {
+            new_data.push({
+              name: $.i18n('bh-eddt-pleaseChoose'),
+              pId: "...",
+              value: ""
+            });
+          }
+          for (var i = 0; i &lt; loaded_data.length; i++) {
+            var item = loaded_data[i];
+            new_data.push({
+              id: item.id,
+              name: item.name,
+              pId: item.pId ? item.pId : "...",
+              value: item.id
+            });
+            if (item.isParent === 1 &amp;&amp; !(setting.params &amp;&amp; setting.params.checkParent)) {
+              var sub_item = {
+                id: item.id + '_load',
+                name: $.i18n('bh-eddt-loading'),
+                pId: item.id,
+                value: item.id
+              };
+              new_data.push(sub_item);
+            }
+          }
+          return new_data;
+        },
+        loadComplete: function () {
+          // dataAdapter.records
+          var records = dataAdapter.getRecordsHierarchy('id', 'pId', 'items', [{
+            name: 'name',
+            map: 'label'
+          }]);
+          if (typeof setting.downloadComplete === 'function') {
+            var result = setting.downloadComplete(records, data);
+            if (result) {
+              records = result;
+            }
+          }
+          // 防止多次添加空值选项
+          if (setting.showBlankOption === true) {
+            if (setting.checkboxes) {
+              records.splice(0, 0, {
+                value: '@__blank__value',
+                id: '@__blank__value',
+                name: $.i18n('bh-eddt-empty'),
+                label: $.i18n('bh-eddt-empty'),
+                pId: '...'
+              })
+            } else {
+              records.splice(1, 0, {
+                value: '@__blank__value',
+                id: '@__blank__value',
+                name: $.i18n('bh-eddt-empty'),
+                label: $.i18n('bh-eddt-empty'),
+                pId: '...'
+              })
+            }
+
+          }
+          _del_ID_PID(records);
+          var height = 220;
+          if (setting.checkboxes &amp;&amp; setting.oneKeySelect) {
+            height = height - 20;
+          }
+          var treeParams = $.extend({
+            width: setting.width ? setting.width : "100%",
+            height: height,
+            hasThreeStates: false,
+            allowDrag: false,
+            source: records,
+            checkSize: 16
+          }, setting.treeParams);
+          treeParams.checkboxes = setting.checkboxes;
+
+          if (!setting.params || !setting.params.checkParent) {
+            setting.$tree.on('expand', function (event) {
+              var $tree = $(this);
+              var $element = $(event.args.element);
+              var isCheck = false;
+              var jqxCheckbox = $element.children('.jqx-checkbox');
+              if (jqxCheckbox &amp;&amp; jqxCheckbox.val() == true) {
+                isCheck = true;
+              }
+              getChildNode($element, $tree, setting, isCheck);
+            });
+          } else {
+            // 搜索结果的回调中, unblind
+            unblindItem(treeParams.source, setting.unblind);
+          }
+          setting.$tree.prev('.loading').remove();
+
+          setting.$tree.jqxTree(treeParams);
+          // 解决有时下拉树初始化 高度为0  不显示的问题 zhuhui 0726
+          setTimeout(function () {
+            var height = 220;
+            if (setting.checkboxes &amp;&amp; setting.oneKeySelect) {
+              height = height - 20;
+            }
+            setting.$tree.jqxTree({
+              height: height + 'px'
+            });
+          }, 0);
+
+          if (setting.params &amp;&amp; setting.params.checkParent) {
+            setting.$tree.off('expand');
+            setting.$tree.jqxTree('expandAll');
+          }
+
+          var val = $dom.data('values');
+          if (val &amp;&amp; val.length > 0) {
+            var treeItems = setting.$tree.jqxTree('getItems');
+            if (setting.checkboxes) { // 多选
+              val.map(function (item) {
+                treeItems.map(function (m) {
+                  if (m.value == item.value) {
+                    setting.$tree.jqxTree('checkItem', m.element);
+                  }
+                });
+              })
+            } else { // 单选
+
+            }
+          }
+
+          function unblindItem(source, unblind) {
+            if (source.length) {
+              source.map(function (sourceItem) {
+                sourceItem.label = sourceItem.name.substring(sourceItem.name.lastIndexOf(unblind) + 1, sourceItem.name.length);
+                if (sourceItem.items &amp;&amp; sourceItem.items.length) {
+                  unblindItem(sourceItem.items, unblind);
+                }
+              })
+            }
+          }
+        }
+      });
+      dataAdapter.dataBind();
+    } else {
+      var records = _getRecords(setting.datas);
+      var height = 220;
+      if (setting.checkboxes &amp;&amp; setting.oneKeySelect) {
+        height = height - 20;
+      }
+
+      if (typeof setting.downloadComplete === 'function') {
+        var result = setting.downloadComplete(records);
+        if (result) {
+          records = result;
+        }
+      }
+
+      var treeParams = $.extend({
+        width: setting.width ? setting.width : "100%",
+        height: height,
+        hasThreeStates: false,
+        allowDrag: false,
+        source: records,
+        checkSize: 16
+      }, setting.treeParams);
+      treeParams.checkboxes = setting.checkboxes;
+      setting.$tree.jqxTree(treeParams);
+    }
+  };
+
+  function getChildNode($element, $tree, setting, isCheck) {
+    var loader = false;
+    var loaderItem = null;
+    var children = $element.find('ul:first').children();
+    $.each(children, function () {
+      var item = $tree.jqxTree('getItem', this);
+      if (item &amp;&amp; item.label == $.i18n('bh-eddt-loading')) {
+        loaderItem = item;
+        loader = true;
+        return false
+      }
+    });
+    if (loader) {
+      // unblind 取消节点label显示的层级关系
+      var unblind = setting.unblind;
+      var ajaxData = $.extend({}, setting.params, {
+        pId: loaderItem.value.replace(".fake", "")
+      })
+      return $.ajax({
+        url: setting.url, 
+        // 在请求子节点的时候， 统一为post请求， 为公有云添加  zhuhui 2017-04-10
+        type: 'POST',
+        data: ajaxData,
+        success: function (data, status, xhr) {
+          var items = data;
+          if (typeof setting.bindComplete === 'function') {
+            setting.bindComplete(items)
+          }
+          if (items.datas &amp;&amp; ((items.datas.code &amp;&amp; items.datas.code.rows)||(items.datas.rows))) {
+            var nodes
+            if (items.datas.code &amp;&amp; items.datas.code.rows) {
+              nodes = items.datas.code.rows;
+            } else if (items.datas.rows) { // 添加对公有云数据格式的支持 zhuhui 2017-05-10
+              nodes = items.datas.rows
+            }
+            var treenodes = [];
+            for (var i = 0; i &lt; nodes.length; i++) {
+              var itemLabel = nodes[i].name;
+              if (unblind)
+                itemLabel = itemLabel.substring(itemLabel.lastIndexOf(setting.unblind) + 1, itemLabel.length);
+              var treenode = {
+                label: itemLabel,
+                value: nodes[i].id
+              };
+
+              if (nodes[i].isParent === 1) {
+                treenode.items = [{
+                  "value": nodes[i].id,
+                  label: $.i18n('bh-eddt-loading')
+                }];
+              }
+              treenodes.push(treenode);
+            }
+
+            if (typeof setting.downloadComplete === 'function') {
+              var result = setting.downloadComplete(treenodes, ajaxData);
+              if (result) {
+                treenodes = result;
+              }
+            }
+
+            $tree.jqxTree('addTo', treenodes, $element[0]);
+            $tree.jqxTree('removeItem', loaderItem.element);
+            // 若父节点选中，则将新添加的子节点勾选
+            if (isCheck == true &amp;&amp; setting.treeParams.hasThreeStates) {
+              var ul = $element.children('ul:first');
+              if (ul.children('li').length) {
+                ul.children('li').each(function () {
+                  $tree.jqxTree('checkItem', this, true);
+                })
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  _treeBind = function ($dom, setting) {
+    // setting.$tree.jqxTree({ width: "100%" });//.jqxTree('addTo', { label: '请选择', value: "" });
+    setting.$tree.niceScroll();
+    if (setting.checkboxes &amp;&amp; setting.oneKeySelect) {
+      var $select = $('&lt;div class="bh-form-group" style="padding-left:2px">' +
+        '&lt;div class="bh-checkbox" style="padding-top:0">' +
+        '&lt;label style="margin-bottom:0">' +
+        '&lt;input type="checkbox" value="">' +
+        '&lt;i class="bh-choice-helper">&lt;/i>' + $.i18n('bh-eddt-selectAll') +
+        '&lt;/label>' +
+        '&lt;/div>' +
+        '&lt;/div>');
+      setting.$tree.before($select);
+      $select.on('change', function (e) {
+        if ($(e.target).prop('checked')) {
+          setting.$tree.jqxTree('checkAll');
+        } else {
+          setting.$tree.jqxTree('uncheckAll');
+        }
+      });
+      setting.$tree.on('checkChange', WIS_EMAP_SERV.debounce(function (e) {
+        if (!e.args.checked) {
+          $select.find('input').prop('checked', false);
+        } else {
+          if ($(e.target).jqxTree('getItems').length === $(e.target).jqxTree('getCheckedItems').length) {
+            $select.find('input').prop('checked', true);
+          }
+        }
+      }, 100));
+    }
+    if (setting.search) {
+      var $searchInput = $('&lt;input style="height: 21px; top: 3px; left: 3px;  width: calc(100% - 4px); margin: 2px 0 2px 2px; border-radius: 2px;" class="treeSearchInput jqx-widget jqx-listbox-filter-input jqx-input jqx-rc-all" type="text" placeHolder="' + $.i18n('bh-eddt-search') + '"/>');
+      setting.$tree.parent().prepend($searchInput);
+      WIS_EMAP_INPUT.placeHolder($searchInput);
+      $searchInput.keyup(function () {
+        window.clearTimeout($searchInput.data('timerId'));
+        $searchInput.data('timerId', window.setTimeout(
+          function () {
+            var value = $searchInput.val();
+            if (value) {
+              if (setting.url) { // 有url参数时， 为远程搜索
+                var source = {
+                  '*tree': "1",
+                  searchValue: value,
+                  checkParent: true
+                };
+                setting.$tree.jqxTree("clear");
+                setting.params = $.extend({}, setting.params, source);
+                _renderTree($dom, setting);
+              } else { // 没有url时， 为本地搜索
+                if (!setting.datas) {
+                  console &amp;&amp; console.error('tree need datas options');
+                }
+                setting.$tree.jqxTree("clear");
+                setting.datas = _filterLocalData(setting.$tree.data('localdata'), value, setting);
+                _renderTree($dom, setting);
+              }
+            } else {
+              setting.$tree.jqxTree("clear");
+              if (setting.url) {
+                setting.params = $searchInput.data('originalParam');
+              } else {
+                setting.datas = setting.$tree.data('localdata');
+              }
+              _renderTree($dom, setting);
+            }
+          }, 500));
+      });
+    }
+    setting.$tree.before('&lt;div style="display: inline-block;margin-left:20px" class="loading">' + $.i18n('bh-eddt-loading') + '&lt;/div>');
+    _renderTree($dom, setting);
+  };
+
+  _getRecords = function (datas) {
+    var source = {
+      datatype: "json",
+      // root:"datas>code>rows",
+      datafields: [{
+        name: 'id'
+      }, {
+        name: 'pId'
+      }, {
+        name: 'name'
+      }],
+      id: 'id',
+      localdata: datas
+    };
+    var dataAdapter = new $.jqx.dataAdapter(source);
+    dataAdapter.dataBind();
+    var records = dataAdapter.getRecordsHierarchy('id', 'pId', 'items', [{
+      name: 'name',
+      map: 'label'
+    }, {
+      name: 'id',
+      map: 'value'
+    }]);
+    return records;
+  };
+
+  _getFullPath = function (treeNode, domTree) {
+    var path = [];
+    path.push(treeNode.label);
+    if (domTree.jqxTree('getItem', treeNode.parentElement) != null) {
+      path = path.concat(_getFullPath(domTree.jqxTree('getItem', treeNode.parentElement), domTree));
+    }
+    return path;
+  };
+
+  _del_ID_PID = function (arr_data) {
+    for (var i = 0; i &lt; arr_data.length; i++) {
+      delete arr_data[i].id;
+      delete arr_data[i].pId;
+      if (arr_data[i].items)
+        _del_ID_PID(arr_data[i].items);
+    }
+  }
+
+  // 前端搜索
+  _filterLocalData = function (data, val, setting) {
+    var result_data = [];
+    if (data.length) {
+      data.map(function (item) {
+        if (item.name.indexOf(val) > -1) {
+          result_data.push(item);
+        }
+      });
+      // 向上遍历父节点加入搜索结果
+      var len = result_data.length;
+      for (var i = 0; i &lt; len; i++) {
+        result_data = result_data.concat(_getFatherNode(data, result_data[i]));
+      }
+    }
+
+    if (typeof setting.downloadComplete === 'function') {
+      var result = setting.downloadComplete(result_data, val);
+      if (result) {
+        result_data = result;
+      }
+    }
+
+    return result_data;
+  }
+
+  _getFatherNode = function (data, childNode) {
+    if (childNode.pId !== undefined &amp;&amp; childNode.pId !== null &amp;&amp; childNode.pId !== '') {
+      var node_list = [];
+      var father_node = data.filter(function (item) {
+        return item.id === childNode.pId
+      })[0];
+      if (father_node) {
+        node_list.push(father_node);
+        if (father_node.pId !== undefined &amp;&amp; father_node.pId !== null &amp;&amp; father_node.pId !== '') {
+          node_list = node_list.concat(_getFatherNode(data, father_node));
+        }
+      }
+      return node_list;
+    } else { // 没有pid的情况，则认为已经是顶级节点
+      return [];
+    }
+  }
+
+  _isSelectable = function (args, setting, event) {
+    var item = setting.$tree.jqxTree('getItem', args.element);
+    if (typeof setting.unselectableLevel == 'number') {
+      setting.unselectableLevel = setting.unselectableLevel.toString();
+    }
+    var unselectableLevelArray = setting.unselectableLevel ? setting.unselectableLevel.split(',') : [];
+    if (setting.checkboxes) {
+      if (!setting.parentNodeSelectable &amp;&amp; item.hasItems) {
+        // 标记位指示checkChange事件是否由下方的checkItem方法触发，
+        // 如果是，则在事件监听里不作处理， 避免由此引起的死循环内存溢出  -- zhuhui 2016-11-15
+        setting.selectableFlag = true;
+        setting.$tree.jqxTree('checkItem', args.element, false);
+        return false;
+      }
+      if (unselectableLevelArray.length &amp;&amp; $.inArray((item.level + 1) + '', unselectableLevelArray) > -1) {
+        setting.selectableFlag = true;
+        setting.$tree.jqxTree('checkItem', args.element, false);
+        return false;
+      }
+    } else {
+      if (!setting.parentNodeSelectable) {
+        if (item.hasItems) return false;
+      }
+      if (unselectableLevelArray.length &amp;&amp; $.inArray((item.level + 1) + '', unselectableLevelArray) > -1) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  $.fn.emapDropdownTree = function (options, params) {
+    var instance;
+    instance = this.data('emapDropdownTree');
+    if (!instance) {
+      return this.each(function () {
+        return $(this).data('emapDropdownTree', new Plugin(this, options));
+      });
+    }
+    if (options === true) return instance;
+    if ($.type(options) === 'string') return instance[options](params);
+    return this;
+  };
+
+  /**  
+   * @memberof module:emapDropdownTree
+   * @prop {Array} datas - 下拉树数据，emap格式，与url二选一必须
+   * @prop {String} url - 下拉树数据请求地址， 与datas二选一必须
+   * @prop {Boolean} [checkboxes=false] - 是否多选
+   * @prop {Boolean} [search=true] - 是否允许搜索
+   * @prop {String} [unblind] - 节点层次关系分隔符
+   * @prop {String} [placeholder=请选择] - 占位符提示文字
+   * @prop {Boolean} [parentNodeSelectable=true] - 父级节点是否允许选中
+   * @prop {String} [unselectableLevel] - 指定层级无法选中如 '1,2', 多层级用 , 分隔
+   * @prop {Function} [downloadComplete] - 数据请求完毕后的回调函数
+   * @prop {Object} [treeParams] - 树组件参数，如配置下拉属于父子节点联动：
+   * $('.tree_multi_linkage').emapDropdownTree({
+              url: url,
+              checkboxes: true,
+              treeParams: {
+                  hasThreeStates: true
+              }
+          })
+          
+   * @prop {Boolean} [showBlankOption=false] - 是否显示空值选项 
+   */
+  $.fn.emapDropdownTree.defaults = {
+    placeholder: $.i18n('bh-eddt-pleaseChoose'),
+    width: "100%",
+    checkboxes: false,
+    showBlankOption: false,
+    search: true,
+    parentNodeSelectable: true,
+    unselectableLevel: "",
+    treeParams: {},
+    downloadComplete: null
+  };
+}).call(this);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapAvatarUpload.html">emapAvatarUpload</a>&nbsp;(头像裁剪上传)</li><li><a href="module-emapCard.html">emapCard</a>&nbsp;(卡片列表)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownTable.html">emapDropdownTable</a>&nbsp;(下拉表格/模糊搜索)</li><li><a href="module-emapDropdownTree.html">emapDropdownTree</a>&nbsp;(下拉树)</li><li><a href="module-emapEditableDataTable.html">emapEditableDataTable</a>&nbsp;(编辑表格)</li><li><a href="module-emapEditor.html">emapEditor</a></li><li><a href="module-emapFileDownload.html">emapFileDownload</a>&nbsp;(文件下载)</li><li><a href="module-emapFileUpload.html">emapFileUpload</a>&nbsp;(文件上传)</li><li><a href="module-emapForm.html">emapForm</a>&nbsp;(表单)</li><li><a href="module-emapgrid.html">emapgrid</a>&nbsp;(grid列表)</li><li><a href="module-emapImageUpload.html">emapImageUpload</a>&nbsp;(多图片上传)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapLinkage.html">emapLinkage</a>&nbsp;(表单联动)</li><li><a href="module-emapPDFViewer.html">emapPDFViewer</a>&nbsp;(PDF文件预览)</li><li><a href="module-emapRulesConstructor.html">emapRulesConstructor</a>&nbsp;(条件构造器)</li><li><a href="module-emapSchema.html">emapSchema</a>&nbsp;(方案模块)</li><li><a href="module-emapSingleImageUpload.html">emapSingleImageUpload</a>&nbsp;(单图片上传)</li><li><a href="module-emapUploadCore.html">emapUploadCore</a>&nbsp;(上传核心模块)</li><li><a href="module-emapValidate.html">emapValidate</a>&nbsp;(表单校验)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_EMAP_SERV.html">WIS_EMAP_SERV</a>&nbsp;(公共方法)</li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:35 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Module: WIS_IMPORT_VIEW</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title"> WIS_IMPORT_VIEW </h1> -->
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        
+            
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description">导入组件view层</div>
+        
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>option</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line2">line 2</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>示例</h5>
+    
+    <pre class="prettyprint"><code>var option = {
+        title: '导入数据',
+        btns: {},
+        params: {
+            height: 450,
+            close: function() {
+                if ($.isFunction(opt.closeCallback)) {
+                    opt.closeCallback();
+                }
+            }
+        },
+        callback: function(){}
+    };
+    var view = new WIS_IMPORT_VIEW(option);
+    view.show();</code></pre>
+
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">方法API</h3>
+
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~getCloseBtn">getCloseBtn<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    获取关闭导入窗口按钮
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line93">line 93</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~getDownloadImportTplBtn">getDownloadImportTplBtn<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    获取下载导入模板按钮
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line61">line 61</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~getDownloadResultBtn">getDownloadResultBtn<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    获取下载导入结果按钮
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line85">line 85</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~getImportConfirmBtn">getImportConfirmBtn<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    获取导入确认按钮
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line69">line 69</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~getReImportBtn">getReImportBtn<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    获取重新导入按钮
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line77">line 77</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~getUploadBtn">getUploadBtn<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    获取上传按钮
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line53">line 53</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~hide">hide<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    隐藏导入窗口
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line45">line 45</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~renderImportCompleteResult">renderImportCompleteResult<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    渲染导入完成后的结果视图
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line198">line 198</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~renderImportingFileProgress">renderImportingFileProgress<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    渲染导入文件进度条
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line125">line 125</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~renderImportRownumResult">renderImportRownumResult<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    渲染导入数据条数结果
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line176">line 176</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~renderImportTempFileResult">renderImportTempFileResult<span class="signature">(result)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    渲染导入临时文件结果
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>result</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">导入结果</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line101">line 101</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~renderProgress">renderProgress<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    根据后台数据渲染导入文件进度条
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line149">line 149</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~renderReUploadBehaviour">renderReUploadBehaviour<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    渲染重新上传按钮
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line235">line 235</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~renderSaveAttachmentResult">renderSaveAttachmentResult<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    渲染保存临时文件结果
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line168">line 168</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~renderUploadTempFileResult">renderUploadTempFileResult<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    渲染导入文件进度条
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line160">line 160</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~show">show<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    显示导入窗口
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapImport_emapImportview.js.html">emapImport/emapImportview.js</a>, <a href="emapImport_emapImportview.js.html#line31">line 31</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:34 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

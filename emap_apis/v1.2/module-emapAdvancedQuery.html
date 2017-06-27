@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Module: emapAdvancedQuery</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title"> emapAdvancedQuery </h1> -->
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        
+            
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description">高级搜索, 通过监听search事件，进行搜索操作</div>
+        
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapAdvancedQuery.js.html">emapAdvancedQuery.js</a>, <a href="emapAdvancedQuery.js.html#line7">line 7</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>示例</h5>
+    
+    <pre class="prettyprint"><code>$('#advancedQueryPlaceholder').emapAdvancedQuery({
+    data: searchData
+  });
+  $('#advancedQueryPlaceholder').on('search', function(e, data, opts){
+    // data 为序列化的搜索条件
+    console.log(data);  
+    //调用表格reload方法
+    $("#retirementInfoTable").emapdatatable('reload', {querySetting: data});
+  });</code></pre>
+
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">配置</h3>
+
+        
+            
+<h4 class="name" id=".$.fn.emapAdvancedQuery.defaults"><span class="type-signature">(static) </span>$.fn.emapAdvancedQuery.defaults<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">属性:</h5>
+
+    
+
+<table class="props ">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+        <th>属性</th>
+        
+
+        
+        <th>默认值</th>
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">搜索数据模型</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>allowAllOption</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">快速搜索的按钮组是否显示[全部]选项</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>contextPath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">快速搜索的按钮组是否显示[全部]选项</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>defaultItem</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    []
+                
+                </td>
+            
+
+            <td class="description last">高级搜索模式默认展示的字段 [{name: "xxx"}]</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>searchModel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    easy
+                
+                </td>
+            
+
+            <td class="description last">默认搜索模式 可选值： 'easy' 简单模式  'advanced' 高级模式</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>schema</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">是否开启保存搜索方案功能</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>showTotalNum</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">是否展示表格数据联动显示</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>initComplete</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">初始化成功的回调函数</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>useGroup</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">在添加搜索字段中，是否将字段按照分组进行排序</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>showBlankOption</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">下拉和下拉树是否添加空值选项</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>beforeSearch</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">搜索触发前的回调函数， 如果返回false则不触发搜索</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>useNewDropdownTree</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">是否使用ztee的下拉树替换原有的下拉树</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapAdvancedQuery.js.html">emapAdvancedQuery.js</a>, <a href="emapAdvancedQuery.js.html#line1234">line 1234</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">方法API</h3>
+
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~clear">clear<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    清空高级搜索条件
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapAdvancedQuery.js.html">emapAdvancedQuery.js</a>, <a href="emapAdvancedQuery.js.html#line82">line 82</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~destroy">destroy<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    销毁组件实例
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapAdvancedQuery.js.html">emapAdvancedQuery.js</a>, <a href="emapAdvancedQuery.js.html#line120">line 120</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~getValue">getValue<span class="signature">()</span><span class="type-signature"> &rarr; {Stirng}</span></h4>
+
+    
+
+
+
+<div class="description">
+    获取高级搜索当前的搜索条件
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapAdvancedQuery.js.html">emapAdvancedQuery.js</a>, <a href="emapAdvancedQuery.js.html#line32">line 32</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>返回:</h5>
+
+        
+<div class="param-desc">
+    搜索条件Json字符串
+</div>
+
+
+
+<dl>
+    <dt>
+        类型：
+    </dt>
+    <dd>
+        
+<span class="param-type">Stirng</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~setValue">setValue<span class="signature">(搜索条件)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    高级搜索赋值
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>搜索条件</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapAdvancedQuery.js.html">emapAdvancedQuery.js</a>, <a href="emapAdvancedQuery.js.html#line40">line 40</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~updateTotalNum">updateTotalNum<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    刷新全部数据条数
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapAdvancedQuery.js.html">emapAdvancedQuery.js</a>, <a href="emapAdvancedQuery.js.html#line107">line 107</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+    
+
+    
+
+    
+        <h3 class="subsection-title">事件</h3>
+
+        
+            
+
+    
+
+    <h4 class="name jd-api-title" id=".event:search">search</h4>
+
+    
+
+
+
+<div class="description">
+    搜索触发的事件
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>event</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">事件对象</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>conditions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Stirng</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">搜索条件字符串</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">搜索组件options对象</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapAdvancedQuery.js.html">emapAdvancedQuery.js</a>, <a href="emapAdvancedQuery.js.html#line1196">line 1196</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>示例</h5>
+    
+    <pre class="prettyprint"><code>$search.on('search'. function (event, conditions) {
+ console.log(event);
+ console.log(conditions);
+ $table.emapdatatable('reload', {querySetting: conditions});
+})</code></pre>
+
+
+
+        
+            
+
+    
+
+    <h4 class="name jd-api-title" id=".event:window-open">window-open</h4>
+
+    
+
+
+
+<div class="description">
+    弹出选择字段弹窗的事件
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>event</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">事件对象</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapAdvancedQuery.js.html">emapAdvancedQuery.js</a>, <a href="emapAdvancedQuery.js.html#line1211">line 1211</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:34 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapRulesConstructor.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapRulesConstructor.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function() {
+  var Plugin;
+  var _defaultValues = [];
+  /**
+   * @module emapRulesConstructor
+   * @alias 条件构造器
+   * @description 条件构造器
+   * @example 
+   *   $container.emapAdvancedQuery({
+          data: searchData
+      });
+  $container.on('search', function(e, data, opts){
+    // data 为序列化的搜索条件
+    console.log(data);  
+  });
+   */
+  $.fn.emapRulesConstructor = function(options, params) {
+    var instance;
+    instance = this.data('plugin');
+    if (!instance) {
+      return this.each(function() {
+        return $(this).data('plugin', new Plugin(this, options));
+      });
+    }
+    if (options === true) return instance;
+    if ($.type(options) === 'string') return instance[options](params);
+    return this;
+  };
+  $.fn.emapRulesConstructor.eventBind = function(options, element) {
+    var $advanced = options.$advanced;
+    // var $advancedModal = options.$advancedModal;
+
+    // 展开高级搜索
+    $advanced.on("click", "[bh-advanced-query-role=advancedOpen]", function() {
+      $($advanced).addClass('bh-active');
+      options.searchModel = 'advanced';
+    });
+
+    // 关闭高级搜索
+    $advanced.on("click", "[bh-advanced-query-role=advancedClose]", function() {
+      $($advanced).removeClass('bh-active');
+      options.searchModel = 'easy';
+    });
+
+    // easy搜索 监听 按键输入
+    $advanced.on('keyup', '.bh-advancedQuery-quick-search-wrap input[type=text]', function(e) {
+      var easySelectH = $advanced.data('easyarray').length * 28 + 1; // 下拉框高度
+      var easySelectW = $(this).outerWidth(); // 下拉框宽度
+      var searchValue = $(this).val();
+      var pos = $(this).offset();
+      var selectDiv = $('.bh-advancedQuery-quick-select[data-guid=' + options.guid + ']');
+      pos.top += 28;
+
+      // 回车快速搜索
+      if (e.keyCode == 13) {
+        selectDiv.css({
+          'height': 0,
+          'border-width': '0'
+        });
+        element.trigger('search', [options.core.getSearchCondition(options), options]);
+        return;
+      }
+
+      if (searchValue == '') {
+        selectDiv.css({
+          'height': 0,
+          'border-width': '0'
+        });
+      } else {
+        $('.bh-advancedQuery-easy-query', selectDiv).html(searchValue);
+        selectDiv.css({
+          'height': easySelectH + 'px',
+          'width': easySelectW + 'px',
+          'border-width': '1px',
+          'top': pos.top,
+          'left': pos.left
+        });
+      }
+    });
+
+    //  点击下拉框选项
+    $('[bh-advanced-query-role=advancedEasySelect][data-guid=' + options.guid + ']').on('click', 'p', function() {
+      var selectDiv = $(this).closest('[bh-advanced-query-role=advancedEasySelect]');
+      if (selectDiv.height() > 0) {
+        selectDiv.css({
+          'height': 0,
+          'border-width': '0'
+        });
+      }
+      element.trigger('search', [options.core.getSearchCondition(options, $(this).data('name')), options]);
+    });
+
+    // 点击搜索按钮  easy search
+    $advanced.on('click', '[bh-advanced-query-role=easySearchBtn]', function() {
+      element.trigger('search', [options.core.getSearchCondition(options), options]);
+    });
+
+    // 点击筛选条件  quick search
+    $advanced.on('click', '[bh-advanced-query-role=quickSearchForm] .bh-label-radio', function() {
+      // radio 的事件冒泡问题
+      setTimeout(function() {
+        element.trigger('search', [options.core.getSearchCondition(options), options]);
+      }, 200);
+    });
+
+    // 执行高级搜索
+    $advanced.on('click', '[bh-advanced-query-role=advancedSearchBtn]', function() {
+      element.trigger('search', [options.core.getSearchCondition(options), options]);
+    });
+
+    // 监听 控件初始化事件  bhInputInitComplete, 根据计数器options._initCounter 判断出发高级搜索组件的 初始化回调
+    element.on('bhInputInitComplete', function() {
+      options._initCounter++;
+      if (options._initCounter == options._initCount) {
+        element.trigger('init', [options]);
+        options.initComplete &amp;&amp; options.initComplete();
+      }
+    });
+
+    // easySearch 下拉框的关闭
+    $(document).on('click', function(e) {
+      var target = e.target;
+      if ($(target).closest('[bh-advanced-query-role=advancedEasySelect]').length == 0) {
+        var selectDiv = $('.bh-advancedQuery-quick-select');
+        // if (selectDiv.height() > 0) {
+        selectDiv.css({
+          'height': 0,
+          'border-width': '0'
+        });
+        // }
+      }
+    });
+
+    // 点击 新增且条件 按钮
+    $advanced.on('click', '[rules-role=addAndBtn]', function() {
+      var row = $(this).closest('.bh-rules-row');
+      options.core.popOver(options, $.i18n('bh-rc-addAndConditions'), $(this), function(e, ele) {
+        var editorData = options.core.getConditionFromEditor(ele, options);
+        if (editorData) {
+          options.core.addAndFilter(options, editorData, row);
+        } else {
+          return false;
+        }
+
+      });
+    });
+
+    // 点击新增或条件按钮
+    $advanced.on('click', '[rules-role=addOrBtn]', function() {
+      options.core.popOver(options, $.i18n('bh-rc-addOrConditions'), $(this), function(e, ele) {
+        var editorData = options.core.getConditionFromEditor(ele, options);
+        if (editorData) {
+          options.core.addOrFilter(options, editorData);
+        } else {
+          return false;
+        }
+      });
+    });
+
+    // 页面初始editor 的确定按钮
+    $advanced.on('click', '.bh-rules-body > .bh-rules-editor [rules-role=editorAddBtn]', function() {
+      var editorData = options.core.getConditionFromEditor($(this).closest('.bh-rules-editor'), options);
+      if (editorData) {
+        options.core.addOrFilter(options, editorData);
+        $('.bh-rules-block', $advanced).show();
+        $('.bh-rules-body > .bh-rules-editor', $advanced).hide();
+      }
+    });
+    // 页面初始editor 的关闭按钮  点击后清空editor
+    $advanced.on('click', '.bh-rules-body > .bh-rules-editor [rules-role=editorCloseBtn]', function() {
+      var editor = $(this).closest('.bh-rules-editor');
+      $('[rules-role^=editorInput]', editor).each(function(i) {
+        if (i == 2) {
+          WIS_EMAP_INPUT.setValue($(this), $(this).attr('data-name'), $(this).attr('xtype'), "", '');
+          // switch ($(this).attr('xtype')) {
+          //     case 'select':
+          //         $(this).jqxDropDownList("clearSelection");
+          //         break;
+          //     case 'multi-select2':
+          //         $(this).jqxDropDownList('uncheckAll');
+          //         break;
+          //     default:
+          //         $(this).val("");
+          // } 
+        } else {
+          $(this).jqxDropDownList("clearSelection");
+        }
+      });
+      var input3 = $('.bh-rules-input-wrap3 [xtype]', editor);
+      WIS_EMAP_INPUT.setValue(input3, input3.attr('data-name'), input3.attr('xtype'), "", '');
+    });
+
+    // tag点击删除
+    $advanced.on('click', '[rules-role=closeTag]', function() {
+      var tag = $(this).parent();
+      var andSPan = tag.prev('.bh-rules-and-text');
+      if (andSPan.length > 0) {
+        //删除tag
+        andSPan.remove();
+        tag.remove();
+      } else {
+        var row = tag.closest('.bh-rules-row');
+        if ($('.bh-tag', row).length > 1) {
+          tag.next('.bh-rules-and-text').remove();
+          tag.remove();
+        } else {
+          // 该行只剩一个tag  所以删除整行
+          row.remove();
+          options.core.resetRowIndent(options);
+        }
+      }
+      $.bhPaperPileDialog.resetPageFooter();
+      $.bhPaperPileDialog.resetDialogFooter();
+    });
+
+    //编辑 tag
+    $advanced.on('click', '[rules-role=tagTxt]', function(e) {
+      var $trigger = $(e.currentTarget);
+      var $tag = $trigger.closest('.bh-tag');
+
+      var data = $tag.data('data');
+
+      _defaultValues = [data.name, data.builder, data.value, data.value_display];
+      //回写CALLBACK
+      var callback = function(e, editor) {
+        var data = options.core.getConditionFromEditor(editor, options);
+        if (!data) {
+          return false;
+        }
+        $tag.data('data', data);
+        var content = '"' + data.caption + '" ' + data.builder_display + ' "' + (data.value_display ? data.value_display : data.value) + '"';
+        var text = content.substring(0, 175);
+        if (content.length > 175) {
+          text += '...';
+        }
+        $('span', $tag).text(text);
+        return true;
+      };
+      //弹出气泡弹窗
+      options.core.popOver(options, '&lt;p style="white-space: nowrap;text-overflow: ellipsis;max-width: 100%;overflow: hidden;">' + $.i18n('bh-rc-edit') + ': ' + $trigger.text() + '&lt;/p>', $tag, callback);
+    });
+
+    // 保存为方案
+    $advanced.on('click', '[bh-advanced-query-role="saveSchema"]', function() {
+      $(this).closest('.bh-schema-btn-wrap').addClass('active');
+    });
+
+    // 点击取消保存方案
+    $advanced.on('click', '[bh-advanced-query-role=saveSchemaCancel]', function() {
+      options.core.closeSchema(options);
+    });
+
+    // 点击确认保存搜索方案
+    $advanced.on('click', '[bh-advanced-query-role=saveSchemaConfirm]', function() {
+      var name = $('.bh-schema-name-input', $advanced).val();
+      var conditionData = options.core.getSearchCondition(options, undefined, false);
+      var fixed = $('[bh-schema-role=fixCheckbox]', $advanced).prop('checked') ? 1 : 0;
+      var programContainer = $('.bh-rules-program', $advanced);
+      element.emapSchema('saveSchema', [name, conditionData, fixed]).done(function() {
+        options.core.closeSchema(options);
+        var schInfo = options.schemaList.filter(function(val) {
+          return val.SCHEMA_NAME == name;
+        });
+        // 判断是否有重名的方案  如果有  直接覆盖
+        if (schInfo.length) {
+          // 重名方案
+          options.schemaList.filter(function(val) {
+            if (val.SCHEMA_NAME == name) {
+              val.CONTENT = conditionData;
+              val.FIXED = fixed;
+            }
+          });
+        } else {
+          schInfo = {
+            "CONTENT": conditionData,
+            "SCHEMA_NAME": name,
+            "FIXED": fixed
+          };
+          options.schemaList.push(schInfo);
+        }
+
+        if (fixed == 1) {
+          var sch = $('&lt;a  data-name="' + name + '" href="javascript:void(0)">' + name + '&lt;/a>');
+          sch.data('info', schInfo);
+          $('.bh-rules-program [bh-schema-role=more]', element).before(sch);
+        } else {
+          var sch = $('.bh-rules-program', element).find('a[data-name=' + name + ']');
+          if (sch.length) {
+            sch.remove();
+          }
+        }
+        programContainer.show();
+
+      }).fail(function(res) {
+        console &amp;&amp; console.log(res)
+      });
+    });
+
+    // 点击快速方案
+    $advanced.on('click', '.bh-rules-program a:not([bh-schema-role=more])', function() {
+      var condition = $(this).data('info');
+      element.emapRulesConstructor('setValue', condition.CONTENT);
+      element.trigger('search', [JSON.stringify(WIS_EMAP_INPUT.filterCondition(condition.CONTENT)), options]);
+    });
+
+    // 点击方案的 更多按钮 呼出方案列表侧边弹窗
+    $advanced.on('click', '[bh-schema-role=more]', function() {
+      if (!$('main > article aside').length) {
+        $('main > article').append('&lt;aside>&lt;/aside>');
+      }
+      $.bhPropertyDialog.show({
+        "content": '&lt;h3>' + $.i18n('bh-rc-setConditionSchema') + '&lt;/h3>' +
+          '&lt;section>' +
+          '&lt;div id="schemaDialog" style="display: none;">' +
+          '&lt;p class="bh-color-caption">' + $.i18n('bh-rc-setSchemaTop') + '&lt;/p>' +
+          '&lt;ul class="bh-schema-list" bh-schema-role="fixedUl">' +
+          // '&lt;li>' +
+          // '&lt;a class="bh-pull-right">删除&lt;/a>' +
+          // '&lt;a class="bh-pull-right">取消置顶&lt;/a>' +
+          // '固定的条件构造方案' +
+          // '&lt;/li>' +
+          // '&lt;li>' +
+          // '&lt;a class="bh-pull-right">删除&lt;/a>' +
+          // '&lt;a class="bh-pull-right">取消置顶&lt;/a>' +
+          // '固定的条件构造方案' +
+          // '&lt;/li>' +
+          '&lt;/ul>' +
+          '&lt;p class="bh-color-caption">' + $.i18n('bh-rc-otherSchema') + '(&lt;span>4&lt;/span>)&lt;/p>' +
+          '&lt;ul class="bh-schema-list" bh-schema-role="unFixedUl">&lt;/ul>' +
+          '&lt;/div>' +
+          '&lt;/section>', //侧边栏的内容html
+        "footer": '', //侧边栏的页脚按钮
+        ready: function() { //初始化完成后的处理
+          var fixedUl = $('[bh-schema-role=fixedUl]');
+          var unFixedUl = $('[bh-schema-role=unFixedUl]');
+          $(options.schemaList).each(function() {
+            var liHtml;
+            liHtml = $('&lt;li data-name="' + this.SCHEMA_NAME + '">' +
+              '&lt;a href="javascript:void(0)" class="bh-pull-right" bh-schema-role="delete">' + $.i18n('bh-rc-delete') + '&lt;/a>' +
+              '&lt;a href="javascript:void(0)" class="bh-pull-right" bh-schema-role="unfixed">' + $.i18n('bh-rc-cancelTop') + '&lt;/a>' +
+              '&lt;a href="javascript:void(0)" class="bh-pull-right" bh-schema-role="fixed">' + $.i18n('bh-rc-setTop') + '&lt;/a>' +
+              this.SCHEMA_NAME +
+              '&lt;/li>').data('info', this);
+            if (this.FIXED == 1) {
+              fixedUl.append(liHtml);
+            } else {
+              unFixedUl.append(liHtml);
+            }
+            options.core.refreshUnfixNum(unFixedUl);
+          });
+          if (!options.schemaList.length) {
+            $('#schemaDialog').length &amp;&amp; $('#schemaDialog').hide();
+          } else {
+            $('#schemaDialog').length &amp;&amp; $('#schemaDialog').show();
+          }
+          options.core.schemaDialogEventBind(element, options);
+        }
+      });
+    });
+  };
+  // 更新未置顶的方案个数
+  $.fn.emapRulesConstructor.refreshUnfixNum = function(ul) {
+    var count = $('li', ul).length;
+    ul.prev('p').find('span').html(count);
+    if (count == 0) {
+      ul.hide().prev('p').hide();
+    } else {
+      ul.show().prev('p').show();
+    }
+
+    var fixedUl = $(ul).siblings('[bh-schema-role=fixedUl]');
+    if ($('li', fixedUl).length == 0) {
+      fixedUl.hide().prev('p').hide();
+    } else {
+      fixedUl.show().prev('p').show();
+    }
+  };
+  // 初始化方案
+  $.fn.emapRulesConstructor.initSchema = function(element, options) {
+    options = $.extend(options, {
+      schemaType: "aq"
+    });
+    $.fn.emapSchema &amp;&amp; $(element).emapSchema(options);
+    options.core.renderFixedSchema(element, options);
+  };
+  // 关闭构造方案
+  $.fn.emapRulesConstructor.closeSchema = function(options) {
+    var wrap = $('.bh-schema-btn-wrap', options.$advanced);
+    wrap.removeClass('active');
+    $('.bh-schema-name-input', wrap).val('');
+    $('[bh-schema-role=fixCheckbox]', wrap).prop('checked', false);
+  };
+  // 方案侧边弹窗事件绑定
+  $.fn.emapRulesConstructor.schemaDialogEventBind = function(element, options) {
+    var dialog = $('#schemaDialog');
+    // 删除
+    dialog.on('click', '[bh-schema-role=delete]', function(e) {
+      e.stopPropagation();
+      var li = $(this).parent();
+      var name = li.data('info').SCHEMA_NAME;
+      if (element.emapSchema('deleteSchema', name)) {
+        li.remove();
+        $('.bh-rules-program', element).find('[data-name="' + name + '"]').remove();
+        $(options.schemaList).each(function(i) {
+          if (this.SCHEMA_NAME == name) {
+            options.schemaList.splice(i, 1);
+          }
+        });
+        options.core.refreshUnfixNum($('[bh-schema-role=unFixedUl]', dialog));
+      }
+    });
+
+    // 点击选择方案
+    dialog.on('click', 'li', function(event) {
+      var condition = $(this).data('info');
+      element.emapAdvancedQuery('setValue', condition.CONTENT);
+      element.trigger('search', [JSON.stringify(WIS_EMAP_INPUT.filterCondition(condition.CONTENT)), options, event]);
+      $.bhPropertyDialog.hide();
+    });
+
+    // 置顶
+    dialog.on('click', '[bh-schema-role=fixed]', function(e) {
+      e.stopPropagation();
+      var li = $(this).closest('li');
+      var info = li.data('info');
+      var name = info.SCHEMA_NAME;
+      var conditionData = info.CONTENT;
+      element.emapSchema('saveSchema', [name, conditionData, 1]).done(function() {
+        options.core.closeSchema(options);
+        var infoData = {
+          "CONTENT": conditionData,
+          "SCHEMA_NAME": name,
+          "FIXED": 1
+        }
+        options.schemaList.filter(function(val) {
+          return val.SCHEMA_NAME == name;
+        })[0].FIXED = 1;
+        $('[bh-schema-role=fixedUl]', dialog).append(li);
+        var sch = $('&lt;a  data-name="' + name + '" href="javascript:void(0)">' + name + '&lt;/a>');
+        sch.data('info', infoData);
+        $('.bh-rules-program [bh-schema-role=more]', element).before(sch);
+        options.core.refreshUnfixNum($('[bh-schema-role=unFixedUl]', dialog));
+      }).fail(function(res) {
+        console &amp;&amp; console.log(res);
+      });
+    });
+    // 取消置顶
+    dialog.on('click', '[bh-schema-role=unfixed]', function(e) {
+      e.stopPropagation();
+      var li = $(this).closest('li');
+      var info = li.data('info');
+      var name = info.SCHEMA_NAME;
+      var conditionData = info.CONTENT;
+      element.emapSchema('saveSchema', [name, conditionData, 0]).done(function() {
+        options.core.closeSchema(options);
+        options.schemaList.filter(function(val) {
+          return val.SCHEMA_NAME == name;
+        })[0].FIXED = 0;
+        $('[bh-schema-role=unFixedUl]', dialog).append(li);
+        $('.bh-rules-program', element).find('[data-name="' + name + '"]').remove();
+        options.core.refreshUnfixNum($('[bh-schema-role=unFixedUl]', dialog));
+
+      }).fail(function(res) {
+        console &amp;&amp; console.log(res);
+      });
+    });
+  };
+  // 渲染固定的搜索方案
+  $.fn.emapRulesConstructor.renderFixedSchema = function(element, options) {
+    options.schemaList = element.emapSchema('getSchemaList');
+    options.schemaList = options.schemaList ? options.schemaList : [];
+    var $advanced = options.$advanced;
+    var programContainer = $('.bh-rules-program', $advanced);
+
+
+    if (options.schemaList.length > 0) {
+      var fixedSchema = options.schemaList.filter(function(val) {
+        return val.FIXED == 1;
+      });
+      if (!fixedSchema.length) {
+        programContainer.html('&lt;label>' + $.i18n('bh-rc-makeSchema') + ': &lt;/label>&lt;a bh-schema-role="more" href="javascript:void(0)">' + $.i18n('bh-rc-more') + ' >&lt;/a>');
+      } else {
+        $(fixedSchema).each(function() {
+          var sch = $('&lt;a  data-name="' + this.SCHEMA_NAME + '" href="javascript:void(0)">' + this.SCHEMA_NAME + '&lt;/a>');
+          sch.data('info', this);
+          $('[bh-schema-role=more]', programContainer).before(sch);
+        });
+        programContainer.show();
+      }
+    } else {
+      programContainer.hide();
+    }
+  };
+  $.fn.emapRulesConstructor.renderEasySearch = function(easyArray, options) {
+    var easySearch = '';
+    var easySearchPlaceholder = ''; // easySearch 文本框placeholder
+
+    if (easyArray.length &amp;&amp; easyArray.length > 0) {
+      easySearchPlaceholder += $.i18n('bh-rc-pleaseInput');
+      $(easyArray).each(function() {
+        easySearchPlaceholder += this.caption + '/';
+        easySearch += '&lt;p data-name="' + this.name + '">' + $.i18n('bh-rc-search') + ' &lt;span class="bh-advancedQuery-easy-caption">' + this.caption + '&lt;/span> : &lt;span class="bh-advancedQuery-easy-query">&lt;/span>&lt;/p>';
+      });
+      $('.bh-advancedQuery-quick-select[data-guid=' + options.guid + ']').html(easySearch);
+      easySearchPlaceholder = easySearchPlaceholder.substring(0, easySearchPlaceholder.length - 1);
+      $('.bh-advancedQuery-quick-search-wrap input[type=text]', options.$advanced).attr('placeholder', easySearchPlaceholder);
+    } else {
+      $('.bh-advancedQuery-quick-search-wrap', options.$advanced).hide();
+      $('[bh-advanced-query-role=easySearchBtn]', options.$advanced).hide();
+    }
+  };
+  $.fn.emapRulesConstructor.renderQuickSearch = function(quickArray) {
+    var quickSearchHtml = $('&lt;div>&lt;/div>');
+    $(quickArray).each(function(i) {
+      /**
+       * 代码不做 数量显示
+       * 由设计规范控制
+       */
+      //if (i >= 3) {
+      //    return false;
+      //}
+      if (this.xtype == 'select' || this.xtype == 'radiolist' || this.xtype == 'checkboxlist') {
+        this.xtype = 'buttonlist';
+      }
+      quickSearchHtml.append($.fn.emapRulesConstructor.renderInputPlace(this));
+    });
+    return quickSearchHtml;
+  };
+  $.fn.emapRulesConstructor.renderInputPlace = function(item, showClose) {
+    //showClose  是否显示 关闭按钮
+    /*
+    var _this = item;
+    _this.get = function (attr) {
+        return _this[attr];
+    };
+    var xtype = _this.get("xtype");
+    var caption = _this.get("caption");
+    var builder = _this.get("defaultBuilder");
+    var url = _this.get("url");
+    var name = _this.get("name");
+    var hidden = _this.get("hidden") ? "hidden" : "";
+    var placeholder = _this.get("placeholder") ? _this.get("placeholder") : "";
+    var checkType = _this.get("checkType");
+    var checkSize = _this.get("checkSize");
+    var dataSize = _this.get("dataSize");
+    var checkExp = _this.get("checkExp");
+    //var allOption = _this.get("allOption") !== undefined ? _this.get("allOption") : true; // 是否显示 "全部"  按钮,  仅在 buttonlist使用
+    var format = _this.get("format") ? _this.get("format") : 'yyyy-MM-dd';
+    var controlHtml = $(' &lt;div class="bh-advancedQuery-form-row bh-advancedQuery-h-28">' +
+        '&lt;div class="bh-advancedQuery-groupName">' + caption + '：&lt;/div>' +
+        '&lt;div class="bh-advancedQuery-groupList bh-label-radio-group">' +
+        '&lt;/div>' +
+        '&lt;/div>');
+
+    if (showClose) {
+        controlHtml.append('&lt;a class="bh-bh-advancedQuery-group-dismiss" href="javascript:void(0)" bh-advanced-query-role="conditionDismiss"> ' +
+            '&lt;i class="icon-close iconfont">&lt;/i>' +
+            '&lt;/a>');
+    }
+    var inputHtml = '';
+    switch (xtype) {
+
+        case "tree":
+        case "multi-tree":
+            inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" data-builder="{{builder}}" data-caption="{{caption}}" data-url="{{url}}" {{hidden}} style="max-width: 300px;">&lt;/div>';
+            break;
+        case "date-local":
+        case "date-range":
+            inputHtml += '&lt;div xtype="{{xtype}}" data-builder="{{builder}}" data-caption="{{caption}}" data-name="{{name}}" data-format="{{format}}" {{hidden}} style="max-width: 300px;">&lt;/div>';
+            break;
+        case "date-ym":
+            inputHtml += '&lt;div xtype="{{xtype}}" data-builder="{{builder}}" data-caption="{{caption}}" data-name="{{name}}" data-format="yyyy-MM" {{hidden}}>&lt;/div>';
+            break;
+        case "date-full":
+            inputHtml += '&lt;div xtype="{{xtype}}" data-builder="{{builder}}" data-caption="{{caption}}" data-name="{{name}}" data-format="yyyy-MM-dd HH:mm" {{hidden}}>&lt;/div>';
+            break;
+        case "switcher":
+            inputHtml += '&lt;div xtype="{{xtype}}"  data-builder="{{builder}}" data-caption="{{caption}}" data-name="{{name}}" {{hidden}}>&lt;/div>';
+            break;
+        case "radiolist":
+            inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" class="bh-radio" data-url="{{url}}" data-builder="{{builder}}" data-caption="{{caption}}" {{hidden}}>&lt;/div>';
+            break;
+        case "checkboxlist":
+            inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" class="bh-checkbox" data-url="{{url}}" data-builder="{{builder}}" data-caption="{{caption}}" {{hidden}}>&lt;/div>';
+            break;
+        case "buttonlist":
+        case "multi-buttonlist":
+            inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" data-url="{{url}}" data-builder="{{builder}}" data-alloption={{allOption}} data-caption="{{caption}}" {{hidden}} >&lt;/div>';
+            break;
+        case "select":
+        case "multi-select":
+        case "multi-select2":
+            inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" data-url="{{url}}" data-builder="{{builder}}" data-alloption={{allOption}} data-caption="{{caption}}" {{hidden}} style="max-width: 300px;">&lt;/div>';
+            break;
+        case 'number':
+        case 'number-range':
+            inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" data-url="{{url}}" data-builder="{{builder}}" data-caption="{{caption}}" {{hidden}} style="max-width: 300px;">&lt;/div>';
+            break;
+        default:
+            inputHtml += '&lt;input class="bh-form-control" data-name="{{name}}" name="{{name}}" data-builder="{{builder}}" data-caption="{{caption}}" xtype="text" type="text" {{hidden}} />';
+            break;
+    }
+    inputHtml = inputHtml.replace(/\{\{xtype\}\}/g, xtype)
+        .replace(/\{\{name\}\}/g, name)
+        .replace(/\{\{builder\}\}/g, builder)
+        .replace(/\{\{caption\}\}/g, caption)
+        .replace(/\{\{url\}\}/g, url)
+        .replace(/\{\{hidden\}\}/g, (hidden ? 'style="display:none;"' : ''))
+        .replace(/\{\{allOption\}\}/g, options.allowAllOption)
+    */
+    var controlHtml = $(' &lt;div class="bh-advancedQuery-form-row bh-advancedQuery-h-28">' +
+      '&lt;div class="bh-advancedQuery-groupName">' + item.caption + '：&lt;/div>' +
+      '&lt;div class="bh-advancedQuery-groupList bh-label-radio-group">' +
+      '&lt;/div>' +
+      '&lt;/div>');
+
+    if (showClose) {
+      controlHtml.append('&lt;a class="bh-bh-advancedQuery-group-dismiss" href="javascript:void(0)" bh-advanced-query-role="conditionDismiss"> ' +
+        '&lt;i class="icon-close iconfont">&lt;/i>' +
+        '&lt;/a>');
+    }
+    var inputHtml = WIS_EMAP_INPUT.renderPlaceHolder(item, 'search');
+
+    $('.bh-advancedQuery-groupList', controlHtml).html(inputHtml);
+    return controlHtml;
+  };
+  // 生成搜索条件
+  $.fn.emapRulesConstructor.getSearchCondition = function(options, name, filter) {
+    var conditionResult = [];
+    var easyArray = options.$advanced.data('easyarray');
+    var modalarray = options.$advanced.data('modalarray');
+    var orCondition = [];
+    var isFilter = filter === false ? false : true;
+    if (options.searchModel == 'easy') {
+      var searchKey = $('.bh-advancedQuery-quick-search-wrap input', options.$advanced).val();
+      // 简单搜索
+      if ($.trim(searchKey) != "") {
+        if (name) {
+          //简单搜索的下拉框搜索
+          var searchItem = options.core.findModel(name, easyArray);
+          conditionResult.push({
+            "caption": searchItem.caption,
+            "name": searchItem.name,
+            "value": searchKey,
+            "builder": searchItem.defaultBuilder || "include",
+            "linkOpt": "AND"
+          });
+        } else {
+          for (var i = 0; i &lt; easyArray.length; i++) {
+            orCondition.push({
+              "caption": easyArray[i].caption,
+              "name": easyArray[i].name,
+              "value": searchKey,
+              "builder": easyArray[i].defaultBuilder || "include",
+              "linkOpt": "OR"
+            });
+          }
+          conditionResult.push(orCondition);
+        }
+      }
+      conditionResult = conditionResult.concat(options.core.getConditionFromForm($('[bh-advanced-query-role=quickSearchForm]', options.$advanced), options));
+    } else if (options.searchModel == 'advanced') {
+      var block = $('.bh-rules-block', options.$advanced);
+      $('.bh-rules-row', block).each(function() {
+        var rowData = [];
+        var tags = $('.bh-tag', $(this));
+        if (tags.length) {
+          tags.each(function() {
+            var tagData = $(this).data('data');
+            tagData.linkOpt = 'and';
+            rowData.push(tagData);
+          });
+          rowData[0].linkOpt = 'or';
+          conditionResult.push(rowData);
+        }
+      });
+    }
+    if (isFilter) {
+      conditionResult = WIS_EMAP_INPUT.filterCondition(conditionResult);
+    }
+    return JSON.stringify(conditionResult);
+  };
+  $.fn.emapRulesConstructor.getConditionFromForm = function(form, options) {
+    var model = options.$advanced.data('modalarray');
+    var conditionArray = [];
+    var formElement = $('[xtype]', form);
+    for (var i = 0; i &lt; formElement.length; i++) {
+      var conditionItem = {};
+      conditionItem.value = WIS_EMAP_INPUT.getValue($(formElement[i]), {});
+      /*
+      switch ($(formElement[i]).attr('xtype')) {
+          case 'radiolist':
+              conditionItem.value = $('input[type=radio]:checked', formElement[i]).map(function () {
+                  return $(this).val();
+              }).get().join(',');
+              break;
+          case 'checkboxlist':
+              conditionItem.value = $('input[type=checkbox]:checked', formElement[i]).map(function () {
+                  return $(this).val();
+              }).get().join(',');
+              break;
+          case 'tree':
+              conditionItem.value = $(formElement[i]).emapDropdownTree('getValue');
+              break;
+          case 'buttonlist':
+              conditionItem.value = $('.bh-label-radio.bh-active', formElement[i]).data('id');
+              break;
+          default:
+              conditionItem.value = $(formElement[i]).val();
+              break;
+      }
+      */
+      if (conditionItem.value == 'ALL' || $.trim(conditionItem.value) == '') {
+        continue;
+      }
+      conditionItem.name = $(formElement[i]).data('name');
+      conditionItem.caption = $(formElement[i]).data('caption');
+      conditionItem.builder = $(formElement[i]).data('builder');
+      conditionItem.linkOpt = 'AND';
+      conditionArray.push(conditionItem);
+    }
+    return conditionArray;
+  };
+  $.fn.emapRulesConstructor.findModel = function(name, modelArray) {
+    for (var i = 0; i &lt; modelArray.length; i++) {
+      if (modelArray[i].name == name) {
+        return modelArray[i];
+      }
+    }
+  };
+  $.fn.emapRulesConstructor.initSelect1 = function(ele, modalOptions) {
+      ele.jqxDropDownList({
+        placeHolder: $.i18n('bh-rc-chooseFindingTasks'),
+        width: 200,
+        source: modalOptions,
+        displayMember: "caption",
+        filterable: true,
+        searchMode: "containsignorecase",
+        filterPlaceHolder: $.i18n('bh-rc-pleaseFind'),
+        valueMember: "name"
+      }).on('open', function(e) {
+        var _this = $(this);
+        var $filterInput = _this.jqxDropDownList('listBoxContainer').jqxListBox('filter');
+        $filterInput.css('position', 'relative');
+        if (!$filterInput.find('[role="bh-placeholder-wrap"]').length) {
+          WIS_EMAP_INPUT.placeHolder($filterInput);
+        }
+      });
+      ele.data('instance', ele);
+      ele._value = function(val) {
+        if (val !== undefined) {
+          ele.val(val);
+        } else {
+          var result = ele.jqxDropDownList('getSelectedItem');
+          return result || {};
+        }
+      }
+    }
+    // 初始化构造器编辑框
+  $.fn.emapRulesConstructor.initConstructorEditor = function(options, ele) {
+    // 字段名称下拉
+    var modalOptions = options.$advanced.data('modalarray');
+    // builder下拉
+    var builderOptions = options.data.builderLists.cbl_String;
+
+    var select1 = $('[rules-role=editorInput1]', ele)
+    options.core.initSelect1(select1, modalOptions);
+
+    var select2 = $('[rules-role=editorInput2]', ele)
+      .jqxDropDownList({
+        placeHolder: $.i18n('bh-rc-chooseConditions'),
+        width: 100,
+        source: builderOptions,
+        filterable: true,
+        searchMode: "containsignorecase",
+        displayMember: "caption",
+        filterPlaceHolder: $.i18n('bh-rc-pleaseFind'),
+        valueMember: "name"
+      }).on('open', function() {
+        var _this = $(this);
+        var $filterInput = _this.jqxDropDownList('listBoxContainer').jqxListBox('filter');
+        $filterInput.css('position', 'relative');
+        if (!$filterInput.find('[role="bh-placeholder-wrap"]').length) {
+          WIS_EMAP_INPUT.placeHolder($filterInput);
+        }
+      })
+    var select3 = undefined;
+
+    if (_defaultValues[0]) { //select1 有 值，则
+      select1.data('instance')._value(_defaultValues[0]);
+
+      var input3Wrap = $('.bh-rules-input-wrap3', ele);
+      var modalItem = options.data.controls.filter(function(item) {
+        return item.name == _defaultValues[0];
+      })[0];
+
+      // 条件选择下拉框的联动
+      select2.jqxDropDownList({
+        source: options.data.builderLists[modalItem.builderList]
+      })
+      select2.val(_defaultValues[1])
+
+      // 搜索value 的控件联动
+      var html3 = options.core.renderInput3Place(modalItem);
+      input3Wrap.html(html3);
+      if (_defaultValues.length &amp;&amp; $.inArray(_defaultValues[1], ['m_value_include', 'm_value_equal', 'm_value_not_include', 'm_value_not_equal']) > -1) {
+        if (html3.attr('xtype') === 'tree') {
+          html3.attr('xtype', 'multi-tree');
+        }
+        if (html3.attr('xtype') === 'tree2') {
+          html3.attr('xtype', 'multi-tree2');
+        }
+        if (html3.attr('xtype') === 'select') {
+          html3.attr('xtype', 'multi-select2');
+        }
+      }
+      var defaultOptions = $.extend({}, {
+        "date-range": {
+          defaultType: 'all'
+        },
+        tree: {
+          unblind: "/"
+        },
+        tree2: {
+          unblind: "/"
+        },
+        "multi-tree": {
+          unblind: "/",
+          search: true
+        },
+        "multi-tree2": {
+          unblind: "/",
+          search: true
+        }
+      }, options.defaultOptions);
+      input3Wrap.emapFormInputInit({
+        defaultOptions: defaultOptions,
+        showBlankOption: options.showBlankOption
+      });
+      select3 = $('[xtype]', input3Wrap)
+      select3.attr('rules-role', 'editorInput3');
+      var fieldVal = {}
+      var name = select3.data('name')
+      fieldVal[name + '_DISPLAY'] = _defaultValues[3]
+      fieldVal[name] = _defaultValues[2]
+      WIS_EMAP_INPUT.setValue(select3, name, select3.attr('xtype'), fieldVal)
+    }
+
+    options.core.bindEditorEvent(options, ele);
+    // 兼容ie9 placeholder
+    WIS_EMAP_INPUT.placeHolder(ele);
+    _defaultValues = [] //reset
+  };
+  // 弹出气泡弹窗
+  $.fn.emapRulesConstructor.popOver = function(options, title, ele, cb) {
+    $.bhPopOver({
+        width: 728,
+        isModal: true,
+        title: '&lt;p class="emap-rules-popover-title bh-str-cut">' + title + '&lt;/p>',
+        content: options.editorHtml,
+        selector: ele,
+        ready: function(win) {
+          // 实例化editor
+          options.core.initConstructorEditor(options, $('#bhPopover'));
+          setTimeout(function() { // 自动打开
+            var popWindow = win;
+            popWindow.on('close', function() { // 气泡弹窗关闭时 自动销毁
+                // 取消 对下拉框事件冒泡的阻止
+                $(document).off('click.bhRules.stop')
+                  // 销毁editor内的下拉框
+                $('div[rules-role=editorInput1],div[rules-role=editorInput2],div[rules-role=editorInput3]', popWindow).jqxDropDownList('destroy');
+                // 销毁popover
+                $(this).jqxPopover('destroy');
+              })
+              .on('click', '[rules-role=editorCloseBtn]', function() {
+                // 关闭气泡弹窗事件
+                popWindow.jqxPopover('close')
+              })
+              .on('click', '[rules-role=editorAddBtn]', function(e) {
+                if (cb(e, popWindow) !== false) {
+                  popWindow.jqxPopover('close');
+                }
+              });
+
+            // 阻止下拉框的事件冒泡  防止点击下拉后 poppver 自动关闭
+            $(document).on('click.bhRules.stop', '.jqx-listbox, .jqx-calendar, .jqx-dropdownbutton-popup', function(e) {
+              e.stopPropagation();
+            })
+
+          }, 0)
+        }
+      })
+      /*
+      var pop = $('&lt;div style="display: none" id="bhPopover">' + options.editorHtml + '&lt;/div>');
+      $('body').append(pop);
+
+      // 计算popover 水平位置
+      var docWidth = document.documentElement.clientWidth;
+      var selectLeft = $(ele).offset().left;
+      var popWidth = 728; // popover的宽度为 728 ,我量出来的
+      var offsetLeft = 0;
+      if (selectLeft - popWidth / 2 &lt; 24) {
+          offsetLeft = Math.abs(selectLeft - popWidth / 2 - 24)
+      }
+      if (selectLeft + popWidth / 2 > docWidth - 24) {
+          offsetLeft = docWidth - 100 - selectLeft - popWidth / 2;
+      }
+
+      // 计算垂直位置
+      var eleTop = $(ele).offset().top;
+      var position = 'bottom';
+      if (window.scrollY + document.documentElement.clientHeight - eleTop &lt; 200) {
+          position = 'top';
+      }
+
+      pop.jqxPopover({
+          offset: {
+              left: offsetLeft,
+              top: 0
+          },
+          arrowOffsetValue: -offsetLeft,
+          showArrow: false,
+          autoClose: true,
+          isModal: true,
+          title: title,
+          selector: ele,
+          position: position
+      });
+      */
+
+  };
+  $.fn.emapRulesConstructor.getConditionFromEditor = function(editor, options) {
+    if (options.core.validateEditor(editor)) {
+      var select1Val = $('[rules-role=editorInput1]', editor).data('instance')._value();
+      var select2Val = $('[rules-role=editorInput2]', editor).jqxDropDownList('getSelectedItem');
+      var select3 = $('.bh-rules-input-wrap3 [xtype]', editor);
+      var conData = {
+        caption: select1Val.label,
+        name: select1Val.value,
+        builder: select2Val.value,
+        builder_display: select2Val.label
+      };
+      var select3_value_obj = {};
+      conData.value = WIS_EMAP_INPUT.getValue(select3, select3_value_obj);
+      conData.value_display = select3_value_obj[select3.attr('data-name') + '_DISPLAY'];
+      // 选择空值时，构造器仅支持 等于 不等于 包含 三个
+      if (conData.value === '@__blank__value') {
+        if ($.inArray(conData.builder, ['include', 'equal', 'notEqual']) &lt; 0) {
+          $.bhTip({
+            content: $.i18n('bh-rc-onlyHave'),
+            state: 'warning'
+          });
+          return false;
+        }
+      }
+      return conData;
+    }
+    return false;
+  };
+  $.fn.emapRulesConstructor.validateEditor = function(editor) {
+    var select1 = $('[rules-role=editorInput1]', editor);
+    var select2 = $('[rules-role=editorInput2]', editor);
+    var input3Wrap = $('.bh-rules-input-wrap3', editor);
+
+    if (!select1.data('instance')._value().value) {
+      select1.addClass('bh-error');
+      return false
+    }
+    if (!select2.val()) {
+      select2.addClass('bh-error');
+      return false
+    }
+    var select3 = $('[xtype]', input3Wrap);
+    if (select3.hasClass('bh-error')) {
+      return false
+    }
+    var select3_val = WIS_EMAP_INPUT.getValue(select3, {})
+    if (WIS_I18N.i18n.locale === 'zh') {
+      if (select3_val === '' || select3_val === undefined || select3_val === '请选择...') {
+        select3.addClass('bh-error');
+        return false;
+      }
+    } else {
+      if (select3_val === '' || select3_val === undefined || select3_val === 'Please choose...') {
+        select3.addClass('bh-error');
+        return false;
+      }
+    }
+    return true;
+  };
+  // editor内下拉框联动事件绑定
+  $.fn.emapRulesConstructor.bindEditorEvent = function(options, editor) {
+    var select1 = $('[rules-role=editorInput1]', editor);
+    var select2 = $('[rules-role=editorInput2]', editor);
+    var select3 = undefined;
+    var input3Wrap = $('.bh-rules-input-wrap3', editor);
+    var select3 = $('[xtype]', input3Wrap);
+    select1.on('select', function(e, detail) {
+      var name;
+      if (e.args) {
+        name = e.args.item.value;
+      } else if (detail) {
+        name = detail;
+      }
+      var modalItem = options.data.controls.filter(function(item) {
+        return item.name == name;
+      })[0];
+
+      if (select1.data('instance')._value().value) {
+        select1.removeClass('bh-error');
+      }
+
+      // 条件选择下拉框的联动
+      select2.jqxDropDownList({
+        source: options.data.builderLists[modalItem.builderList]
+      })
+      if ($.inArray(modalItem.xtype, ['multi-select2', 'select', 'multi-tree', 'tree', 'multi-tree2', 'tree2']) > -1) {
+        // select2.jqxDropDownList('getItemByValue', 'm_value_equal');
+        select2.val('m_value_equal');
+        setTimeout(function() {
+          select2.trigger('select');
+        }, 10)
+      } else if ($.inArray(modalItem.xtype, ['text', undefined]) > -1) {
+        select2.val('include');
+        setTimeout(function() {
+          select2.trigger('select');
+        }, 10)
+      } else {
+        select2.jqxDropDownList('selectIndex', 0);
+      }
+      // 搜索value 的控件联动 
+      var defaultOptions = $.extend({}, {
+        "date-range": {
+          defaultType: 'all'
+        },
+        tree: {
+          unblind: "/",
+          search: true
+        },
+        tree2: {
+          unblind: "/",
+          search: true
+        },
+        "multi-tree": {
+          unblind: "/",
+          search: true
+        },
+        "multi-tree2": {
+          unblind: "/",
+          search: true
+        }
+      }, options.defaultOptions);
+      input3Wrap.html(options.core.renderInput3Place(modalItem)).emapFormInputInit({
+        defaultOptions: defaultOptions,
+        showBlankOption: options.showBlankOption
+      });
+      $('[xtype]', input3Wrap).attr('rules-role', 'editorInput3');
+
+    });
+    select2.on('select', WIS_EMAP_SERV.debounce(function() {
+      /***
+       * 联动规则：
+       * 1. 单选组、多选组、按钮组变成下拉类型
+       * 2. 当构造器为多值时， 下拉变为多选下拉， 下拉树变为多选下拉树
+       * 3. 当构造器不为多值时， 多选下拉变为下拉，多选下拉树变为下拉树
+       */
+      select3 = $('[xtype]', input3Wrap);
+      if (select2.val()) {
+        select2.removeClass('bh-error');
+      }
+      var itemModel = options.data.controls.filter(function(val) {
+        return val.name == select1.data('instance')._value().value;
+      })[0];
+      itemModel = JSON.parse(JSON.stringify(itemModel));
+      itemModel.get = function(field) {
+        if (this["search." + field] !== undefined)
+          return this["search." + field];
+        else
+          return this[field];
+      };
+      var xtype = itemModel['search.xtype'] || itemModel['xtype']
+      var defaultOptions = $.extend({}, {
+        "date-range": {
+          defaultType: 'all'
+        },
+        tree: {
+          unblind: "/",
+          search: true
+        },
+        tree2: {
+          unblind: "/",
+          search: true
+        },
+        "multi-tree": {
+          unblind: "/",
+          search: true
+        },
+        "multi-tree2": {
+          unblind: "/",
+          search: true
+        }
+      }, options.defaultOptions)
+
+      if ($.inArray($(this).val(), ['m_value_include', 'm_value_equal', 'm_value_not_include', 'm_value_not_equal']) > -1) {
+        // 构造器为多值时
+        if (xtype === 'select') itemModel['search.xtype'] = 'multi-select2'
+        if (xtype === 'tree') itemModel['search.xtype'] = 'multi-tree'
+        if (xtype === 'tree2') itemModel['search.xtype'] = 'multi-tree2'
+      } else {
+        // 构造器不为多值时
+        if (xtype === 'multi-select2') itemModel['search.xtype'] = 'select'
+        if (xtype === 'multi-tree') itemModel['search.xtype'] = 'tree'
+        if (xtype === 'multi-tree2') itemModel['search.xtype'] = 'tree2'
+      }
+      input3Wrap.empty();
+      input3Wrap.html(options.core.renderInput3Place(itemModel)).emapFormInputInit({
+        defaultOptions: defaultOptions,
+        showBlankOption: options.showBlankOption
+      });
+    }, 200));
+    input3Wrap.on('select, input, change', '[xtype]', WIS_EMAP_SERV.debounce(function() {
+      var xtype = this.getAttribute('xtype')
+      var value = WIS_EMAP_INPUT.getValue($(this), {})
+      if (value !== '') {
+        $(this).removeClass('bh-error');
+        // 多选树添加最多选择1000项的显示
+        if (/multi-tree/.test(xtype) &amp;&amp; value.split(',').length > 1000) {
+          $(this).addClass('bh-error')
+          $.bhTip({
+            content: $.i18n('bh-rc-dropdownTreeTip'),
+            state: 'warning'
+          });
+        }
+      }
+    }, 200));
+  };
+  $.fn.emapRulesConstructor.renderInput3Place = function(modalItem) {
+    return WIS_EMAP_INPUT.renderPlaceHolder(modalItem, 'search');
+    /*
+    var attr = WIS_EMAP_SERV.getAttr(modalItem);
+    var controlHtml = "";
+    attr.xtype = attr.xtype ? attr.xtype : 'text';
+    if (attr.xtype == 'checkboxlist' || attr.xtype == 'radiolist') {
+        attr.xtype = 'select';
+    }
+
+
+    switch (attr.xtype) {
+        case undefined:
+        case "text":
+            attr.xtype = "text";
+            controlHtml = '&lt;input class="bh-form-control" data-type="{{dataType}}" data-name="{{name}}" name="{{name}}" xtype="{{xtype}}" type="{{xtype}}" {{checkType}}  {{dataSize}} {{checkSize}} {{checkExp}} ' + (attr.inputReadonly ? 'readOnly' : '') + '  />';
+            break;
+        case "textarea":
+            controlHtml = '&lt;textarea xtype="{{xtype}}" data-type="{{dataType}}" class="bh-form-control" rows="3" data-name="{{name}}" {{checkType}} {{dataSize}} {{checkSize}} {{checkExp}} ' + (attr.inputReadonly ? 'readOnly' : '') + ' >&lt;/textarea>';
+            break;
+        case "selecttable":
+        case "select":
+        case "tree":
+        case "multi-tree":
+        case "date-local":
+        case "date-ym":
+        case "date-full":
+        case "switcher":
+        case "uploadfile":
+        case "uploadphoto":
+        case "uploadsingleimage":
+        case "uploadmuiltimage":
+        case "buttonlist":
+        case "multi-select":
+        case "multi-select2":
+        case "div":
+            controlHtml = '&lt;div xtype="{{xtype}}" data-type="{{dataType}}" data-name="{{name}}" {{url}} {{format}} {{checkType}} {{JSONParam}} {{checkSize}} data-disabled={{inputReadonly}}>&lt;/div>';
+            break;
+        case "radiolist":
+            controlHtml = '&lt;div xtype="{{xtype}}" data-type="{{dataType}}" class="bh-radio jqx-radio-group" data-name="{{name}}" {{url}} {{checkSize}} data-disabled={{inputReadonly}}>&lt;/div>';
+            break;
+        case "checkboxlist":
+            controlHtml = '&lt;div xtype="{{xtype}}" data-type="{{dataType}}" class="bh-checkbox" data-name="{{name}}" {{checkType}} {{url}} {{checkSize}} data-disabled={{inputReadonly}}>&lt;/div>';
+            break;
+    }
+    controlHtml = controlHtml.replace(/\{\{xtype\}\}/g, attr.xtype)
+        .replace(/\{\{name\}\}/g, attr.name)
+        .replace(/\{\{dataType\}\}/g, attr.dataType)
+        .replace(/\{\{inputReadonly\}\}/g, attr.inputReadonly);
+    controlHtml = controlHtml.replace(/\{\{url\}\}/g, attr.url ? ('data-url="' + attr.url + '"') : '');
+    controlHtml = controlHtml.replace(/\{\{format\}\}/g, attr.format ? ('data-format="' + attr.format + '"') : '');
+    controlHtml = controlHtml.replace(/\{\{JSONParam\}\}/g, attr.JSONParam ? ('data-jsonparam="' + encodeURI(JSON.stringify(attr.JSONParam)) + '"') : '');
+    controlHtml = controlHtml.replace(/\{\{checkType\}\}/g, attr.checkType ? ('data-checktype="' + encodeURI(JSON.stringify(attr.checkType)) + '"') : '');
+    controlHtml = controlHtml.replace(/\{\{dataSize\}\}/g, attr.dataSize ? ('data-size="' + attr.dataSize + '"') : '');
+    controlHtml = controlHtml.replace(/\{\{checkSize\}\}/g, attr.checkSize ? ('data-checksize="' + attr.checkSize + '"') : '');
+    controlHtml = controlHtml.replace(/\{\{checkExp\}\}/g, attr.checkExp ? ('data-checkexp=' + encodeURI(attr.checkExp)) : '');
+    controlHtml = $(controlHtml);
+    if (attr.JSONParam) {
+        controlHtml.data('jsonparam', attr.JSONParam);
+    }
+    return controlHtml;
+    */
+  };
+  // 渲染一个tag
+  $.fn.emapRulesConstructor.renderOneTag = function(data) {
+    var tag = $('&lt;label class="bh-tag">&lt;span class="bh-tag__txt" rules-role="tagTxt">&lt;/span>&lt;a rules-role="closeTag" href="javascript:void(0)">&lt;i class="iconfont icon-close">&lt;/i>&lt;/a>&lt;/label>');
+    tag.data('data', data);
+    var content = '"' + data.caption + '" ' + data.builder_display + ' "' + (data.value_display ? data.value_display : data.value) + '"';
+    var text = content.substring(0, 175);
+    if (content.length > 175) {
+      text += '...';
+    }
+    $('span', tag).text(text);
+    tag.attr('title', content);
+    return tag;
+  };
+  // 添加 且 条件
+  $.fn.emapRulesConstructor.addAndFilter = function(options, data, row) {
+    var andBtn = $('[rules-role=addAndBtn]', row);
+    andBtn.before(options.andSpan).before(options.core.renderOneTag(data));
+    $.bhPaperPileDialog.resetPageFooter();
+    $.bhPaperPileDialog.resetDialogFooter();
+  };
+  // 添加或条件
+  $.fn.emapRulesConstructor.addOrFilter = function(options, data) {
+    var row = $('&lt;div class="bh-rules-row">' +
+      '&lt;div class="bh-rules-row-indent">' + $.i18n('bh-rc-or') + '&lt;/div>' +
+      '&lt;a rules-role="addAndBtn" href="javascript:void(0)">' + $.i18n('bh-rc-addAndConditions') + '&lt;/a>' +
+      '&lt;/div>');
+    $('[rules-role=addAndBtn]', row).before(options.core.renderOneTag(data));
+    $('[rules-role=addOrRow]', options.$advanced).before(row);
+    options.core.resetRowIndent(options);
+  };
+  // 重置 row indent
+  $.fn.emapRulesConstructor.resetRowIndent = function(options) {
+    var $advanced = options.$advanced;
+    var rows = $('.bh-rules-row', $advanced);
+    rows.each(function(i) {
+      if (i > 0) {
+        $(this).css('margin-left', (i - 1) * 20)
+      }
+    })
+    $.bhPaperPileDialog.resetPageFooter();
+    $.bhPaperPileDialog.resetDialogFooter();
+  };
+  $.fn.emapRulesConstructor.init = function(element, options) {
+    if (options.showBlankOption === undefined) {
+      options.showBlankOption = WIS_EMAP_CONFIG.showBlankOptionInSearch;
+    }
+    if ($.fn.emapDropdownZTree) {
+      if (options.useNewDropdownTree === undefined) {
+        options.useNewDropdownTree = WIS_EMAP_CONFIG.useNewDropdownTree;
+      }
+    }
+
+    if (options.useNewDropdownTree === true) {
+      options.data.controls.map(function(item) {
+        if (item['search.xtype']) {
+          if ($.inArray(item['search.xtype'], ['tree', 'multi-tree']) > -1) {
+            item['search.xtype'] = item['search.xtype'].replace(/tree$/, 'tree2')
+          }
+        } else {
+          if ($.inArray(item['xtype'], ['tree', 'multi-tree']) > -1) {
+            item['xtype'] = item['xtype'].replace(/tree$/, 'tree2')
+          }
+        }
+      });
+    }
+    element.attr("emap", JSON.stringify({
+      "emap-url": WIS_EMAP_SERV.url,
+      "emap-name": WIS_EMAP_SERV.name,
+      "emap-app-name": WIS_EMAP_SERV.appName,
+      "emap-model-name": WIS_EMAP_SERV.modelName
+    }));
+    delete WIS_EMAP_SERV.url;
+    delete WIS_EMAP_SERV.name;
+    delete WIS_EMAP_SERV.appName;
+    delete WIS_EMAP_SERV.modelName;
+
+    var modalData = options.data.controls;
+    var easyArray = [];
+    var quickArray = [];
+    var guid = BH_UTILS.NewGuid();
+
+
+
+    options.editorHtml = '&lt;div class="bh-rules-editor bh-clearfix bh-mb-16">' +
+      '&lt;div class="bh-rules-input-wrap">&lt;div rules-role="editorInput1">&lt;/div>&lt;/div>' +
+      '&lt;div class="bh-rules-input-wrap">&lt;div rules-role="editorInput2">&lt;/div>&lt;/div>' +
+      '&lt;div class="bh-rules-input-wrap bh-rules-input-wrap3">&lt;input rules-role="editorInput3" class="bh-form-control" type="text" placeholder="' + $.i18n('bh-rc-multiValueSpilt') + '">&lt;/div>' +
+      '&lt;div class="bh-rules-input-wrap bh-rules-input-wrap4">' +
+      '&lt;a class="bh-btn bh-btn-small bh-btn-primary" rules-role="editorAddBtn">&lt;i class="iconfont icon-check" style="margin-right: 0;">&lt;/i>&lt;/a>' +
+      '&lt;a class="bh-btn bh-btn-small bh-btn-default" rules-role="editorCloseBtn">&lt;i class="iconfont icon-close" style="margin-right: 0;">&lt;/i>&lt;/a>' +
+      '&lt;/div>' +
+      '&lt;/div>';
+
+    options.andSpan = '&lt;span class="bh-rules-and-text">' + $.i18n('bh-rc-and') + '&lt;/span>';
+    options.orSpan = '&lt;span class="bh-rules-or-text">' + $.i18n('bh-rc-or') + '&lt;/span>';
+    options.tag = '&lt;label class="bh-tag">&lt;span class="bh-tag__txt" rules-role="tagTxt">&lt;/span>&lt;a rules-role="closeTag" href="javascript:void(0)">&lt;i class="iconfont icon-close">&lt;/i>&lt;/a>&lt;/label>';
+
+    element.css({
+      "position": "relative",
+      "z-index": 358
+    }).html('&lt;div class="bh-advancedQuery bh-mb-16" bh-advanced-query-role="advancedQuery">' +
+      '&lt;div class="bh-advancedQuery-dropDown ">' +
+      '&lt;div class="" style="display: table-cell">' +
+      '&lt;div class="bh-advancedQuery-form" bh-advanced-query-role="advanceSearchForm" >' +
+
+      '&lt;div class="bh-rules-container">' +
+      '&lt;div class="bh-rules-header bh-clearfix">' +
+      '&lt;h4>' +
+      '&lt;i class="iconfont icon-search">&lt;/i>' + $.i18n('bh-rc-conditionDesigner') +
+      '&lt;/h4>' +
+      '&lt;p class="bh-rules-program">' +
+      '&lt;label>' + $.i18n('bh-rc-makeSchema') + ': &lt;/label>' +
+      '&lt;a bh-schema-role="more" href="javascript:void(0)">' + $.i18n('bh-rc-more') + ' >&lt;/a>' +
+      '&lt;/p>' +
+      '&lt;/div>' +
+
+
+      '&lt;div class="bh-rules-body">' +
+      options.editorHtml +
+
+      '&lt;div class="bh-rules-block">' +
+
+
+      '&lt;div class="bh-rules-row" rules-role="addOrRow">' +
+      '&lt;div class="bh-rules-row-indent">&lt;/div>' +
+      '&lt;a rules-role="addOrBtn" href="javascript:void(0)">' + $.i18n('bh-rc-addOrConditions') + '&lt;/a>' +
+
+      '&lt;/div>' +
+
+      '&lt;/div>' +
+      '&lt;/div>' +
+
+      '&lt;/div>' +
+
+
+      '&lt;div class="bh-advancedQuery-form-row bh-advancedQuery-form-btn-row bh-advancedQuery-h-28" bh-advanced-query-role="dropDownBtnWrap"> ' +
+      '&lt;div class="bh-advancedQuery-groupList">' +
+      '&lt;a class="bh-btn bh-btn-primary bh-btn-small" bh-advanced-query-role="advancedSearchBtn">' + $.i18n('bh-rc-takeConditionsSearch') + '&lt;/a>' +
+      '&lt;div class="bh-schema-btn-wrap">' +
+      '&lt;div class="bh-schema-edit-div">' +
+      '&lt;input type="text" placeholder="' + $.i18n('bh-rc-inputPlanName') + '" maxlength="20" class="bh-form-control bh-schema-name-input" />' +
+      '&lt;a  class="bh-btn bh-btn-success bh-btn-small"  bh-advanced-query-role="saveSchemaConfirm">' + $.i18n('bh-rc-save') + '&lt;/a>' +
+      '&lt;a class="bh-btn bh-btn-default bh-btn-small" bh-advanced-query-role="saveSchemaCancel">' + $.i18n('bh-rc-cancel') + '&lt;/a>' +
+      '&lt;span class="bh-checkbox" style="display:inline-block;vertical-align:middle;margin-left:8px;">&lt;label>' +
+      '&lt;input type="checkbox" bh-schema-role="fixCheckbox">&lt;i class="bh-choice-helper">&lt;/i> ' + $.i18n('bh-rc-fixToSearchInput') +
+      '&lt;/label>&lt;/span>' +
+      '&lt;/div>' +
+      '&lt;a class="bh-btn bh-btn-default bh-btn-small " bh-advanced-query-role="saveSchema" href="javascript:void(0)">' + $.i18n('bh-rc-saveAsPlan') + '&lt;/a>' +
+      '&lt;/div>' +
+      '&lt;a class="bh-mh-4" bh-advanced-query-role="advancedClose" href="javascript:void(0)">[' + $.i18n('bh-rc-closeConditionDesigner') + ']&lt;/a>' +
+      '&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;/div>' +
+
+      '&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-advancedQuery-quick">' +
+      '&lt;div class="bh-advancedQuery-inputGroup bh-clearfix">' +
+      '&lt;div class="bh-advancedQuery-quick-search-wrap" >' +
+      '&lt;input type="text" class="bh-form-control"/>' +
+      '&lt;i class="iconfont icon-search" style="position: absolute;left: 6px;top: 6px;">&lt;/i>' +
+      '&lt;/div>' +
+      '&lt;a class="bh-btn bh-btn bh-btn-primary bh-btn-small" bh-advanced-query-role="easySearchBtn">' + $.i18n('bh-rc-search') + '&lt;/a>' +
+      '&lt;a href="javascript:void(0);" class="bh-mh-8" bh-advanced-query-role="advancedOpen">[' + $.i18n('bh-rc-conditionDesigner') + ']&lt;/a>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-advancedQuery-form bh-mt-8" bh-advanced-query-role="quickSearchForm">' +
+      '&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;/div>');
+
+    options.$advanced = $('div[bh-advanced-query-role=advancedQuery]', element).css({
+      'overflow': 'hidden'
+    });
+    options.guid = guid;
+    if (options.searchModel == 'advanced') {
+      options.$advanced.addClass('bh-active');
+    }
+
+    $('body').append('&lt;div class="bh-advancedQuery-quick-select" bh-advanced-query-role="advancedEasySelect" data-guid="' + guid + '" >&lt;/div>');
+    if (options.formType) {
+      element.addClass('bu-rules-form-type');
+    }
+
+
+    var advanceInputPlaceHolder = '';
+    options.core.eventBind(options, element);
+    $(modalData).each(function(i) {
+      //移除 hidden 项
+      var index = modalData.indexOf(this);
+      if (this.get('hidden')) {
+        modalData.splice(index, 1);
+        return true;
+      }
+
+      if (!this.xtype || this.xtype == 'text') {
+        advanceInputPlaceHolder += this.caption + '/'; // 高级搜索关键词输入框placeholder
+      } else {
+        options._initCount++;
+      }
+
+      if (this.quickSearch) {
+        if (!this.xtype || this.xtype == 'text') {
+          easyArray.push(this);
+        } else {
+          quickArray.push(this);
+        }
+      }
+    });
+    // 高级搜索关键词字段添加placeholder
+    $('[bh-advanced-query-role=advancedInput]', element).attr('placeholder', advanceInputPlaceHolder.substr(0, advanceInputPlaceHolder.length - 1));
+
+    options.$advanced.data('modalarray', modalData);
+    options.$advanced.data('easyarray', easyArray);
+    options.$advanced.data('quickarray', quickArray);
+
+    if (options.searchModel == 'easy') {
+      options._initCount = quickArray.length;
+    }
+    if (easyArray.length == 0 &amp;&amp; quickArray.length == 0) {
+      // console.warn("没有配置快速搜索字段,所以高级搜索控件无法展示!");
+    }
+
+    // 简单搜索 条件渲染
+    options.core.renderEasySearch(easyArray, options);
+
+    // 快速搜索条件渲染
+    quickArray = JSON.parse(JSON.stringify(quickArray));
+    var defaultOptions = $.extend({}, {
+      "date-range": {
+        defaultType: 'all'
+      },
+      tree: {
+        unblind: "/",
+        search: true
+      },
+      "multi-tree": {
+        unblind: "/",
+        search: true
+      },
+      tree2: {
+        unblind: "/",
+        search: true
+      },
+      "multi-tree2": {
+        unblind: "/",
+        search: true
+      }
+    }, options.defaultOptions);
+    $('[bh-advanced-query-role=quickSearchForm]', options.$advanced).html(options.core.renderQuickSearch(quickArray, options))
+      .emapFormInputInit({
+        root: '',
+        defaultOptions: defaultOptions,
+        showBlankOption: options.showBlankOption
+      });
+
+    // 初始化构造器默认的 editor
+    options.core.initConstructorEditor(options, $('.bh-rules-editor', element));
+
+    // 初始化 方案 模块
+    if (options.schema) {
+      $.fn.emapSchema &amp;&amp; options.core.initSchema(element, options);
+    } else {
+      $('.bh-rules-program, .bh-schema-btn-wrap', options.$advanced).hide();
+
+    }
+  }
+
+
+
+  Plugin = (function() {
+    function Plugin(element, options) {
+      this.options = $.extend({}, $.fn.emapRulesConstructor.defaults, options);
+      this.$element = $(element);
+      this.$element.attr("emap-role", "advancedQuery").attr("emap-pagePath", "").attr("emap-action", this.options.data.name);
+      this.options._initCount = 0; // 需要初始化的控件的总数
+      this.options._initCounter = 0; // 控件初始化计数器
+      this.options.core.init(this.$element, this.options);
+    }
+
+    /**
+     * @method getValue
+     * @description 获取组件当前的搜索条件
+     * @return {String} - 序列化的emap搜索条件
+     * @example 
+     * var condition = $dom.emapRulesConstructor('getValue');
+     * console.log(condition);
+     */
+    Plugin.prototype.getValue = function() {
+      return this.options.core.getSearchCondition(this.options);
+    };
+
+    /**
+     * @method setValue
+     * @description 赋值
+     * @param {Object|String} val - 需要赋值的搜索条件
+     * @example 
+     * $dom.emapRulesConstructor('setValue', [{name: 'xxx', value: 'xxx', builder: 'equal', linkOpt: 'AND'}])
+     */
+    Plugin.prototype.setValue = function(val) {
+      this.$element.emapRulesConstructor('clear');
+      var value = (typeof val == "string") ? JSON.parse(val) : val;
+      var $advanced = this.options.$advanced;
+      var block = $('.bh-rules-block', $advanced);
+      $($advanced).addClass('bh-active');
+      this.options.searchModel = 'advanced';
+      $('.bh-rules-block', $advanced).show();
+      $('.bh-rules-body > .bh-rules-editor', $advanced).hide();
+      for (var i = 0; i &lt; value.length; i++) {
+        if ($.isArray(value[i])) {
+          for (var j = 0; j &lt; value[i].length; j++) {
+            if (j == 0) {
+              // 添加行
+              this.options.core.addOrFilter(this.options, value[i][j]);
+            } else {
+              // 添加tag
+              this.options.core.addAndFilter(this.options, value[i][j], $('.bh-rules-row:eq(' + i + ')', block))
+            }
+          }
+        }
+      }
+    };
+
+    /**
+     * @method clear
+     * @description 清空搜索
+     */
+    Plugin.prototype.clear = function() {
+      var $advanced = this.options.$advanced;
+      $('.bh-rules-row:not([rules-role=addOrRow])', $advanced).remove();
+      this.options.core.resetRowIndent(this.options);
+    };
+
+    return Plugin;
+  })();
+
+  /**
+   * @memberof module:emapRulesConstructor
+   * @event search
+   * @description 搜索触发的事件
+   * @param {Object} event - 事件对象
+   * @param {Stirng} conditions - 搜索条件字符串
+   * @param {Object} options - 搜索组件options对象
+   * @example
+   * $search.on('search'. function (event, conditions) {
+   *  console.log(event);
+   *  console.log(conditions);
+   *  $table.emapdatatable('reload', {querySetting: conditions});
+   * })
+   */
+
+  /**
+   * @memberof module:emapRulesConstructor
+   * @prop {Obiect} data - 高级搜索模型
+   * @prop {String} [searchModel=easy] - 默认展示形式 可选值： easy - 简单搜索    advanced - 条件构造器
+   * @prop {Boolean} [allowAllOption=true] - 快速搜索中的单选按钮组是否显示 【全部】 选项
+   * @prop {Boolean} [formType=false] - 表单中使用的模式, 开启后,隐藏简单搜索的文本框与搜索按钮,隐藏高级模式的按钮
+   * @prop {Boolean} [showBlankOption=true] - 下拉和下拉树是否添加空值选项
+   * @prop {Boolean} [schema=false] - 是否开启保存方案功能
+   */
+  $.fn.emapRulesConstructor.defaults = {
+    allowAllOption: true, // 是否显示[全部]选项
+    searchModel: 'easy',
+    formType: false,
+    schema: false,
+    core: $.fn.emapRulesConstructor,
+    defaultOptions: undefined
+  };
+}).call(this);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapAvatarUpload.html">emapAvatarUpload</a>&nbsp;(头像裁剪上传)</li><li><a href="module-emapCard.html">emapCard</a>&nbsp;(卡片列表)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownTable.html">emapDropdownTable</a>&nbsp;(下拉表格/模糊搜索)</li><li><a href="module-emapDropdownTree.html">emapDropdownTree</a>&nbsp;(下拉树)</li><li><a href="module-emapEditableDataTable.html">emapEditableDataTable</a>&nbsp;(编辑表格)</li><li><a href="module-emapEditor.html">emapEditor</a></li><li><a href="module-emapFileDownload.html">emapFileDownload</a>&nbsp;(文件下载)</li><li><a href="module-emapFileUpload.html">emapFileUpload</a>&nbsp;(文件上传)</li><li><a href="module-emapForm.html">emapForm</a>&nbsp;(表单)</li><li><a href="module-emapgrid.html">emapgrid</a>&nbsp;(grid列表)</li><li><a href="module-emapImageUpload.html">emapImageUpload</a>&nbsp;(多图片上传)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapLinkage.html">emapLinkage</a>&nbsp;(表单联动)</li><li><a href="module-emapPDFViewer.html">emapPDFViewer</a>&nbsp;(PDF文件预览)</li><li><a href="module-emapRulesConstructor.html">emapRulesConstructor</a>&nbsp;(条件构造器)</li><li><a href="module-emapSchema.html">emapSchema</a>&nbsp;(方案模块)</li><li><a href="module-emapSingleImageUpload.html">emapSingleImageUpload</a>&nbsp;(单图片上传)</li><li><a href="module-emapUploadCore.html">emapUploadCore</a>&nbsp;(上传核心模块)</li><li><a href="module-emapValidate.html">emapValidate</a>&nbsp;(表单校验)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_EMAP_SERV.html">WIS_EMAP_SERV</a>&nbsp;(公共方法)</li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:35 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

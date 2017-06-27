@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapUpload/uploadView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapUpload/uploadView.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function ($) {
+	/**
+	 * @module WIS_UPLOAD_VIEW
+	 * @alias 上传视图模块
+	 * @description 上传 视图模块， 封装了上传组件view部分的相关api
+	 */
+	WIS_UPLOAD_VIEW = (function () {
+		function WIS_UPLOAD_VIEW(instance) {
+			var element = instance.$element;
+			var options = instance.options;
+			options.wrap = $('&lt;div class="bh-clearfix" style="clear: none;" emap-role="upload-container">&lt;/div>');
+			options.list = $('&lt;div class="bh-clearfix emap-upload-list-container" emap-role="upload-list">&lt;/div>');
+			options.wrap.append(options.list);
+			if (options.readonly) {
+				options.list.addClass('emap-readonly');
+			}
+			element.append(options.wrap);
+			upload_block.renderUploadButton(options);
+			options.fileInput = $('input[type=file]', options.wrap);
+			eventBind(options);
+		}
+
+		// api
+		WIS_UPLOAD_VIEW.prototype = {
+			/**
+			 * @method renderItemsBlock
+			 * @description 根据文件信息将文件列表渲染到组件上
+			 * @param {Object|Array} items - 文件信息json数据,多个文件时为数组
+			 * @param {Object} options - 上传组件options对象
+			 */
+			renderItemsBlock: function (items, options) {
+				if (items instanceof Array) {
+					$(items).each(function () {
+						addItem(this, options);
+					});
+				} else {
+					addItem(items, options);
+				}
+
+				function addItem(item, options) {
+					var state = item.state || 'saved';
+					upload_block.addBlock(item, state, options);
+					if (_isSingleBlock(options)) {
+						options.list.parent().find('.emap-upload-btn-wrap').addClass('bh-hide');
+					}
+				}
+			},
+
+			/**
+			 * @method getFileNum
+			 * @description 获取组件视图中文件数量
+			 * @param {Object} options - 上传组件options对象
+			 * @param {Boolean} [flag=false] - 是否包含错误文件与上传中文件 默认 不包含
+			 * @return {Int} - 文件数量
+			 */
+			getFileNum: function (options, flag) {
+				var selector = '.emap-upload-block-wrap:not(.emap-upload-btn-wrap)';
+				if (flag !== true) {
+					selector += ':not(.error):not(.loading)';
+				}
+				return $(selector, options.wrap).length;
+			},
+
+			/**
+			 * @method reloadBlock
+			 * @description 重新上传一个block
+			 * @param {Object} data -  文件信息
+			 * 	{
+			 * 		name: xxx,
+			 * 		bhId: xxx,
+			 * 		fileUrl: xxx,
+			 * 		size: xxx
+			 *  }
+			 * @param {Object} options - 上传组件options对象
+			 */
+			reloadBlock: function (data, options) {
+				upload_block.reloadBlock(data, options);
+			},
+
+			/**
+			 * @method loadingBlock
+			 * @description 将一个block 的状态变为loading
+			 * @param {Object} data - fileUpload 返回的文件信息
+			 * @param {Object} options - 上传组件options对象
+			 * @param {Object} input - 上传file dom
+			 */
+			loadingBlock: function (data, options, input) {
+				upload_block.loadingBlock(data, options, input);
+			},
+
+			/**
+			 * @method successBlock
+			 * @description 将一个block 的状态变为success
+			 * @param {Object} data - fileUpload 返回的文件信息
+			 * @param {Object} options - 上传组件options对象
+			 */
+			successBlock: function (data, options) {
+				upload_block.successBlock(data, options);
+			},
+
+			/**
+			 * @method saveBlock
+			 * @description 将一个block saved
+			 * @param {Object} data - fileUpload 返回的文件信息
+			 * @param {Object} options - 上传组件options对象
+			 */
+			saveBlock: function (data, options) {
+				if (data) {
+					upload_block.successBlock(data, options, 'saved');
+				} else {
+					// 保存动作后将所有success的block 变为saved
+					$('.emap-upload-block-wrap', options.list).each(function () {
+						if ($(this).hasClass('success') || $(this).hasClass('normal')) {
+							// 将success文件转换为saved文件
+							$(this).removeClass('success').removeClass('normal').addClass('saved');
+						}
+					});
+				}
+			},
+
+			/**
+			 * @method errorBlock
+			 * @description 将一个block error
+			 * @param {Object} data - fileUpload 返回的文件信息
+			 * @param {Object} options - 上传组件options对象
+			 */
+			errorBlock: function (data, options) {
+				upload_block.errorBlock(data, options);
+			},
+
+			/**
+			 * @method removeBlock
+			 * @description 将一个block 移除
+			 * @param {String} fileId - 文件的wid
+			 * @param {Object} options - 上传组件options对象
+			 */
+			removeBlock: function (fileId, options) {
+				var block = $('[data-fileid=' + fileId + ']', options.wrap);
+				if (block.length == 0) {
+					block = $('[data-bhid=' + fileId + ']', options.wrap);
+				}
+				if (_isSingleBlock(options)) {
+					block.parent().find('.emap-upload-btn-wrap').removeClass('bh-hide');
+				}
+				block.remove();
+			},
+
+			/**
+			 * @method hasLoadingFile
+			 * @description 判断当前组件中是否有正在上传的文件
+			 * @param {Object} options - 上传组件options对象
+			 * @return {Boolean} - 是否有正在上传的文件
+			 */
+			hasLoadingFile: function (options) {
+				return $('.emap-upload-block-wrap.loading', options.list).length > 0;
+			},
+
+			/**
+			 * @method isSorting
+			 * @description 判断当前组件是否正在排序
+			 * @param {Object} options - 上传组件options对象
+			 * @return {Boolean} - 是否有正在排序
+			 */
+			isSorting: function (options) {
+				return options.list.parent().hasClass('emap-upload-sorting');
+			},
+
+			/**
+			 * @method clearFileContainer
+			 * @description  清空当前文件列表容器内所有的文件dom
+			 * @param {Object} options - 上传组件options对象
+			 */
+			clearFileContainer: function (options) {
+				options.list.empty();
+			}
+		}
+		return WIS_UPLOAD_VIEW;
+	})();
+	var upload_block = {
+		// 渲染上传按钮
+		renderUploadButton: function (options) {
+			var buttonHtml;
+			if (options.buttonType == 'block') {
+				buttonHtml = $('&lt;div class="emap-upload-block-wrap emap-upload-btn-wrap">&lt;div class="emap-upload-block emap-upload-btn" ' + upload_block.getBlockStyle(options) + ' >&lt;div class="emap-upload-cell" style="height:' + (options.height - 8) + 'px;">' +
+					'&lt;i class="iconfont icon-addcircle emap-upload-icon-add">&lt;/i>' +
+					'&lt;span class="iconfont icon-info emap-upload-shuoming ">'+ $.i18n('bh_up_annotation') +' &lt;/span>' +
+					'&lt;input type="file" emap-role="upload-input" class="emap-upload-input" ' + ((options.limit != 1 &amp;&amp; options.multiple === true) ? 'multiple' : '') + '>' +
+					'&lt;/div>' +
+					'&lt;/div>' +
+					(options.showFileTitle &amp;&amp; options.title ? '&lt;p class="emap-upload-name" title="' + getFileTitle(options) + '">' + getFileTitle(options) + '&lt;/p>' : '') +
+					'&lt;/div>');
+				if (options.readonly) {
+					buttonHtml.css({
+						'display': 'none'
+					});
+				}
+				options.list.append(buttonHtml);
+			} else if (options.buttonType == 'button') {
+				buttonHtml = $('&lt;p class="bh-mb-16">&lt;a class="bh-btn bh-btn-default emap-upload-btn-button" href="javascript:void(0)">' +
+					'&lt;i class="iconfont icon-fileupload">&lt;/i>' +
+					((options.limit != 1 &amp;&amp; options.multiple === true) ? $.i18n('bh_up_batchUpload'): '&lt;span>'+ $.i18n('bh_up_uploadFile') +'&lt;/span>') +
+					'&lt;input type="file" emap-role="upload-input" ' + ((options.limit != 1 &amp;&amp; options.multiple === true) ? 'multiple' : '') + ' >' +
+					'&lt;/a>' +
+					'&lt;span class="bh-color-caption">' + _getInfoText(options) + '&lt;/span>' +
+					'&lt;/p>');
+				if (options.readonly) {
+					buttonHtml.css({
+						'display': 'none'
+					});
+				}
+				if (options.sortable) {
+					var sortButtons = $('&lt;div class="bh-l-inline bh-mr-8">&lt;button class="bh-btn bh-btn-default emap-upload-start-sort" emap-role="sort-file" style="margin-left: 0">&lt;i class="iconfont icon-importexport">&lt;/i>'+ $.i18n('bh_up_sortFile') +'&lt;/button>' +
+						'&lt;div class="emap-upload-sort-btns">&lt;button class="bh-btn bh-btn-primary" emap-role="save-sort" style="margin-left: 0">'+ $.i18n('bh_up_completeSorting') +'&lt;/button>&lt;span class="bh-text-caption bh-color-caption bh-ph-8">'+ $.i18n('bh_up_dragToSort') +'&lt;/span>&lt;/div>' +
+						'&lt;/div>');
+					buttonHtml.find('.emap-upload-btn-button').after(sortButtons);
+				}
+
+				options.list.before(buttonHtml);
+			}
+		},
+
+		// 拼接block宽高样式
+		getBlockStyle: function (options) {
+			return 'style="width: ' + options.width + 'px; height: ' + options.height + 'px;"'
+		},
+
+		/***
+		 * @method addBlock
+		 * @description 添加一个上传项
+		 * @param {Object} data - 文件信息json数据
+		 * @param {String} state - 文件状态 success saved loading
+		 * @param {Object} options - 组件options对象
+		 */
+		addBlock: function (data, state, options) {
+			var blockItem;
+			if (options.buttonType == 'block') {
+				blockItem = upload_block.renderBlockItem(data, state, options);
+				var $btn = $('.emap-upload-btn', options.list);
+				if ($btn.length === 0) {
+					upload_block.renderUploadButton(options);
+					$btn = $('.emap-upload-btn', options.list);
+				}
+				$btn.parent().before(blockItem);
+				// 显示文件名称 
+				if (options.showFileTitle &amp;&amp; !options.title) {
+					$('.emap-upload-name', blockItem).text(data.name).attr('title', data.name);
+				}
+				if (_isSingleBlock(options)) {
+					$btn.parent().addClass('bh-hide');
+				}
+
+
+			} else if (options.buttonType == 'button') {
+				if (options.limit == 1) {
+					$('.emap-upload-btn-button span', options.wrap).attr('disabled', true).html($.i18n('bh_up_uploadAgain'));
+					$('input[type=file]', options.wrap).addClass('emap-upload-single');
+				}
+				blockItem = upload_block.renderBlockItem(data, state, options);
+				options.list.append(blockItem);
+				if (options.displayType == 'file') {
+					_resizeFilenameLength(blockItem);
+				}
+			}
+
+			if (options.displayType == 'image') {
+				// 对于展示缩略图的情况。宽度不够的时候自动铺满
+				var imgs = $('.emap-upload-img', options.list);
+				if (imgs.length) {
+					imgs.on('load', function () {
+						var height = $(this).height();
+						var width = $(this).width();
+						var optWidth = options.width - 8;
+						var optHeight = options.height - 8;
+						if (height &lt; optHeight &amp;&amp; width &lt; optWidth) {
+							if ((width / height) &lt; (optWidth / optHeight)) {
+								$(this).height(optHeight);
+							} else {
+								$(this).width(optWidth);
+							}
+						}
+					})
+				}
+			}
+			if (state === 'saved') {
+				$('input[type=file]', blockItem).trigger('_uploadSuccess', data);
+			}
+		},
+
+		// 文件的重新上传 (单文件的重新上传)
+		reloadBlock: function (data, options) {
+			var block = $('[data-bhid]', options.list);
+			
+			if (!options.deleteFileCallback) {
+				options.list.trigger('_uploadDelete', [block.attr('data-fileid') || block.data('bhid'), _getFileState(block), true])
+			}
+			/* 
+			 重新上传时给block 添加标记位
+			 */
+			block.data('bhid', data.bhId).attr('data-bhid', data.bhId);
+			block.data('file_data', data);
+			if (data.name) {
+				if (options.displayType == 'image') {
+					$('.emap-upload-name', block).text(data.name);
+				} else {
+					$('.filename', block).text(data.name);
+				}
+			}
+			
+			// _deleteFile(block, options).done(function () {
+			// 	upload_block.addBlock(data, 'loading', options);
+			// });
+			// block.addClass('loading');
+
+		},
+
+		// 渲染单个文件
+		renderBlockItem: function (data, state, options) {
+			var itemHtml = '';
+			var readonly = options.readonly;
+			data.bhId = data.bhId || data.id; // 渲染正式文件时， 若没有bhId  则将文件id（fileId）作为bhId，此情况一般出现在渲染上传组件原有文件时
+			if (options.displayType == 'image') {
+				itemHtml += '&lt;div class="emap-upload-block-wrap {{state}}" data-bhid="{{bhId}}" style="width:' + (options.width + 2) + 'px">' +
+					'&lt;div class="emap-upload-block "   {{style}}>' +
+					// loading
+					'&lt;div class="emap-upload-cell emap-upload-loading-cell" style="height: ' + (options.height - 8) + 'px;width: ' + (options.width - 8) + 'px;">' +
+					'&lt;p class="emap-upload-loading-cell-size">{{size}}&lt;/p>' +
+					'&lt;img src="{{loadingIcon}}">' +
+					'&lt;p>&lt;a href="javascript:void(0)" emap-role="upload-cancel">'+ $.i18n('bh_up_cancelTheUpload') +'&lt;/a>&lt;/p>' +
+					'&lt;/div>' +
+					// file
+					'&lt;div class="emap-upload-cell emap-upload-file-cell" style="height: ' + (options.height - 8) + 'px;width: ' + (options.width - 8) + 'px;">' +
+					upload_block.renderFileDetail(data.name, data.middleSizeImageUrl || data.fileUrl, options) + // 列表中展示小图片
+					'&lt;/div>' +
+
+					// edit
+					'&lt;div class="emap-upload-cell emap-upload-mask emap-upload-cell-edit ' + _getblockClass(data.name, options) + '" >' +
+					'&lt;a href="javascript:void(0)" emap-role="upload-reupload">' +
+					'&lt;i class="iconfont icon-fileupload">&lt;/i>'+$.i18n('bh_up_uploadAgain') +
+					'&lt;input type="file" name="reUpload">' +
+					'&lt;/a>' +
+					'&lt;a href="javascript:void(0)"  emap-role="upload-preview">&lt;i class="iconfont icon-findinpage">&lt;/i>预览&lt;/a>' +
+					'&lt;a href="javascript:void(0)" emap-role="upload-down">&lt;i class="iconfont icon-filedownload">&lt;/i>下载&lt;/a>' +
+					'&lt;a href="javascript:void(0)" emap-role="upload-delete">&lt;i class="iconfont icon-delete">&lt;/i>删除&lt;/a>' +
+					'&lt;/div>' +
+
+					// error
+					'&lt;div class="emap-upload-cell emap-upload-error-cell" style="height:' + (options.height - 8) + 'px">' +
+					'&lt;p class="emap-upload-error-icon">&lt;i class="iconfont icon-close">&lt;/i>&lt;/p>' +
+					'&lt;p class="emap-upload-error-text">上传失败&lt;/p>' +
+					'&lt;p>' +
+					// '&lt;a href="javascript:void(0)" class="bh-mh-4" emap-role="upload-reupload">重新上传&lt;/a>' +
+					'&lt;a href="javascript:void(0)" class="bh-mh-4" emap-role="upload-delete">删除&lt;/a>' +
+					'&lt;/p>' +
+					'&lt;/div>' +
+					'&lt;div class="emap-upload-cell emap-upload-mask emap-upload-sort-icon">&lt;i class="iconfont icon-dehaze" style="line-height: ' + options.height + 'px">&lt;/i>&lt;/div>' +
+					'&lt;/div>' +
+					'&lt;p class="emap-upload-name" title="{{fileName}}" style="width: ' + options.width + 'px;">{{fileName}}&lt;/p>' +
+					'&lt;/div>';
+				if ('FileReader' in window) {
+					itemHtml = itemHtml.replace('{{size}}', _getFileSize(data.size / 1024));
+				} else {
+					itemHtml = itemHtml.replace('{{size}}', '');
+				}
+
+				itemHtml = itemHtml.replace('{{state}}', state)
+					.replace('{{style}}', upload_block.getBlockStyle(options))
+					.replace('{{bhId}}', data.bhId)
+					.replace('{{loadingIcon}}', _getLoadingGIF());
+				if (_isSingleBlock(options)) {
+					itemHtml = itemHtml.replace(/\{\{fileName\}\}/g, options.title ? getFileTitle(options, data) : '');
+				} else {
+					itemHtml = itemHtml.replace(/\{\{fileName\}\}/g, data.name);
+				}
+
+
+				itemHtml = $(itemHtml);
+				if (options.displayType == 'image' &amp;&amp; options.showFileTitle === false) {
+					$('.emap-upload-name', itemHtml).hide();
+				}
+				if (state == 'saved') {
+					itemHtml.data('filedata', data);
+				} else {
+					itemHtml.data('file', data);
+				}
+				return itemHtml;
+			} else if (options.displayType == 'file') {
+
+				//added by zsl on 2016.8.11
+				itemHtml += '&lt;div class=" emap-upload-block-wrap emap-upload-file-wrap {{state}} {{support-rate}} ' + _getblockClass(data.name, options) + '" data-bhid="{{bhId}}">' +
+					'&lt;span class="bh-icon-file-type {{filetype}}">{{filetype}}&lt;/span>' +
+					'&lt;span class="filename" title="{{filename}}">{{filename}}&lt;/span>' +
+					'&lt;span class="state-icon">&lt;/span>' +
+					'&lt;span class="result-fail">上传失败！&lt;/span>' +
+					'&lt;span class="result-success">上传成功！&lt;/span>' +
+					'&lt;a class="cancel" emap-role="upload-cancel" href="javascript:void(0)">取消上传&lt;/a>' +
+					'&lt;a class="error-reupload" emap-role="upload-reupload" href="javascript:void(0)">' +
+					'重新上传' +
+					'&lt;input type="file" name="reUpload">' +
+					'&lt;/a>' +
+					'&lt;a class="fail-reupload" emap-role="upload-reupload" href="javascript:void(0)">' +
+					'重试' +
+					'&lt;input type="file" name="reUpload">' +
+					'&lt;/a>' +
+					(_canPreview(data.name, options) ? '&lt;a class="view" emap-role="upload-preview" href="javascript:void(0)">预览&lt;/a>' : '') +
+					'&lt;a class="download" emap-role="upload-down" href="javascript:void(0)">下载&lt;/a>' +
+					'&lt;a class="del" emap-role="upload-delete" href="javascript:void(0)">删除&lt;/a>' +
+					'&lt;span class=" rate">{{uploadrate}}&lt;/span>' +
+					'&lt;div class="progress">' +
+					'	&lt;div class="bar" style="width: {{uploadpercent}}%;">&lt;/div>' +
+					'&lt;/div>' +
+					'&lt;/div>';
+
+				if ('FileReader' in window) {
+					itemHtml = itemHtml.replace('{{size}}', '&lt;p >' + _getFileSize(data.size) + '&lt;/p>');
+				}
+				//替换是否支持速度、bhid、filetype、filename、uploadrate、uploadpercent
+				itemHtml = itemHtml.replace('{{state}}', (state === 'saved' ? 'saved' : 'loading'))
+					.replace(/\{\{support-rate\}\}/g, _isSupportRate() ? 'state-support-rate' : '')
+					.replace(/\{\{filetype\}\}/g, function () {
+						var sfx = data.name.match(/\.[^\.]+$/);
+						if (sfx) {
+							return sfx[0].substr(1).toUpperCase();
+						} else {
+							return '';
+						}
+					})
+					.replace(/\{\{filename\}\}/g, data.name)
+					.replace('{{bhId}}', data.bhId);
+				if (_isSupportRate()) {
+					itemHtml = itemHtml.replace(/\{\{uploadrate\}\}/g, '0KB/s')
+						.replace(/\{\{uploadpercent\}\}/g, '0');
+				}
+
+				itemHtml = $(itemHtml);
+				if (state == 'saved') {
+					itemHtml.data('filedata', data);
+				} else {
+					itemHtml.data('file', data);
+				}
+				return itemHtml;
+			}
+		},
+
+		renderFileDetail: function (name, url, options) {
+			var fileHtml = "";
+			if (_isImage(name)) {
+				// 图片
+				fileHtml += '&lt;img class="emap-upload-img"  ' + (url ? ' src="' + url + '"' : '') + '" style="max-height: ' + (options.height - 8) + 'px;max-width: ' + (options.width - 8) + 'px;" />';
+			} else {
+				fileHtml += '&lt;div class="emap-upload-img-file ' + _getIconByFileName(name) + '">&lt;/div>';
+			}
+			return fileHtml;
+		},
+
+		loadingBlock: function (data, options, input) {
+			var block = $(input).closest('.emap-upload-block-wrap');
+			$(input).data('oldfiledata', {
+				state: block[0].className.match(/(success|saved|error|normal)/)[0],
+				fileId: block.data('filedata').id
+			})
+			block.removeClass('success saved error normal').addClass('loading').data('bhid', data.bhId).attr('data-bhid', data.bhId);
+			if (options.displayType == 'image') {
+				var file_name = '';
+				if (options.showFileTitle) {
+					if (_isSingleBlock(options) &amp;&amp; options.title) {
+						file_name = getFileTitle(options, data);
+					} else {
+						file_name = data.name;
+					}
+				}
+				$('.emap-upload-name', block).text(file_name).attr('title', file_name);
+				if ('FileReader' in window) {
+					$('.emap-upload-loading-cell-size', block).text(_getFileSize(data.size / 1024));
+				}
+			} else if (options.displayType == 'file') {
+				$('span.filename', block).text(data.name).attr('title', data);
+				var suffix = data.name.match(/\.(\w+$)/)[1].toUpperCase();
+				$('.bh-icon-file-type', block).html(suffix).attr('class', 'bh-icon-file-type ' + suffix);
+			}
+
+		},
+
+		// 将上传block的状态从loading 改变为success
+		successBlock: function (data, options, state) {
+			var bhId = data.files[0].bhId;
+			var result = data.result;
+			var block = $('[data-bhid=' + bhId + ']', options.list);
+			var state = state || 'success';
+			var url = state === 'saved' ? result.fileUrl : result.tempFileUrl;
+
+			block.attr('data-fileid', data.result.id);
+			if (options.displayType == 'image') {
+				block.removeClass('loading error').addClass(state).data('filedata', result);
+				if (_isImage(result.name)) {
+					$('.emap-upload-file-cell img', block).attr('src', url)
+						.css({
+							"height": options.height - 8,
+							"width": options.width - 8
+						});
+				}
+				if (options.limit == 1) {
+					$('.emap-upload-btn-button', options.wrap).attr('disabled', false);
+				}
+
+				$('.emap-upload-file-cell', block).html(upload_block.renderFileDetail(result.name, url, options));
+				// 显示上传成功图标 
+				var successCell = $('&lt;div class="emap-upload-cell emap-upload-mask emap-upload-cell-success" style="display: block;">' +
+					'&lt;p class="emap-upload-success-icon">&lt;i class="iconfont icon-check">&lt;/i>&lt;/p>' +
+					'&lt;p>上传成功&lt;/p>' +
+					'&lt;/div>');
+				$('.emap-upload-block', block).append(successCell);
+				successCell.css('opacity', 1);
+				var editCell = $('.emap-upload-cell-edit', block);
+				// 添加操作图标
+				editCell.removeClass('emap-upload-cell-edit_3 emap-upload-cell-edit_4 emap-upload__preview emap-upload__delete emap-upload__download emap-upload__reupload');
+				editCell.addClass(_getblockClass(result.name, options))
+				// if (_canPreview(result.name, options)) {
+				// 	editCell.addClass('emap-upload-cell-edit_4');
+				// } else {
+				// 	editCell.addClass('emap-upload-cell-edit_3');
+				// }
+				setTimeout(function () {
+					successCell.css({
+						top: '-101%'
+					});
+					setTimeout(function () {
+						successCell.remove();
+					}, 250);
+				}, 2000);
+			} else if (options.displayType == 'file') {
+				if (state === 'saved') {
+					block.removeClass('normal');
+				}
+				block.removeClass('loading').addClass(state).data('filedata', result);
+				_resizeFilenameLength(block);
+				setTimeout(function () {
+					block.addClass('normal').removeClass('success');
+					//状态改变后重新计算filename长度
+					_resizeFilenameLength(block);
+				}, 2000);
+			}
+
+			options.wrap.trigger('bh.file.upload.done', data);
+			// 触发事件
+			$('input[type=file][name=reUpload]', block).trigger('_uploadSuccess', data);
+		},
+		// 上传出错将block 变为error状态
+		errorBlock: function (res, options) {
+			var bhId = res.files[0].bhId;
+			var result = res.result || {
+				"error": "已取消"
+			}; // 点击取消上传时, res 没有result, 此时错误提示应为 已取消
+			var block = $('[data-bhid=' + bhId + ']', options.list);
+			if (options.displayType == 'image') {
+
+				result.error = result.error || '上传失败';
+				block.removeClass('success loading').addClass('error');
+				$('.emap-upload-error-text', block).text(result.error);
+				if (options.limit == 1) {
+					$('.emap-upload-btn-button', options.wrap).attr('disabled', false);
+				}
+
+			} else if (options.displayType == 'file') {
+
+				if (options.limit == 1) {
+					$('.emap-upload-btn-button', options.wrap).attr('disabled', false);
+				}
+				//错误、失败两种状态
+				if (result &amp;&amp; result.error) {
+					block.removeClass('success loading').addClass('error');
+					$('.result-fail', block).text(result.error);
+				} else {
+					block.removeClass('success loading').addClass('fail');
+					$('.result-fail', block).text('上传失败！');
+				}
+				//状态改变时重新计算文件名长度
+				_resizeFilenameLength(block);
+			}
+		},
+
+		editBlock: function () {
+
+		}
+	};
+
+	// 判断是否为block模式下的单文件上传
+	function _isSingleBlock(options) {
+		if (options.displayType &amp;&amp; options.buttonType &amp;&amp; options.limit) {
+			return options.displayType === 'image' &amp;&amp; options.buttonType === 'block' &amp;&amp; options.limit === 1;
+		} else {
+			return false;
+		}
+	}
+
+	// 文件列表模式下重新计算文件名长度
+	function _resizeFilenameLength(block) {
+		//重置长度
+		$('.filename', block).css('max-width', '');
+
+		block = $(block);
+		//总长
+		var totalWidth = block.get(0).clientWidth;
+		//偏移
+		var offset = 80;
+		if (block.hasClass('normal') || block.hasClass('saved')) {
+			offset = 180;
+		}
+
+		//其它元素宽度
+		var otherWidth = 0;
+		$('.filename', block).siblings().each(function () {
+			otherWidth += this.offsetWidth;
+		});
+		//剩余长度
+		var remainWidth = totalWidth - otherWidth - offset;
+		//文件名原长度
+		var oWidth = $('.filename', block).get(0).offsetWidth;
+
+		if (oWidth > remainWidth) {
+			$('.filename', block).css('max-width', remainWidth + 'px');
+		}
+	}
+
+	// loading icon gif base64
+	function _getLoadingGIF() {
+		return 'data:image/gif;base64,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';
+	}
+
+	// 拼接上传 提示文字
+	function _getInfoText(options) {
+		var infoHtml = [];
+		if (options.type &amp;&amp; options.type.length > 0) {
+			infoHtml.push('仅支持' + options.type.join("，").toLowerCase() + '类型文件');
+		}
+		if (options.size) {
+			infoHtml.push('文件大小' + _getFileSize(options.size) + '以内');
+		}
+
+		if (options.tooltipText) {
+			if (typeof options.tooltipText === 'function') {
+				return options.tooltipText(infoHtml.join('; '));
+			} else {
+				return options.tooltipText;
+			}
+		}
+		return infoHtml.join('; ');
+	}
+
+	// 获取文件大小文字 自动转换单位
+	function _getFileSize(size) {
+		size = parseInt(size * 10) / 10;
+		return size &lt; 1024 ? size + ' KB' : parseInt(size / 1024 * 10) / 10 + 'MB';
+	}
+
+	// 获取文件block的状态
+	function _getFileState(ele) {
+		var stateArray = ['success', 'saved', 'normal', 'loading', 'error'];
+		var stateArrayLen = stateArray.length;
+		for (var i = 0; i &lt; stateArrayLen; i++) {
+			if (ele.hasClass(stateArray[i])) {
+				return stateArray[i];
+			}
+		}
+		return '';
+	}
+
+	function _isImage(fileName) {
+		return /\.(jpg$|jpeg$|png$|gif$)/.test(fileName.toLowerCase());
+	}
+
+	function _canPreview(fileName, options) {
+		options = options || {};
+		var previewArray = ['gif', 'jpg', 'jpeg', 'png'];
+		if (options.canPreviewPDF) {
+			previewArray.push('pdf');
+		}
+		return previewArray.filter(function (item) {
+			return new RegExp('.' + item + '$').test(fileName.toLowerCase())
+		}).length > 0;
+	}
+
+	// 根据文件和配置信息状态 获取不同的class，控制block中可选的操作项
+	function _getblockClass(fileName, options) {
+		var readonly = options.readonly;
+		var count = 0;
+		var classList = [];
+		if (options.editButtons) {
+			if ($.inArray('download', options.editButtons) > -1) {
+				count++;
+				classList.push('download');
+			}
+			if ($.inArray('preview', options.editButtons) > -1 &amp;&amp; _canPreview(fileName, options)) {
+				count++;
+				classList.push('preview');
+			}
+			if ($.inArray('delete', options.editButtons) > -1 &amp;&amp; !readonly) {
+				count++;
+				classList.push('delete');
+			}
+			if ($.inArray('reupload', options.editButtons) > -1 &amp;&amp; !readonly) {
+				count++;
+				classList.push('reupload');
+			}
+		}
+		return 'emap-upload-cell-edit_' + count + ' ' + classList.map(function (item) {return 'emap-upload__' + item}).join(' ');
+	}
+
+	// 根据文件后缀名获取展示的icon图片地址
+	function _getIconByFileName(fileName) {
+		var urlMap = {
+			"(doc|docx)": "doc",
+			"(xls|xlsx)": "xls",
+			"(ppt|pptx)": "ppt",
+			"psd": "psd",
+			"cpt": "cpt",
+			"zip": "zip",
+			"other": "other"
+		};
+
+		for (var k in urlMap) {
+			if (new RegExp('.' + k + '$').test(fileName)) {
+				return urlMap[k];
+			}
+		}
+		return urlMap['other'];
+	}
+
+	function _isSupportRate() {
+		return false;
+	}
+
+	function _isPDF(fileName) {
+		return /\.pdf$/.test(fileName.toLowerCase());
+	}
+
+	// 获取文件的标题， 用来处理title参数可能为字符串或者函数（只在单个文件上传且设置了title参数的情况下会生效）
+	function getFileTitle (options, fileData) {
+		var title = options.title
+		if (typeof title === 'string') {
+			return title
+		} else if (typeof title === 'function') {
+			return title(options, fileData)
+		}
+	}
+
+	function eventBind(options) {
+		if (options.buttonType == 'block') {
+			// 上传按钮为block 形式下, hover上去显示 上传说明的气泡弹窗
+			options.list.on('mouseover', '.emap-upload-btn-wrap', function () {
+				if ($.bhPopOver) {
+					$.bhPopOver({
+						selector: $(this),
+						title: null,
+						showCloseButton: false,
+						width: 200,
+						content: '&lt;p style="word-wrap:break-word">' + _getInfoText(options) + '&lt;/p>'
+					});
+				}
+			}).on('mouseout', '.emap-upload-btn-wrap', function () {
+				$.bhPopOver.close();
+			});
+		}
+
+		// 点击删除
+		options.list.on('click', '[emap-role="upload-delete"]', function (e) {
+			var block = $(this).closest('.emap-upload-block-wrap');
+			//有回调删除，调用回调删除；没有时采用事件机制
+			if (options.deleteFileCallback) {
+				options.deleteFileCallback(block.data('fileid') || block.data('bhid'), _getFileState(block), false, options).fail(function () {
+					//删除失败，请稍后重试
+					if ($.bhPopOver) {
+						$.bhPopOver({
+							selector: $(block),
+							width: 220,
+							title: null,
+							content: '&lt;p class="bh-mb-16">&lt;i class="iconfont icon-info bh-color-danger">&lt;/i>文件删除失败&lt;/p>' +
+								'&lt;div class="emap-upload-loading-popover bh-text-center">' +
+								'&lt;a class="bh-btn bh-btn-primary bh-mh-8" emap-role="upload-pop-confirm" href="javascript:void(0)">确定&lt;/a>' +
+								'&lt;/div>',
+							ready: function (popover) {
+								// 确定
+								popover.on('click', '[emap-role="upload-pop-confirm"]', function () {
+									$.bhPopOver.close();
+								});
+							}
+
+						});
+					} else {
+						console &amp;&amp; console.info('文件删除失败，重新上传取消');
+					}
+
+				});
+			} else {
+				options.list.trigger('_uploadDelete', [block.attr('data-fileid') || block.data('bhid'), _getFileState(block)]);
+			}
+		});
+
+		//  点击下载
+		options.list.on('click', '[emap-role="upload-down"]', function () {
+			var block = $(this).closest('.emap-upload-block-wrap');
+			if (block.hasClass('success') || block.hasClass('normal')) {
+				// 临时文件
+				window.open(block.data('filedata').tempFileUrl);
+			} else if (block.hasClass('saved')) {
+				// 正式文件
+				var paramArray = [];
+				var paramStr = ''
+				if (options.downloadParam) {
+					for (var v in options.downloadParam) {
+						paramArray.push(v + '=' + options.downloadParam[v]);
+					}
+					if (paramArray.length) {
+						paramStr = '?' + paramArray.join('&amp;');
+					}
+				}
+				window.open(block.data('filedata').fileUrl + paramStr);
+			}
+		});
+
+		// 点击取消上传
+		options.list.on('click', '[emap-role="upload-cancel"]', function () {
+			var target = $(this);
+			if ($.bhPopOver) {
+				$.bhPopOver({
+					selector: $(this),
+					width: 220,
+					title: null,
+					content: '&lt;p class="bh-mb-16">&lt;i class="iconfont icon-info bh-color-danger">&lt;/i>文件正在上传, 确认取消吗?&lt;/p>' +
+						'&lt;div class="emap-upload-loading-popover bh-text-center">' +
+						'&lt;a class="bh-btn bh-btn-primary bh-mh-8" emap-role="upload-pop-confirm" href="javascript:void(0)">&lt;i class="iconfont icon-check">&lt;/i>&lt;/a>' +
+						'&lt;a class="bh-btn bh-btn-default bh-mh-8" emap-role="upload-pop-cancel" href="javascript:void(0)">&lt;i class="iconfont icon-close">&lt;/i>&lt;/a>' +
+						'&lt;/div>',
+					ready: function (popover) {
+						// 取消
+						popover.on('click', '[emap-role="upload-pop-cancel"]', function () {
+							$.bhPopOver.close();
+						});
+						// 确认
+						popover.on('click', '[emap-role="upload-pop-confirm"]', function () {
+							var xhr = $(target).closest('.emap-upload-block-wrap').data('xhr');
+							xhr.abort();
+							$.bhPopOver.close();
+							$(target).closest('.emap-upload-block-wrap').parent().find('.emap-upload-btn-wrap').removeClass('bh-hide');
+
+							//block.parent().find('.emap-upload-btn-wrap').removeClass('bh-hide');
+
+							if (_isSingleBlock(options)) {
+								$('.emap-upload-btn', options.list).parent().addClass('bh-hide');
+							} else {
+								$(target).closest('.emap-upload-block-wrap').remove();
+							}
+						});
+					}
+
+				});
+			}
+		});
+
+		// 点击预览
+		options.list.on('click', '[emap-role="upload-preview"]', function () {
+			if (!$.bhGallery) {
+				console &amp;&amp; console.warn('图片轮播插件Gallery未引入');
+				return;
+			}
+			var block = $(this).closest('.emap-upload-block-wrap');
+			var imgSource = [];
+			var imgUrlArr = [];
+			var show = 0;
+			var file_url;
+			if (block.hasClass('saved')) {
+				file_url = block.data("filedata")['fileUrl'];
+			} else if (block.hasClass('success') || block.hasClass('normal')) {
+				file_url = block.data("filedata")['tempFileUrl'];
+			}
+
+			// 预览pdf
+			if (_isPDF(block.data("filedata")['name'])) {
+				$.emapPDFViewer({
+					url: file_url
+				});
+				return;
+			}
+
+			// 预览图片
+			$('.emap-upload-block-wrap:not(.emap-upload-btn-wrap)', options.list).each(function () {
+				var file_data = $(this).data("filedata");
+
+				if (_canPreview(file_data.name, options)) {
+					if (_isPDF(file_data.name)) return true;
+
+					if ($(this).hasClass('saved')) {
+						imgUrlArr.push(file_data['fileUrl']);
+					} else if ($(this).hasClass('success') || $(this).hasClass('normal')) {
+						imgUrlArr.push(file_data['tempFileUrl']);
+					}
+				}
+			});
+
+			$(imgUrlArr).each(function (i) {
+				if (file_url == this) {
+					show = i;
+				}
+				imgSource.push({
+					image: this
+				})
+			});
+			$.bhGallery({
+				dataSource: imgSource,
+				show: show
+			});
+
+
+		});
+
+		//文件排序
+		options.list.parent().on('click', '[emap-role="sort-file"]', function (e) {
+			var $delegate = $(e.delegateTarget);
+			var $fileWrap = $delegate.find('.emap-upload-block-wrap:not(.emap-upload-btn-wrap)');
+			if ($fileWrap.length) {
+				if ($fileWrap.length === 1) {
+					$.bhTip &amp;&amp; $.bhTip({
+						content: '只有一个文件，无法排序',
+						state: 'warning'
+					});
+					return;
+				}
+				var loading = $fileWrap.filter('div.error').length;
+				var fail = $fileWrap.filter('div.loading').length;
+				var num = loading + fail;
+				if (num) {
+					var button = [{
+						text: '去处理',
+						className: 'bh-btn-primary',
+						callback: $.noop
+					}];
+					BH_UTILS.bhWindow('有' + num + '个文件正在上传或上传出错，无法排序！', '提示', button, {
+						width: 368,
+						height: 240
+					});
+					return;
+				}
+				$delegate.addClass('emap-upload-sorting');
+				var $list = $delegate.find('[emap-role="upload-list"]');
+				var sorter = Sortable.create($list[0], {
+					filter: '.emap-upload-btn-wrap',
+					dataIdAttr: 'data-bhid'
+				});
+				$delegate.data('sorter', sorter);
+				$delegate.data('sorterOrder', sorter.toArray());
+			} else {
+				$.bhTip &amp;&amp; $.bhTip({
+					content: '没有文件，无法排序',
+					state: 'warning'
+				});
+			}
+		});
+
+		//完成排序
+		options.list.parent().on('click', '[emap-role="save-sort"]', function (e) {
+			var $delegate = $(e.delegateTarget);
+			var sorter = $delegate.data('sorter');
+			sorter.destroy();
+			$delegate.removeData('sorter');
+			$delegate.removeData('sorterOrder');
+			$delegate.removeClass('emap-upload-sorting');
+			$delegate.trigger('_sort-complete')
+		});
+
+		//取消排序
+		options.list.parent().on('click', '[emap-role="cancel-sort"]', function (e) {
+			var $delegate = $(e.delegateTarget);
+			var sorter = $delegate.data('sorter');
+			var order = $delegate.data('sorterOrder');
+			sorter.sort(order);
+			sorter.destroy();
+			$delegate.removeClass('emap-upload-sorting');
+		});
+	}
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:34 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

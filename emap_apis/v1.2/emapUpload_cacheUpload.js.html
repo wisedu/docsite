@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapUpload/cacheUpload.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapUpload/cacheUpload.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function () {
+	var Plugin;
+	var fileReader = 'FileReader' in window;
+	var upload_block;
+
+	/**
+	 * @module cacheUpload
+	 * @alias 缓存上传
+	 * @description 缓存上传
+	 * @example 
+	  	$('#upload').cacheUpload({
+			contextPath: '/emap',  
+			buttonType: 'button'
+		})
+	 */
+	Plugin = (function () {
+		function Plugin(element, options) {
+			this.options = $.extend({}, $.fn.cacheUpload.defaults, options);
+			this.options.isSingle = this.options.limit == 1 ? '1' : '0';
+			this.$element = $(element);
+			_init(this);
+		}
+
+		/**
+		 * @method saveUpload 
+		 * @param {Object} [params] - 保存时附带的参数
+		 * @description 保存上传
+		 * @return {Object} - 带有保存结果的promise对象
+		 */
+		Plugin.prototype.saveUpload = function (params) {
+
+			// 删除 已经删除的正式文件
+			var options = this.options;
+			var element = this.$element;
+			var param_data = params || {};
+			var result = $.Deferred();
+
+			if (options.view.isSorting(options)) {
+				$.bhTip({
+					content: '正在排序中，无法保存，请完成排序或者取消排序',
+					state: 'warning'
+				});
+				result.reject();
+				return result;
+			}
+
+			param_data.attachmentParam = JSON.stringify($.extend({}, this.options.attachmentParam, {
+				orderMap: _getSortData(this.options),
+				storeId: options.storeId
+			}));
+
+			// 先判断没有没正在上传的文件, 如果有弹出提示框
+			if (options.view.hasLoadingFile(options) &amp;&amp; options.uploadingWarn) {
+				BH_UTILS.bhDialogWarning({
+					title: "警告",
+					content: "有文件正在上传中, 操作可能会造成文件丢失, 是否继续?",
+					buttons: [{
+						text: '确认并提交',
+						className: 'bh-btn-warning',
+						callback: function () {
+							saveAction(element, options, param_data, result);
+						}
+					}, {
+						text: '取消',
+						className: 'bh-btn-default',
+						callback: function () {
+							result.reject();
+						}
+					}]
+				})
+			} else {
+				saveAction(element, options, param_data, result);
+			}
+			return result;
+
+			function saveAction(element, options, param, result) {
+				WIS_EMAP_UPLOAD.cacheCore.save(element, options, param).done(function (res) {
+					options.arrToDelete = [];
+					// token下没有文件时, 返回的token为空
+					if (element.cacheUpload('getFileNum') > 0) {
+						res.token = options.token;
+					} else {
+						res.token = "";
+					}
+					options.view.saveBlock(undefined, options);
+					result.resolve(res);
+				}).fail(function (e) {
+					result.reject(e);
+				});
+			}
+		};
+
+		Plugin.prototype.saveTempFile = function (params) {
+
+		};
+
+		/**
+		 * @method getFileToken
+		 * @description 获取token, 若token下文件数量为0,则返回""
+		 * @returns {string} token
+		 */
+		Plugin.prototype.getFileToken = function () {
+			if (this.$element.cacheUpload('getFileNum') == 0) {
+				return "";
+			}
+			return this.options.token;
+		};
+
+		/**
+		 * @method getFileNum
+		 * @description 获取token下文件数量 包括正式文件和临时文件, 不包含 出错的文件和 正在上传的文件
+		 * @returns {*|jQuery}
+		 */
+		Plugin.prototype.getFileNum = function () {
+			return this.options.view.getFileNum(this.options);
+		};
+
+		/**
+		 * @method getFileInfo
+		 * @description 获取当前组件下所有的文件信息
+		 * @param {Boolean} [async=true] - 是否为异步请求
+		 * @return {Object} 若为异步则返回promis对象，若为同步，则返回请求结果数组
+		 */
+		Plugin.prototype.getFileInfo = function (async) {
+			var options = this.options;
+			var fileArr;
+			var defer = $.Deferred();
+			$.ajax({
+				type: "post",
+				url: options.contextPath + '/sys/emapcomponent/file/getUploadedAttachment/' + options.token + '.do',
+				dataType: "json",
+				async: async === false ? false : true,
+				success: function (res) {
+					if (res.success) {
+						defer.resolve(res.items);
+						fileArr = res.items;
+					} else {
+						defer.reject(res);
+					}
+				},
+				error: function (error) {
+					defer.reject(error);
+				}
+			});
+
+			if (async === false) {
+				return fileArr;
+			} else {
+				return defer;
+			}
+		};
+
+		/**
+		 * @method disable
+		 * @description 禁用
+		 */
+		Plugin.prototype.disable = function () {
+			var $upload = this.$element.find('input[emap-role="upload-input"]');
+			$upload.prop('disabled', true).closest('.emap-upload-btn-button').addClass('bh-disabled');
+			return this.$element;
+		};
+
+		/**
+		 * @method disable
+		 * @description 禁用
+		 */
+		Plugin.prototype.enable = function () {
+			var $upload = this.$element.find('input[emap-role="upload-input"]');
+			$upload.prop('disabled', false).closest('.emap-upload-btn-button').removeClass('bh-disabled');
+			return this.$element;
+		};
+
+		/**
+		 * @method destroy
+		 * @description 销毁上传实例
+		 */
+		Plugin.prototype.destroy = function () {
+			this.options = null;
+			$(this.$element).data('cacheupload', false)
+				.off('_uploadDelete').off('_uploadSuccess')
+				.empty();
+		};
+
+		/**
+		 * @method reload
+		 * @description 重载token下的数据
+		 */
+		Plugin.prototype.reload = function () {
+			var options = this.options;
+			this.options.view.clearFileContainer(options);
+			var dfd = new $.Deferred();
+			WIS_EMAP_UPLOAD.cacheCore.getTokenData(this.$element, this.options).done(function (fileItems) {
+				if (fileItems &amp;&amp; fileItems.length) {
+					options.view.renderItemsBlock(fileItems, options);
+				}
+				dfd.resolve();
+			});
+			return dfd;
+		};
+
+		return Plugin;
+	})();
+
+	function _init(instance) {
+		var element = instance.$element;
+		var options = instance.options;
+		options.config = options.config || {};
+		options.filesToDelete = [];
+
+		_initActions(options);
+
+		options.view = new WIS_UPLOAD_VIEW(instance);
+
+		_eventBind(instance);
+		_uploadCoreInit(instance);
+
+	}
+
+
+	function _initActions(options) {
+		options.actions = {
+			// 删除临时文件
+			deleteTempFile: function (id) {
+				return WIS_EMAP_UPLOAD.cacheCore.deleteTempFile(options, id);
+			},
+			// 删除正式文件
+			deleteFormalFile: function (id) {
+				return WIS_EMAP_UPLOAD.cacheCore.deleteFormalFile(options, id);
+			}
+		}
+	}
+
+	// 初始化上传核心模块
+	function _uploadCoreInit(instance) {
+		var element = instance.$element;
+		var options = instance.options;
+		var isNewToken = options.token === undefined ? true : false;
+		WIS_EMAP_UPLOAD.cacheCore.init(element, options, {
+			init: function (items) {
+				if (items &amp;&amp; items.length) {
+					options.view.renderItemsBlock(items, options);
+				} else {
+					if (options.readonly === true) {
+						options.list.text('无');
+					}
+				}
+				// 初始化时，编辑状态下 先删除 原有token下的所有临时文件
+				if (options.readonly === false) {
+					if (!isNewToken) {
+						WIS_EMAP_UPLOAD.cacheCore.deleteTempFile(options);
+						setTimeout(function () {
+							element.trigger('bh.file.upload.done', items);
+						}, 0);
+					}
+				} else {
+					setTimeout(function () {
+						element.trigger('bh.file.download.done', items);
+					}, 0);
+				}
+
+				options.initComplete &amp;&amp; options.initComplete(items);
+				// 初始化完成后自动调用一次页脚重置
+				WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+			},
+			add: function (e, data) {
+				var files = data.files;
+				var tmp = new Date().getTime();
+				$(files).each(function (i) {
+					data.files[i].bhId = tmp + i;
+					if (options.limit == 1 &amp;&amp; options.view.getFileNum(options, true) > 0) {
+						// 单文件上传模式下的重新上传   
+						options.view.reloadBlock(this, options);
+					} else {
+						this.state = 'loading';
+						options.view.renderItemsBlock(this, options)
+						// upload_block.addBlock(this, options);
+					}
+				});
+
+				if (options.add) {
+					if (options.add(e, data) === false) { // 若add回调 返回false则终止上传
+						return false;
+					}
+				}
+			},
+			submit: function (e, data) {
+				var file = data.files[0];
+				// 文件数量限制的校验
+				if (options.limit) {
+					var currentCount = options.view.getFileNum(options, true);
+					if (currentCount > options.limit) {
+						data.result = {
+							"error": "文件数量超出限制"
+						};
+						options.view.errorBlock(data, options);
+						WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+						return false;
+					}
+				}
+
+				// 文件的大小 和类型校验
+				if (options.type &amp;&amp; options.type.length > 0) {
+					if (!new RegExp((options.type.join('|') + '$').toUpperCase()).test(file.name.toUpperCase())) {
+						data.result = {
+							"error": "文件类型不正确"
+						};
+						options.view.errorBlock(data, options);
+						WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+						return false;
+					}
+				}
+
+				if (fileReader &amp;&amp; options.size) {
+					if (file.size / 1024 > options.size) {
+						data.result = { 
+							"error": "文件大小超出限制"
+						};
+						options.view.errorBlock(data, options);
+						WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+						return false;
+					}
+				}
+				$('[data-bhid=' + file.bhId + ']', options.list).data('xhr', data);
+				if (options.submit) {
+					if (options.submit(e, data) === false) {
+						return false;
+					}
+				}
+			},
+			done: function (e, data) {
+				// 上传成功
+				if (options.autoSave) {
+					options.view.saveBlock(data, options);
+				} else {
+					options.view.successBlock(data, options);
+				}
+				if (options.done) {
+					options.done(e, data);
+				}
+				element.trigger('bh.file.upload.done', data);
+				WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+			},
+			fail: function (e, data) {
+				options.view.errorBlock(data, options);
+			}
+		})
+	}
+
+	// 删除文件 参数： 文件id  文件状态  options
+	function _deleteFile(fileId, state, isReload, options) {
+		var dtd = $.Deferred();
+		//  删除临时文件 
+		if (state == 'success' || state == 'normal') {
+			var promise = options.actions.deleteTempFile(fileId);
+			var then = 'done';
+			if (!promise.done) then = 'then';
+			promise[then](function (res) {
+				//删除后再显示出原来上传按钮
+				!isReload &amp;&amp; options.view.removeBlock(fileId, options);
+				dtd.resolve();
+			})
+		} else if (state == 'saved') {
+			if (options.autoSave) {
+				//自动保存模式下的正式文件删除， 实时发请求
+				fileId = fileId.replace(/(_1|_2)$/, '');
+				options.actions.deleteFormalFile(fileId + '_1');
+				options.actions.deleteFormalFile(fileId + '_2');
+				options.actions.deleteFormalFile(fileId).done(function (res) {
+					//删除后再显示出原来上传按钮
+					!isReload &amp;&amp; options.view.removeBlock(fileId, options);
+					dtd.resolve();
+				})
+			} else {
+				options.filesToDelete.push(fileId);
+				//删除后再显示出原来上传按钮
+				!isReload &amp;&amp; options.view.removeBlock(fileId, options);
+				setTimeout(function () {
+					dtd.resolve();
+				}, 0)
+			}
+		} else if (state == 'error') {
+			//删除后再显示出原来上传按钮
+			!isReload &amp;&amp; options.view.removeBlock(fileId, options);
+			setTimeout(function () {
+				dtd.resolve();
+			}, 0)
+		}
+
+		return dtd.promise();
+	}
+
+
+	// 获取排序信息
+	function _getSortData(options) {
+		var blocks = $('.emap-upload-block-wrap:not(.emap-upload-btn-wrap)', options.list);
+		var order_flag = 1;
+		var order_map = {};
+		blocks.each(function () {
+			var self = $(this);
+			var file_data = self.data('filedata');
+			if (self.hasClass('loading error') || !file_data) {
+				return; // 出错和正在上传的文件 不计入排序
+			}
+			/*
+			 对于上传的临时文件, 如果带有排序, 则说明是已有正式文件重新上传得到的
+			 如果没有排序, 则说明是新上传的临时文件
+
+			 对于上传的正式文件, 若没有排序, 则添加排序
+			 */
+
+			if (self.hasClass('success')) {
+				order_map[file_data.id] = order_flag;
+				order_flag++;
+			} else if (self.hasClass('saved')) {
+				order_map[file_data.id] = order_flag;
+				order_flag++;
+			}
+		});
+		return order_map;
+	}
+
+	function _eventBind(instance) {
+		var element = instance.$element;
+		var options = instance.options;
+		// 删除事件绑定
+		/*
+			e       事件对象
+			fileId  文件id
+			state   文件状态
+			isReload  是否为重新上传
+		*/
+		element.on('_uploadDelete', function (e, fileId, state, isReload) {
+			_deleteFile(fileId, state, isReload, options).done(function () {
+				element.trigger('bh.file.upload.delete');
+			});
+		});
+		// 重新上传事件
+		element.on('_uploadSuccess', function (e, data) {
+			var input = e.target;
+			var oldData = data;
+			WIS_EMAP_UPLOAD.cacheCore.uploadInputInit(input, options, {
+				add: function (e, data) {
+					var files = data.files;
+					var input = e.target;
+					var tmp = new Date().getTime();
+					data.files[0].bhId = tmp + 'R';
+					options.view.loadingBlock(files[0], options, input);
+					if (options.add) {
+						if (options.add(e, data) === false) { // 若add回调 返回false则终止上传
+							return false;
+						}
+					}
+				},
+				submit: function (e, data) {
+					var file = data.files[0];
+					// 文件数量限制的校验
+					if (options.limit) {
+						var currentCount = options.view.getFileNum(options);
+						if (currentCount > options.limit) {
+							data.result = {
+								"error": "文件数量超出限制"
+							};
+							options.view.errorBlock(data, options);
+							return false;
+						}
+					}
+
+					// 文件的大小 和类型校验 upload
+					if (options.type &amp;&amp; options.type.length > 0) {
+						if (!new RegExp((options.type.join('|') + '$').toUpperCase()).test(file.name.toUpperCase())) {
+							data.result = {
+								"error": "文件类型不正确"
+							};
+							options.view.errorBlock(data, options);
+							return false;
+						}
+					}
+
+					if (fileReader &amp;&amp; options.size) {
+						if (file.size / 1024 > options.size) {
+							data.result = {
+								"error": "文件大小超出限制"
+							};
+							options.view.errorBlock(data, options);
+							return false;
+						}
+					}
+					$('[data-bhid=' + file.bhId + ']', options.list).data('xhr', data);
+					if (options.submit) {
+						if (options.submit(e, data) === false) {
+							return false;
+						}
+					}
+				},
+				done: function (e, data) {
+					var input = e.target;
+					var oldFileData = $(input).data('oldfiledata');
+					if (oldFileData) {
+						_deleteFile(oldFileData.fileId, oldFileData.state, true, options).done(function () {
+							element.trigger('bh.file.upload.delete');
+						});
+					}
+					// 上传成功
+					if (options.autoSave) {
+						options.view.saveBlock(data, options);
+					} else {
+						options.view.successBlock(data, options);
+					}
+					if (options.done) {
+						options.done(e, data);
+					}
+					element.trigger('bh.file.upload.done', data);
+					WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+				},
+				fail: function (e, data) {
+					options.view.errorBlock(data, options);
+				}
+			})
+		})
+
+		// 监听排序完成事件
+		element.on('_sort-complete', function (e) {
+			e.stopPropagation()
+			element.trigger('sort-complete', _getSortData(options))
+		})
+	}
+
+	$.fn.cacheUpload = function (options, param) {
+		var instance;
+		instance = this.data('cacheupload');
+		if (!instance) {
+			return this.each(function () {
+				if (options == 'destroy') {
+					return this;
+				}
+				return $(this).data('cacheupload', new Plugin(this, options));
+			});
+		}
+		if (options === true) return instance;
+		if ($.type(options) === 'string') return instance[options](param);
+		return this;
+	};
+
+	/**
+	 * @memberof module:cacheUpload
+	 * @prop {String} contextPath - emap根路径
+	 * @prop {String} storeId - 定义的文件类型
+	 * @prop {String} [buttonType=button] - 上传按钮样式 button 或者block
+	 * @prop {String} [displayType=image] - 上传文件展示类型 image 或者 file
+	 * @prop {Int} [width=168] - image 模式下文件展示的宽度
+	 * @prop {Int} [height=108] - image 模式下文件展示的高度
+	 * @prop {Int} [limit] - 文件上传个数限制
+	 * @prop {Array} [type] -  文件格式限制
+	 * @prop {Int} [size] - 文件大小限制,单位KB
+	 * @prop {String|Function} [placeholder] - 提示文字，若为function则带参为默认的提示文字，需要拼接后返回
+	 * @prop {String} [token] - 文件token, 编辑页面传入已有token,则不会生成新的token, 组件会自动拉取该token下已有的文件信息
+	 * @prop {Boolean} [canPreviewPDF=true] - 是否可以预览pdf文件
+	 * @prop {Boolean} [readonly=false] - 是否只读 
+	 * @prop {Boolean} [sortable=false] - 是否开启排序
+	 * @prop {Boolean} [showFileTitle=true] - image模式下，是否显示文件的名称
+	 * @prop {String|Function} [title] - 自定义上传的显示文件名，只在单个文件上传的情况下生效
+	 * @prop {function} [initComplete] - 初始化完成的回调  
+	 * @prop {Object} [uploadParam] - 上传请求附带的参数
+	 * @prop {Boolean} [autoSave=false] - 是否自动保存， 如果为true，则上传完成后自动保存为正式文件，不需要额外调用保存方法，同时保存请求需要传的参数，请配置在uploadParam中
+	 * @prop {Boolean} [uploadingWarn=true] - 保存方法前是否会判断是否有正在上传的文件并弹出提示框
+	 * @prop {Boolean} [multiple=true] - 是否允许批量选取文件 
+	 * @prop {String} [tooltipText] - 自定义上传按钮tooltip的内容
+	 * @prop {Object} [downloadParam] - 下载文件请求附带的参数
+	 * @prop {Function} [initComplete] - 初始化完成的回调
+	 * @prop {Array} [editButtons] - 配置操作按钮的显示 默认值 ['preview', 'download', 'reupload', 'delete']
+	 */
+
+	$.fn.cacheUpload.defaults = {
+		// contextPath: "",
+		storeId: "file",
+		buttonType: "button",
+		displayType: "image",
+		paramName: 'files[]',
+		width: 168,
+		height: 108,
+		limit: null,
+		type: [],
+		size: 0,
+		token: undefined,
+		canPreviewPDF: true,
+		readonly: false,
+		sortable: false,
+		showFileTitle: true,
+		title: '',
+		initComplete: undefined,
+		autoSave: false,
+		uploadParam: {},
+		uploadingWarn: true,
+		multiple: true,
+		tooltipText: undefined,
+		downloadParam: undefined,
+		editButtons: ['preview', 'download', 'reupload', 'delete']
+	};
+}).call(this);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:34 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

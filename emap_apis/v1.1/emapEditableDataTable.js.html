@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapEditableDataTable.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapEditableDataTable.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>;
+(function($) {
+    /**
+     * @module emapEditableDataTable
+     * @alias 编辑表格
+     * @description 表格编辑，修改，新增，删除，校验
+     * @example
+     * $('#emapEditableDataTable').emapEditableDataTable({
+     *     newDataEmptyNum:1,
+     *     emapdatatable:{
+     *         pagePath:'',
+     *         action:'action',
+     *         customColumns:[{
+     *             colIndex:0,
+     *             type:'checkbox'
+     *         },{
+     *             colIndex:'last',
+     *             type:'tpl',
+     *             column:{
+     *                 text:'操作',
+     *                 cellsRenderer:function(){
+     *                     return '';
+     *                 }
+     *             }
+     *         },{
+     *             colIndex: 40,//如果已经有自定义列colIndex为last，请在此设置为数字，否则会出现问题，40表示展示在最后一列
+     *             type:'edit_tpl', /表示编辑时的操作列
+     *             column:{
+     *                 text:'操作',
+     *                 //colModel为当前列的模型，settings为组件配置参数，其中的editMode表示是否进入编辑模式，rowData的isToDelete表示行是否待删除
+     *                 cellsRenderer:function(row, column, value, rowData, colModel, settings){ 
+     *                     return '';
+     *                 }
+     *             }
+     *         }]
+     *     }
+     * });
+     */
+    var toDeleteKey = 'isToDelete';
+    var Plugin = function(element, options) {
+        this.options = $.extend(true, {}, $.fn.emapEditableDataTable.defaults, options);
+        this.isEditMode = !!this.options.emapdatatable.isEditMode; //是否处于编辑模式
+        this.options.emapdatatable.canEdit = true;
+        this.isNewDataHolderTableInited = false;
+        this.$element = $(element);
+        var tip = '&lt;p class="bh-color-warning bh-mv-4 emap-data-tip" role="emapDataTip" style="display:none">' + $.i18n('bh-edt-originDatas') + '：&lt;/p>';
+        var emapDataTable = '&lt;div table-role="emapDataTable">&lt;/div>';
+        var newDataHolderTable = '&lt;p role="newDataTip" class="bh-color-warning bh-mv-4 new-data-tip" style="display:none">' + $.i18n('bh-edt-newRow') + '（1）：&lt;/p>&lt;div table-role="newDataHolderTable">&lt;/div>';
+        this.$element.html(newDataHolderTable + tip + emapDataTable);
+        this.$emapDataTable = this.$element.find('[table-role="emapDataTable"]');
+        this.$newDataHolderTable = this.$element.find('[table-role="newDataHolderTable"]');
+
+        //是否显示自定义列按钮
+        var customColumnAttr = 'data-no-custom-field';
+        var value = this.$element.attr('data-no-custom-field');
+        if (value) {
+            this.$emapDataTable.attr(customColumnAttr, value);
+            this.$newDataHolderTable.attr(customColumnAttr, value);
+        } else {
+            this.$emapDataTable.attr(customColumnAttr, '0');
+            this.$newDataHolderTable.attr(customColumnAttr, '0');
+        }
+
+        _initComponent(this);
+    };
+
+    /**
+     * @method enterEditMode
+     * @description 进入编辑模式，先判断是否已经进入编辑模式
+     */
+    Plugin.prototype.enterEditMode = function() {
+        if (!this.isEditMode) {
+            this.isEditMode = true;
+            this.$emapDataTable.emapdatatable('enterEditMode');
+        }
+    };
+
+    /**
+     * @method leaveEditMode
+     * @description 退出编辑模式
+     */
+    Plugin.prototype.leaveEditMode = function() {
+        if (this.isEditMode) {
+            _hideTip(this);
+            this.$emapDataTable.emapdatatable('leaveEditMode');
+            if (this.isNewDataHolderTableInited) {
+                this.$newDataHolderTable.jqxDataTable('clear');
+                this.$newDataHolderTable.data('changedRowsData', []);
+                this.$newDataHolderTable.hide();
+            }
+        }
+    };
+
+    /**
+     * @method addRow
+     * @description 新增数据
+     * @param {Object} opt 入参
+     * @param {Number} opt.newDataEmptyNum 增加几条新数据
+     */
+    Plugin.prototype.addRow = function(opt) {
+        if (this.isEditMode) {
+            if (this.isNewDataHolderTableInited) {
+                _showTip(this);
+                this.$newDataHolderTable.show();
+                _addNewData(this, opt || {});
+            } else {
+                _renderNewDataHolderTable(this, opt || {});
+            }
+            //关闭jqx下拉框
+            $('body').trigger('mousedown');
+        }
+    };
+
+    /**
+     * @method getChangedRows
+     * @description emapDataTable changerRows 不包括将要被删除的行
+     * @return {Array}
+     */
+    Plugin.prototype.getChangedRows = function() {
+        var emapData = this.$emapDataTable.emapdatatable('getChangedRows');
+        return emapData;
+    };
+
+    /**
+     * @method getToDeleteRows
+     * @description emapDataTable 将要被删除的行
+     * @return {Array}
+     */
+    Plugin.prototype.getToDeleteRows = function() {
+        var emapData = this.$emapDataTable.emapdatatable('getToDeleteRows');
+        return emapData;
+    };
+
+    /**
+     * @method getNewChangedRows
+     * @description 不包括将要被删除的行
+     * @return {Array}
+     */
+    Plugin.prototype.getNewChangedRows = function() {
+        if (this.$newDataHolderTable.emapdatatable(true)) {
+            return this.$newDataHolderTable.emapdatatable('getChangedRows');
+        }
+        return [];
+    };
+
+    /**
+     * @method deleteNewRow
+     * @description 删除新添加的行
+     * @param  {Object} opt 入参
+     * @param {Number} opt.rowIndex
+     */
+    Plugin.prototype.deleteNewRow = function(opt) {
+        if (this.isNewDataHolderTableInited) {
+            this.$newDataHolderTable.emapdatatable('deleteRowInEditMode', opt);
+            _refreshTip(this);
+        }
+    };
+
+    /**
+     * @method cancelDeleteNewRow
+     * @description 取消删除新添加的行
+     * @param  {Object} opt 入参
+     * @param {Number} opt.rowIndex 行索引
+     */
+    Plugin.prototype.cancelDeleteNewRow = function(opt) {
+        if (this.isNewDataHolderTableInited) {
+            this.$newDataHolderTable.emapdatatable('cancelDeleteRowInEditMode', opt);
+            _refreshTip(this);
+        }
+    };
+
+    /**
+     * @method deleteEmapRow
+     * @description 删除表格原始数据
+     * @param  {Object} opt 入参
+     * @param {Number} opt.rowIndex 行索引
+     */
+    Plugin.prototype.deleteEmapRow = function(opt) {
+        this.$emapDataTable.emapdatatable('deleteRowInEditMode', opt);
+    };
+
+    /**
+     * @method cancelDeleteEmapRow
+     * @description 取消删除表格原始数据
+     * @param  {Object} opt 入参
+     * @param {Number} opt.rowIndex 行索引
+     */
+    Plugin.prototype.cancelDeleteEmapRow = function(opt) {
+        this.$emapDataTable.emapdatatable('cancelDeleteRowInEditMode', opt);
+    };
+
+    /**
+     * @method getEmapDataTable
+     * @description 获取emapDataTable元素，可以调用emapdatatable的API
+     * @example
+     * $el.emapEditableDataTable('getEmapDataTable').emapdatatable('reload')
+     * @return {DOM}
+     */
+    Plugin.prototype.getEmapDataTable = function() {
+        return this.$emapDataTable;
+    };
+
+    /**
+     * @method getNewDataHolderTable
+     * @description 获取getNewDataHolderTable元素，可以调用emapdatatable的API
+     * @return {DOM}
+     */
+    Plugin.prototype.getNewDataHolderTable = function() {
+        return this.$newDataHolderTable;
+    };
+
+    /**
+     * @method validateTable
+     * @description 校验表格输入是否合法
+     * @return {Boolean}
+     */
+    Plugin.prototype.validateTable = function() {
+        if (this.isNewDataHolderTableInited) {
+            var emap = this.$emapDataTable.emapdatatable('validateTable');
+            var newData = this.$newDataHolderTable.emapdatatable('validateTable');
+            return emap &amp;&amp; newData;
+        } else {
+            return this.$emapDataTable.emapdatatable('validateTable');
+        }
+    };
+
+    /**
+     * @method isInEditMode
+     * @description 判断表格是否处于编辑模式
+     * @return {Boolean}
+     */
+    Plugin.prototype.isInEditMode = function() {
+        return this.isEditMode;
+    };
+
+    /**
+     * @method checkedRowsIndex
+     * @description 获取勾选的行索引，emap表示原始表单，new表示新增表格
+     * @return {Object}
+     */
+    Plugin.prototype.checkedRowsIndex = function() {
+        var emapRow = this.$emapDataTable.emapdatatable('checkedRowsIndex');
+        if (this.isNewDataHolderTableInited) {
+            var newRow = this.$newDataHolderTable.emapdatatable('checkedRowsIndex');
+            return {
+                emap: emapRow,
+                news: newRow
+            };
+        }
+        return {
+            emap: emapRow
+        };
+    };
+
+    function _initComponent(instance) {
+        _bindCheckTableDataIsEmpty(instance);
+        instance.$emapDataTable.emapdatatable(instance.options.emapdatatable);
+    }
+
+    function _bindCheckTableDataIsEmpty(instance) {
+        var newDataEmptyNum = instance.options.newDataEmptyNum;
+        instance.$emapDataTable.on('emapdatatable.created', function(e, table) {
+            setTimeout(function() {
+                var edit = table.$element.parent().emapEditableDataTable(true);
+                if (table.getTotalRecords() == 0 || table.getTotalRecords() == undefined) {
+                    edit.$element.trigger('emapdata.empty');
+                    if (edit.options.isAutoAdd) {
+                        edit.enterEditMode();
+                        table.$element.hide();
+                        _renderNewDataHolderTable(edit, {
+                            newDataEmptyNum: newDataEmptyNum
+                        }, true);
+                    }
+                } else {
+                    edit.$element.trigger('emapdata.unempty');
+                }
+            });
+        });
+    }
+
+    function _showTip(instance) {
+        instance.$element.find('[role="newDataTip"]').show();
+        instance.$element.find('[role="emapDataTip"]').show();
+    }
+
+    function _hideTip(instance) {
+        instance.isEditMode = false;
+        instance.$element.find('[role="newDataTip"]').hide();
+        instance.$element.find('[role="emapDataTip"]').hide();
+    }
+
+    function _renderNewDataHolderTable(instance, rowOpt, isEmapDataEmpty) {
+        instance.isNewDataHolderTableInited = true;
+        var opt = _getNewDataHolderTableOpt(instance);
+        instance.$newDataHolderTable.show();
+        instance.$newDataHolderTable.on('emapdatatable.created', function(e, table) {
+            if (rowOpt) {
+                table.settings.isNewDataHolder = true;
+                table.enterEditMode();
+                var edit = table.$element.parent().emapEditableDataTable(true);
+                _showTip(edit);
+                if ((rowOpt.newDataEmptyNum || 1) - 1) {
+                    _addNewData(edit, rowOpt);
+                }
+                if (isEmapDataEmpty) {
+                    edit.$element.find('[role="emapDataTip"]').hide();
+                }
+            }
+        });
+        instance.$newDataHolderTable.emapdatatable(opt);
+    }
+
+    function _addNewData(instance, opt) {
+        var num = opt.newDataEmptyNum || 1;
+        for (var i = 0; i &lt; num; i++) {
+            instance.$newDataHolderTable.jqxDataTable('addRow', null, {});
+        }
+        _refreshTip(instance);
+    }
+
+    function _refreshTip(instance) {
+        var rows = instance.$newDataHolderTable.jqxDataTable('getRows');
+        var num = rows.filter(function(row) {
+            return !row[toDeleteKey];
+        }).length;
+        instance.$element.find('[role="newDataTip"]').text($.i18n('bh-edt-newRow') + '（' + num + '）：');
+    }
+
+    function _getNewDataHolderTableOpt(instance) {
+        var opt = $.extend(true, {}, instance.options.emapdatatable);
+        opt.datamodel = instance.$emapDataTable.data('tableDataModel');
+        opt.height = 'auto';
+        opt.pageable = false;
+        opt.columnsResize = false;
+        opt.source = {
+            localData: [{}],
+            dataType: 'array',
+            datafields: []
+        };
+        opt.schemaList = instance.$emapDataTable.data('schemaList');
+        return opt;
+    }
+
+    /**
+     * 这里是关键
+     * 定义一个插件 plugin
+     */
+    $.fn.emapEditableDataTable = function(options, params) {
+        var instance;
+        instance = this.data('emapEditableDataTable');
+        /**
+         * 判断插件是否已经实例化过，如果已经实例化了则直接返回该实例化对象
+         */
+        if (!instance) {
+            return this.each(function() {
+                //将实例化后的插件缓存在dom结构里（内存里）
+                return $(this).data('emapEditableDataTable', new Plugin(this, options));
+            });
+        }
+        if (options === true) return instance;
+        /**
+         * 优雅处： 如果插件的参数是一个字符串，则 调用 插件的 字符串方法。
+         * 如 $('#id').plugin('doSomething') 则实际调用的是 $('#id).plugin.doSomething();
+         * doSomething是刚才定义的接口。
+         * 这种方法 在 juqery ui 的插件里 很常见。
+         */
+        if ($.type(options) === 'string') {
+            return instance[options](params);
+        }
+        return this;
+    };
+
+    /**
+     * @memberof module:emapEditableDataTable
+     * @description [description]
+     * @property {Boolean} [isAutoAdd=false] 原始表单数据为空，是否进入编辑模式
+     * @property {Number} [newDataEmptyNum=1] 原始表单数据为空，今日编辑模式，默认新增几行数据
+     * @property {Object} emapdatatable 参数同组件emapdatable入参
+     */
+    $.fn.emapEditableDataTable.defaults = {
+        isAutoAdd: false,
+        newDataEmptyNum: 1,
+        emapdatatable: {}
+    };
+
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapAvatarUpload.html">emapAvatarUpload</a>&nbsp;(头像裁剪上传)</li><li><a href="module-emapCard.html">emapCard</a>&nbsp;(卡片列表)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownTable.html">emapDropdownTable</a>&nbsp;(下拉表格/模糊搜索)</li><li><a href="module-emapDropdownTree.html">emapDropdownTree</a>&nbsp;(下拉树)</li><li><a href="module-emapEditableDataTable.html">emapEditableDataTable</a>&nbsp;(编辑表格)</li><li><a href="module-emapEditor.html">emapEditor</a></li><li><a href="module-emapFileDownload.html">emapFileDownload</a>&nbsp;(文件下载)</li><li><a href="module-emapFileUpload.html">emapFileUpload</a>&nbsp;(文件上传)</li><li><a href="module-emapForm.html">emapForm</a>&nbsp;(表单)</li><li><a href="module-emapgrid.html">emapgrid</a>&nbsp;(grid列表)</li><li><a href="module-emapImageUpload.html">emapImageUpload</a>&nbsp;(多图片上传)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapLinkage.html">emapLinkage</a>&nbsp;(表单联动)</li><li><a href="module-emapPDFViewer.html">emapPDFViewer</a>&nbsp;(PDF文件预览)</li><li><a href="module-emapRulesConstructor.html">emapRulesConstructor</a>&nbsp;(条件构造器)</li><li><a href="module-emapSchema.html">emapSchema</a>&nbsp;(方案模块)</li><li><a href="module-emapSingleImageUpload.html">emapSingleImageUpload</a>&nbsp;(单图片上传)</li><li><a href="module-emapUploadCore.html">emapUploadCore</a>&nbsp;(上传核心模块)</li><li><a href="module-emapValidate.html">emapValidate</a>&nbsp;(表单校验)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_EMAP_SERV.html">WIS_EMAP_SERV</a>&nbsp;(公共方法)</li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:35 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapAdvancedQuery.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapAdvancedQuery.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function () {
+  var Plugin, _init;
+  var _animateTime, _eventBind, _addTime, _cancelAddTime, _renderEasySearch, _renderQuickSearch,
+    _renderInputPlace, _renderConditionList, _getSelectedConditionFromForm, _renderAdvanceSearchForm, _getSelectedConditionFromModal,
+    _getSearchCondition, _findModel, _getConditionFromForm, _initSchema, _closeSchema, _renderFixedSchema, _schemaDialogEventBind,
+    _refreshUnfixNum;
+  /**
+   * @module emapAdvancedQuery
+   * @alias 高级搜索
+   * @description 高级搜索, 通过监听search事件，进行搜索操作
+   * @example 
+   $('#advancedQueryPlaceholder').emapAdvancedQuery({
+    data: searchData
+  });
+  $('#advancedQueryPlaceholder').on('search', function(e, data, opts){
+    // data 为序列化的搜索条件
+    console.log(data);  
+    //调用表格reload方法
+    $("#retirementInfoTable").emapdatatable('reload', {querySetting: data});
+  });
+   */
+  Plugin = (function () {
+    function Plugin(element, options) {
+      this.options = $.extend({}, $.fn.emapAdvancedQuery.defaults, options);
+      this.$element = $(element);
+      this.$element.attr("emap-role", "advancedQuery").attr("emap-pagePath", "").attr("emap-action", this.options.data.name);
+      this.options._initCount = 0; // 需要初始化的控件的总数
+      this.options._initCounter = 0; // 控件初始化计数器
+      _init(this.$element, this.options);
+    }
+
+    /**
+     * @method getValue
+     * @description 获取高级搜索当前的搜索条件
+     * @return {Stirng} 搜索条件Json字符串
+     */
+    Plugin.prototype.getValue = function () {
+      return _getSearchCondition(this.options);
+    };
+    /**
+     * @method setValue
+     * @description 高级搜索赋值
+     * @param {Object|String} 搜索条件
+     */
+    Plugin.prototype.setValue = function (condition) {
+      var element = this.$element;
+      this.$element.emapAdvancedQuery('clear');
+      var value = (typeof condition == "string") ? JSON.parse(condition) : condition;
+      if (value.length > 0) {
+        var formValue = {};
+        $(value).each(function () {
+          if ($.isArray(this)) {
+            // 数组
+            $('[bh-advanced-query-role=advancedInput]', element).val(this[0].value);
+          } else {
+            if (formValue.hasOwnProperty(this.name)) {
+              if (this.builder === 'moreEqual') {
+                formValue[this.name] = this.value + ',' + formValue[this.name];
+                if (this.value_display) {
+                  formValue[this.name + '_DISPLAY'] = this.value_displayformValue + ',' + [this.name + '_DISPLAY'];
+                }
+              }
+              if (this.builder === 'lessEqual') {
+                formValue[this.name] = formValue[this.name] + ',' + this.value;
+                if (this.value_display) {
+                  formValue[this.name + '_DISPLAY'] = formValue[this.name + '_DISPLAY'] + ',' + this.value_display;
+                }
+              }
+            } else {
+              formValue[this.name] = this.value;
+              if (this.value_display) {
+                formValue[this.name + '_DISPLAY'] = this.value_display;
+              }
+            }
+          }
+        });
+        _renderAdvanceSearchForm(this.options, formValue);
+        WIS_EMAP_INPUT.formSetValue(element, formValue, this.options);
+      }
+    };
+
+    /**
+     * @method clear
+     * @description 清空高级搜索条件
+     */
+    Plugin.prototype.clear = function () {
+      var element = this.$element;
+      var options = this.options;
+      // 清空高级搜索
+      $('[bh-advanced-query-role=advancedInput]', element).val('');
+      $('[bh-advanced-query-role=advanceSearchForm] [xtype]', element).each(function () {
+        var _this = $(this);
+        var name = _this.data('name');
+        var xtype = _this.attr('xtype');
+        WIS_EMAP_INPUT.setValue(_this, name, xtype, "", options.contextPath);
+      });
+      // 清空简单搜索
+      $('.bh-advancedQuery-quick-search-wrap input[type=text]', element).val('');
+      $('[bh-advanced-query-role="quickSearchForm"] [xtype]', element).each(function () {
+        var _this = $(this);
+        var name = _this.data('name');
+        var xtype = _this.attr('xtype');
+        WIS_EMAP_INPUT.setValue(_this, name, xtype, "", options.contextPath);
+      });
+    };
+
+    /**
+     * @method updateTotalNum
+     * @description 刷新全部数据条数
+     */
+    Plugin.prototype.updateTotalNum = function (num) {
+      if (!this.options.showTotalNum) return;
+      var numWrap = $('.bh-advancedQuery-totalNum-wrap', this.$element);
+      if (numWrap.css('display') == 'none') {
+        numWrap.show();
+      }
+      $('.bh-advancedQuery-totalNum span', numWrap).text(num);
+    };
+
+    /**
+     * @method destroy
+     * @description 销毁组件实例
+     */
+    Plugin.prototype.destroy = function () {
+      this.options = null;
+      $(this.$element).data('plugin', false).empty();
+    };
+    return Plugin;
+  })();
+
+  _init = function (element, options) {
+    if (options.showBlankOption === undefined) {
+      options.showBlankOption = WIS_EMAP_CONFIG.showBlankOptionInSearch;
+    }
+     // 是否使用新的ztree下拉树替换原有下拉树
+    if (options.useNewDropdownTree === undefined) {
+      options.useNewDropdownTree = WIS_EMAP_CONFIG.useNewDropdownTree;
+    }
+    element.attr("emap", JSON.stringify({
+      "emap-url": WIS_EMAP_SERV.url,
+      "emap-name": WIS_EMAP_SERV.name,
+      "emap-app-name": WIS_EMAP_SERV.appName,
+      "emap-model-name": WIS_EMAP_SERV.modelName
+    }));
+    delete WIS_EMAP_SERV.url;
+    delete WIS_EMAP_SERV.name;
+    delete WIS_EMAP_SERV.appName;
+    delete WIS_EMAP_SERV.modelName;
+    // contextPath 兼容
+    options.contextPath = options.contextPath || WIS_EMAP_SERV.getContextPath();
+
+    // 读取全局配置参数 将下拉树替换为新版Ztree的下拉树
+    if (options.useNewDropdownTree === true) {
+      options.data.controls.map(function (item) {
+        if (item['search.xtype']) {
+          if ($.inArray(item['search.xtype'], ['tree', 'multi-tree']) > -1) {
+            item['search.xtype'] = item['search.xtype'].replace(/tree$/, 'tree2')
+          }
+        } else {
+          if ($.inArray(item['xtype'], ['tree', 'multi-tree']) > -1) {
+            item['xtype'] = item['xtype'].replace(/tree$/, 'tree2')
+          }
+        }
+
+        if (item['search.quickSearchXtype'] == 'tree' || item['search.quickSearchXtype'] == 'multi-tree') {
+          item['search.quickSearchXtype'] = item['search.quickSearchXtype'].replace(/tree/, 'tree2');
+        }
+      });
+    }
+
+    var modalData = options.data.controls;
+    var easyArray = [];
+    var quickArray = [];
+    var guid = BH_UTILS.NewGuid();
+
+    _animateTime = function () {
+      return 450;
+    };
+
+    _eventBind = function (options, element) {
+      var $advanced = options.$advanced;
+      var $advancedModal = options.$advancedModal;
+      $advanced.on("click", "[bh-advanced-query-role=addTime]", function () {
+        _addTime($(this));
+      });
+
+      $advanced.on("click", "[bh-advanced-query-role=cancelAddTime]", function () {
+        _cancelAddTime($(this));
+      });
+
+      // 展开高级搜索
+      $advanced.on("click", "[bh-advanced-query-role=advancedOpen]", function () {
+        $($advanced).addClass('bh-active');
+        options.searchModel = 'advanced';
+        if (document.documentMode == 9 &amp;&amp; $.fn.placeholder) {
+          setTimeout(function () {
+            WIS_EMAP_INPUT.placeHolder();
+          }, 300);
+        }
+        WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+      });
+
+      // 关闭高级搜索
+      $advanced.on("click", "[bh-advanced-query-role=advancedClose]", function (event) {
+        $($advanced).removeClass('bh-active');
+        options.searchModel = 'easy';
+        // 关闭高级搜索时, 清空高级搜索  6-1 zhuhui
+        element.emapAdvancedQuery('clear');
+        // 关闭高级搜索时, 触发一次简单搜索 5-13 zhuhui
+        triggerSearch(element, options, _getSearchCondition(options, $(this).data('name')), event);
+        // element.trigger('search', [_getSearchCondition(options, $(this).data('name')), options, event]);
+        WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+      });
+
+      // 删除搜索条件
+      $advanced.on("click", "[bh-advanced-query-role=conditionDismiss]", function () {
+        // 针对日期范围选择组件，删除时连同 范围选择的弹出框一同清除
+        var inputRow = $(this).closest('.bh-advancedQuery-form-row');
+        var inputItem = $('[xtype]', inputRow);
+        if (inputItem.length &amp;&amp; inputItem.attr('xtype') == 'date-range') {
+          inputItem.bhTimePicker('remove');
+        }
+        inputRow.remove();
+      });
+
+      // 弹出  添加搜索条件 弹框
+      $advanced.on("click", "[bh-advanced-query-role=addCondition]", function () {
+        _renderConditionList(options);
+        $advanced.trigger('window-open')
+      });
+
+      // easy搜索 监听 按键输入
+      $advanced.on('keyup', '.bh-advancedQuery-quick-search-wrap input[type=text]', function (e) {
+        var easySelectH = $advanced.data('easyarray').length * 28 + 1; // 下拉框高度
+        var easySelectW = $(this).outerWidth(); // 下拉框宽度
+        var searchValue = $(this).val();
+        var pos = $(this).offset();
+        var selectDiv = $('.bh-advancedQuery-quick-select[data-guid=' + options.guid + ']');
+        pos.top += 28;
+        // 回车快速搜索
+        if (e.keyCode == 13) {
+          selectDiv.css({
+            'height': 0,
+            'border-width': '0'
+          });
+          triggerSearch(element, options, _getSearchCondition(options), e);
+          // element.trigger('search', [_getSearchCondition(options), options, e]);
+          return;
+        }
+        if (searchValue == '') {
+          selectDiv.css({
+            'height': 0,
+            'border-width': '0'
+          });
+        } else {
+          $('.bh-advancedQuery-easy-query', selectDiv).text(searchValue);
+          selectDiv.css({
+            'height': easySelectH + 'px',
+            'width': easySelectW + 'px',
+            'border-width': '1px',
+            'top': pos.top,
+            'left': pos.left
+          });
+        }
+      });
+
+      // 点击下拉快速搜索
+      $('[bh-advanced-query-role=advancedEasySelect][data-guid=' + options.guid + ']').on('click', 'p', function (event) {
+        var selectDiv = $(this).closest('[bh-advanced-query-role=advancedEasySelect]');
+        if (selectDiv.height() > 0) {
+          selectDiv.css({
+            'height': 0,
+            'border-width': '0'
+          });
+        }
+        triggerSearch(element, options, _getSearchCondition(options, $(this).data('name')), event);
+        // element.trigger('search', [_getSearchCondition(options, $(this).data('name')), options, event]);
+      });
+
+      // 点击搜索按钮  easy search
+      $advanced.on('click', '[bh-advanced-query-role=easySearchBtn]', function (event) {
+        triggerSearch(element, options, _getSearchCondition(options), event);
+        // element.trigger('search', [_getSearchCondition(options), options, event]);
+      });
+
+      // 点击筛选条件  quick search
+      $advanced.on('click', '[bh-advanced-query-role=quickSearchForm] .bh-label-radio', function (event) {
+        // radio 的事件冒泡问题
+        setTimeout(function () {
+          triggerSearch(element, options, _getSearchCondition(options), event);
+          // element.trigger('search', [_getSearchCondition(options), options, event]);
+        }, 200);
+      });
+
+      //监听普通搜索里时间选择框selected事件
+      $advanced.on('selectedTime', '.bh-advancedQuery-quick div[xtype="date-range"]', function (event) {
+        var searchCondition = _getSearchCondition(options);
+        triggerSearch(element, options, searchCondition, event);
+        // element.trigger('search', [searchCondition, options, event]);
+      });
+
+      // 执行高级搜索
+      $advanced.on('click', '[bh-advanced-query-role=advancedSearchBtn]', function (event) {
+        triggerSearch(element, options, _getSearchCondition(options), event);
+        // element.trigger('search', [_getSearchCondition(options), options, event]);
+      });
+
+      // 监听 控件初始化事件  bhInputInitComplete, 根据计数器options._initCounter 判断出发高级搜索组件的 初始化回调
+      element.on('_init', function (e) {
+        var role = $(e.target).attr('bh-advanced-query-role')
+        if (role === 'quickSearchForm') {
+          element.trigger('init', [options]);
+          options.initComplete &amp;&amp; options.initComplete();
+        }
+      });
+
+      // easySearch 下拉框的关闭
+      $(document).on('click', function (e) {
+        var target = e.target;
+        if ($(target).closest('[bh-advanced-query-role=advancedEasySelect]').length == 0) {
+          var selectDiv = $('.bh-advancedQuery-quick-select');
+          selectDiv.css({
+            'height': 0,
+            'border-width': '0'
+          });
+        }
+      });
+
+      // 点击保存为搜索方案
+      $advanced.on('click', '[bh-advanced-query-role=saveSchema]', function () {
+        $(this).closest('.bh-schema-btn-wrap').addClass('active');
+      });
+
+      // 点击取消保存搜索方案
+      $advanced.on('click', '[bh-advanced-query-role=saveSchemaCancel]', function () {
+        _closeSchema(options);
+      });
+
+      // 点击确认保存搜索方案
+      $advanced.on('click', '[bh-advanced-query-role=saveSchemaConfirm]', function () {
+        var name = $('.bh-schema-name-input', $advanced).val();
+        var conditionData = _getSearchCondition(options, undefined, true);
+        var fixed = $('[bh-schema-role=fixCheckbox]', $advanced).prop('checked') ? 1 : 0;
+        var programContainer = $('.bh-rules-program', $advanced);
+        element.emapSchema('saveSchema', [name, conditionData, fixed]).done(function () {
+          _closeSchema(options);
+          var schInfo = options.schemaList.filter(function (val) {
+            return val.SCHEMA_NAME == name;
+          })
+          var sameSch = false;
+          if (schInfo.length > 0) {
+            sameSch = true;
+          }
+          // 判断是否有重名的方案  如果有  直接覆盖
+          if (sameSch) {
+            // 重名方案
+            options.schemaList.filter(function (val) {
+              if (val.SCHEMA_NAME == name) {
+                val.CONTENT = conditionData;
+                val.FIXED = fixed;
+              }
+            })
+          } else {
+            schInfo = {
+              "CONTENT": conditionData,
+              "SCHEMA_NAME": name,
+              "FIXED": fixed
+            };
+            options.schemaList.push(schInfo);
+          }
+          if (fixed == 1) {
+            if (sameSch) {
+              // 固定方案中的重名方案
+              $('.bh-rules-program a[data-name="' + name + '"]', element).data('info', {
+                "CONTENT": conditionData,
+                "SCHEMA_NAME": name,
+                "FIXED": fixed
+              });
+            } else {
+              var sch = $('&lt;a  data-name="' + name + '" href="javascript:void(0)">' + name + '&lt;/a>');
+              sch.data('info', schInfo);
+              $('.bh-rules-program [bh-schema-role=more]', element).before(sch);
+
+            }
+          } else {
+            var sch = $('.bh-rules-program', element).find('a[data-name="' + name + '"]');
+            if (sch.length > 0) {
+              sch.remove()
+            }
+          }
+          programContainer.show();
+        }).fail(function (res) {
+          console &amp;&amp; console.log(res)
+        });
+      });
+
+      // 点击方案的 更多按钮 呼出方案列表侧边弹窗
+      $advanced.on('click', '[bh-schema-role=more]', function () {
+        if ($('main > article aside').length == 0) {
+          $('main > article').append('&lt;aside>&lt;/aside>');
+        }
+        $.bhPropertyDialog.show({
+          // "title": "高级搜索方案", //侧边栏的标题
+          "content": '&lt;h3>'+ $.i18n('bh_aq_advancedSearchSheme') +'&lt;/h3>' +
+            '&lt;section>' +
+            '&lt;div id="schemaDialog" style="display: none;">' +
+            '&lt;p class="bh-color-caption">'+$.i18n('bh_aq_topScheme') +'&lt;/p>'+
+            '&lt;ul class="bh-schema-list" bh-schema-role="fixedUl">' +
+            '&lt;/ul>' +
+            '&lt;p class="bh-color-caption">'+$.i18n('bh_aq_otherScheme')+'(&lt;span>4&lt;/span>)&lt;/p>' +
+            '&lt;ul class="bh-schema-list" bh-schema-role="unFixedUl">&lt;/ul>' +
+            '&lt;/div>' +
+            '&lt;/section>', //侧边栏的内容html
+          "footer": '', //侧边栏的页脚按钮
+          ready: function () { //初始化完成后的处理
+            var fixedUl = $('[bh-schema-role=fixedUl]');
+            var unFixedUl = $('[bh-schema-role=unFixedUl]');
+            $(options.schemaList).each(function () {
+                var liHtml;
+                liHtml = $('&lt;li data-name="' + this.SCHEMA_NAME + '">' +
+                  '&lt;a href="javascript:void(0)" class="bh-pull-right" bh-schema-role="delete">'+$.i18n('bh_aq_delete')+'&lt;/a>' +
+                  '&lt;a href="javascript:void(0)" class="bh-pull-right" bh-schema-role="unfixed">'+$.i18n('bh_aq_cancelTheTop')+'&lt;/a>' +
+                  '&lt;a href="javascript:void(0)" class="bh-pull-right" bh-schema-role="fixed">'+$.i18n('bh_aq_top')+'&lt;/a>' +
+                  this.SCHEMA_NAME +
+                  '&lt;/li>').data('info', this);
+                if (this.FIXED == 1) {
+                  fixedUl.append(liHtml);
+                } else {
+                  unFixedUl.append(liHtml);
+                }
+                _refreshUnfixNum(unFixedUl);
+              })
+
+              // 处理保存方案的排序
+            var fixedSchema = $('.bh-rules-program a:not([bh-schema-role="more"])', options.$advanced);
+            if (fixedSchema.length > 0) {
+              fixedSchema.each(function () {
+                var condition
+                var schemaName = $(this).data('info').SCHEMA_NAME;
+                fixedUl.append($('li[data-name="' + schemaName + '"]'));
+              });
+            }
+            if (options.schemaList.length == 0) {
+              $('#schemaDialog').length > 0 &amp;&amp; $('#schemaDialog').hide()
+            } else {
+              $('#schemaDialog').length > 0 &amp;&amp; $('#schemaDialog').show()
+            }
+            _schemaDialogEventBind(element, options);
+          }
+        });
+      })
+
+      // 点击快速方案
+      $advanced.on('click', '.bh-rules-program a:not([bh-schema-role=more])', function (event) {
+        var condition = $(this).data('info');
+        element.emapAdvancedQuery('setValue', condition.CONTENT);
+        triggerSearch(element, options, JSON.stringify(filterCondition(condition.CONTENT)), event);
+        // element.trigger('search', [JSON.stringify(filterCondition(condition.CONTENT)), options, event]);
+        $.bhTip &amp;&amp; $.bhTip({
+          content: condition.SCHEMA_NAME + ' 方案执行成功',
+          state: 'success',
+          iconClass: 'icon-checkcircle'
+        });
+      });
+
+      // 点击清空按钮
+      $advanced.on('click', '[bh-advanced-query-role=clearBtn]', function (event) {
+        $(element).emapAdvancedQuery('clear');
+        triggerSearch(element, options, _getSearchCondition(options), event)
+          // element.trigger('search', [_getSearchCondition(options), options, event]);
+      });
+    };
+
+    function triggerSearch(element, options, conditions, event) {
+      if (options.beforeSearch) {
+        if (options.beforeSearch(conditions, options) === false) return;
+      }
+      element.trigger('search', [conditions, options, event]);
+    }
+
+    // 更新未置顶的方案个数
+    _refreshUnfixNum = function (ul) {
+      var count = $('li', ul).length;
+      ul.prev('p').find('span').html(count);
+      if (count == 0) {
+        ul.hide().prev('p').hide()
+      } else {
+        ul.show().prev('p').show()
+      }
+      var fixedUl = $(ul).siblings('[bh-schema-role=fixedUl]');
+      if ($('li', fixedUl).length == 0) {
+        fixedUl.hide().prev('p').hide();
+      } else {
+        fixedUl.show().prev('p').show();
+      }
+    };
+
+    _addTime = function ($item) {
+      var $groupParent = $item.closest(".bh-advancedQuery-addBlock");
+      $groupParent.addClass("bh-active");
+      var $addTime = $groupParent.children("div[bh-advanced-query-role=addTime]");
+      $groupParent.children("div[bh-advanced-query-role=addTimeGroup]").show();
+      $addTime.hide();
+    };
+
+    _cancelAddTime = function ($item) {
+      var $groupParent = $item.closest(".bh-advancedQuery-addBlock");
+      $groupParent.removeClass("bh-active");
+      var $addTimeGroup = $groupParent.children("div[bh-advanced-query-role=addTimeGroup]");
+      $addTimeGroup.removeClass("bh-entryLeft").addClass("bh-outLeft");
+      $groupParent.children("div[bh-advanced-query-role=addTime]").addClass("bh-entryRight").show();
+      setTimeout(function () {
+        $addTimeGroup.removeClass("bh-outLeft").addClass("bh-entryLeft").hide();
+      }, _animateTime());
+    };
+
+    _renderEasySearch = function (easyArray, options) {
+      var easySearch = '';
+      var easySearchPlaceholder = ''; // easySearch 文本框placeholder
+      if (easyArray.length &amp;&amp; easyArray.length > 0) {
+        easySearchPlaceholder += '请输入';
+        $(easyArray).each(function () {
+          easySearchPlaceholder += this.caption + '/';
+          easySearch += '&lt;p data-name="' + this.name + '">搜索 &lt;span class="bh-advancedQuery-easy-caption">' + this.caption + '&lt;/span> : &lt;span class="bh-advancedQuery-easy-query">&lt;/span>&lt;/p>';
+        });
+        $('.bh-advancedQuery-quick-select[data-guid=' + options.guid + ']').html(easySearch);
+        easySearchPlaceholder = easySearchPlaceholder.substring(0, easySearchPlaceholder.length - 1);
+        $('.bh-advancedQuery-quick-search-wrap input[type=text]', options.$advanced).attr('placeholder', easySearchPlaceholder);
+      } else {
+        $('.bh-advancedQuery-inputGroup', options.$advanced).hide();
+      }
+    };
+
+    _renderQuickSearch = function (quickArray) {
+      var quickSearchHtml = $('&lt;div>&lt;/div>');
+      $(quickArray).each(function (i) {
+        // 应业务线需求将快速搜索中的多选下拉放出  不做类型转换  zhuhui 0722
+        if (this.xtype == 'select' || this.xtype == 'radiolist' || this.xtype == 'checkboxlist' || this.xtype == 'multi-select2') {
+          this['search.xtype'] = 'buttonlist';
+        }
+        // 添加 quickSearchXtype属性, 表示字段在 快速搜索中展示的类型 zhuhui 0725
+        if (this['search.quickSearchXtype']) {
+          this['search.xtype'] = this['search.quickSearchXtype'];
+        }
+        quickSearchHtml.append(_renderInputPlace(this));
+      });
+      return quickSearchHtml;
+    };
+
+    _renderInputPlace = function (item, showClose) {
+      //showClose  是否显示 关闭按钮
+      var _this = item;
+      _this.get = function (attr) {
+        if (_this['search.' + attr] !== undefined) {
+          return _this['search.' + attr];
+        } else {
+          return _this[attr];
+        }
+      };
+      var attr = WIS_EMAP_SERV.getAttr(_this)
+      var xtype = _this.get("xtype");
+      var caption = _this.get("caption");
+      var builder = _this.get("defaultBuilder");
+      var url = _this.get("url");
+      var name = _this.get("name");
+      var hidden = _this.get("hidden") ? "hidden" : "";
+      var placeholder = _this.get("placeholder") ? _this.get("placeholder") : "";
+      var checkType = _this.get("checkType");
+      var checkSize = _this.get("checkSize");
+      var dataSize = _this.get("dataSize");
+      var checkExp = _this.get("checkExp");
+      var JSONParam = _this.get("JSONParam");
+      var format = _this.get("format") ? _this.get("format") : 'yyyy-MM-dd';
+      var controlHtml = $(' &lt;div class="bh-advancedQuery-form-row bh-advancedQuery-h-28">' +
+        '&lt;div class="bh-advancedQuery-groupName">' + caption + '：&lt;/div>' +
+        '&lt;div class="bh-advancedQuery-groupList bh-label-radio-group">' +
+        '&lt;/div>' +
+        '&lt;/div>');
+
+      if (showClose) {
+        controlHtml.append('&lt;a class="bh-bh-advancedQuery-group-dismiss" bh-advanced-query-role="conditionDismiss"> ' +
+          '&lt;i class="icon-close iconfont">&lt;/i>' +
+          '&lt;/a>');
+      }
+      var inputHtml = '';
+      switch (xtype) {
+
+      case "tree":
+      case "multi-tree":
+      case "tree2":
+      case "multi-tree2":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" data-builder="{{builder}}" data-caption="{{caption}}" data-url="{{url}}" {{hidden}} style="max-width: 300px;">&lt;/div>';
+        break;
+      case "date-local":
+      case "date-range":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-builder="{{builder}}" data-caption="{{caption}}" data-name="{{name}}" data-format="{{format}}" {{hidden}} style="max-width: 300px;">&lt;/div>';
+        break;
+      case "date-ym":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-builder="{{builder}}" data-caption="{{caption}}" data-name="{{name}}" data-format="YYYY-MM" {{hidden}}>&lt;/div>';
+        break;
+      case "date-full":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-builder="{{builder}}" data-caption="{{caption}}" data-name="{{name}}" data-format="yyyy-MM-dd HH:mm" {{hidden}}>&lt;/div>';
+        break;
+      case "switcher":
+        inputHtml += '&lt;div xtype="{{xtype}}"  data-builder="{{builder}}" data-caption="{{caption}}" data-name="{{name}}" {{hidden}}>&lt;/div>';
+        break;
+      case "radiolist":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" class="bh-radio" data-url="{{url}}" data-builder="{{builder}}" data-caption="{{caption}}" {{hidden}}>&lt;/div>';
+        break;
+      case "checkboxlist":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" class="bh-checkbox" data-url="{{url}}" data-builder="{{builder}}" data-caption="{{caption}}" {{hidden}}>&lt;/div>';
+        break;
+      case "buttonlist":
+      case "multi-buttonlist":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" data-url="{{url}}" data-builder="{{builder}}" data-alloption={{allOption}} data-caption="{{caption}}" {{hidden}} >&lt;/div>';
+        break;
+      case "select":
+      case "multi-select":
+      case "multi-select2":
+      case "selecttable":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" data-url="{{url}}" data-builder="{{builder}}" data-alloption={{allOption}} data-caption="{{caption}}" {{hidden}} style="max-width: 300px;">&lt;/div>';
+        break;
+      case 'number':
+      case 'number-range':
+        inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" data-url="{{url}}" data-builder="{{builder}}" data-caption="{{caption}}" {{hidden}} style="max-width: 300px;">&lt;/div>';
+        break;
+      default:
+        inputHtml += '&lt;input class="bh-form-control" data-name="{{name}}" name="{{name}}" data-builder="{{builder}}" data-caption="{{caption}}" xtype="text" type="text" {{hidden}} />';
+        break;
+      }
+      inputHtml = inputHtml.replace(/\{\{xtype\}\}/g, xtype)
+        .replace(/\{\{name\}\}/g, name)
+        .replace(/\{\{builder\}\}/g, builder)
+        .replace(/\{\{caption\}\}/g, caption)
+        .replace(/\{\{url\}\}/g, url)
+        .replace(/\{\{hidden\}\}/g, (hidden ? 'style="display:none;"' : ''))
+        .replace(/\{\{allOption\}\}/g, options.allowAllOption)
+        .replace(/\{\{format\}\}/g, format);
+      inputHtml = $(inputHtml);
+      if (JSONParam) {
+        inputHtml.data('jsonparam', JSONParam);
+      }
+      inputHtml.data('attr', attr)
+      $('.bh-advancedQuery-groupList', controlHtml).html(inputHtml);
+      return controlHtml;
+    };
+
+    _getSelectedConditionFromForm = function (options) {
+      var selectedForm = $('[bh-advanced-query-role=advanceSearchForm]', options.$advanced);
+      var selectedArr = [];
+      $('[xtype][data-name]', selectedForm).each(function () {
+        selectedArr.push($(this).data('name'));
+      });
+      return selectedArr;
+    };
+
+    _renderConditionList = function (options) {
+      var modalArray = options.$advanced.data('modalarray');
+      // 获取已选condition 数据
+      var selectedArr = _getSelectedConditionFromForm(options);
+
+      var columns = [];
+
+      $(modalArray).each(function () {
+        var colItem = {};
+        colItem.hidden = $.inArray(this.name, selectedArr) == -1;
+        colItem.text = this.caption;
+        colItem.datafield = this.name;
+        columns.push(colItem);
+      });
+
+      $.bhCustomizeColumn({
+        model: modalArray,
+        modelType: 'search',
+        columns: columns,
+        useGroup: options.useGroup,
+        title: $.i18n('bh_aq_addTheSearchField'),
+        params: { height: 500 },
+        callback: function (col) {
+          var colData = {};
+          col.map(function (item) {
+            if (!item.hidden) {
+              colData[item.name] = "";
+            }
+          });
+          _renderAdvanceSearchForm(options, colData);
+          setTimeout(function () {
+            // 若表单字段有变动则 弹出tip 弹窗
+            if (options._changeCounter > 0) {
+              $.bhTip &amp;&amp; $.bhTip({
+                content: $.i18n('bh_aq_success'),
+                state: 'success',
+                iconClass: 'icon-checkcircle'
+              });
+            }
+          }, 0);
+        }
+      });
+    };
+
+    // 渲染高级搜索表单
+    _renderAdvanceSearchForm = function (options, selectedObj) {
+      var advanceForm = $('[bh-advanced-query-role=advanceSearchForm]', options.$advanced);
+      var btnWrap = $('[bh-advanced-query-role=dropDownBtnWrap]', advanceForm);
+      options._changeCounter = 0; // 记录改变的字段的数量，如果有改动，则在渲染完成后弹出 成功的 tip
+      $(options.$advanced.data('modalarray')).each(function () {
+        var _this = this;
+        var formItem = $('[data-name="' + this.name + '"]', advanceForm);
+        if (selectedObj[this.name] !== undefined &amp;&amp; selectedObj[this.name] != null) {
+          if (formItem.length > 0) {
+            // 表单已有字段
+            return true;
+          } else {
+            // 表单添加字段
+            options._changeCounter++;
+            btnWrap.before(_renderInputPlace(this, true));
+          }
+        } else {
+          if (formItem.length > 0) {
+            // 表单删除字段
+            options._changeCounter++;
+            formItem.closest('.bh-advancedQuery-form-row').remove();
+          }
+        }
+      });
+      var formOpt = {
+        defaultOptions: {
+          tree: {
+            unblind: '/',
+            search: true
+          },
+          "multi-tree": {
+            unblind: '/',
+            search: true
+          },
+          tree2: {
+            unblind: '/',
+            search: true
+          },
+          "multi-tree2": {
+            unblind: '/',
+            search: true
+          },
+          switcher: {
+            checked: true
+          },
+          "multi-select2": {
+            width: 300
+          },
+          "date-range": {
+            defaultType: 'all'
+          }
+        },
+        showBlankOption: options.showBlankOption
+      };
+      formOpt.defaultOptions = $.extend({}, formOpt.defaultOptions, options.defaultOptions);
+      advanceForm.emapFormInputInit(formOpt);
+
+      // 表单塞值
+      for (var v in selectedObj) {
+        if (selectedObj[v] === undefined || selectedObj[v] === null) return true;
+        var ele = $('[data-name="' + v + '"]', advanceForm);
+        var xtype = ele.attr('xtype');
+        if (xtype == 'switcher') {
+          if (selectedObj[v] === "") selectedObj[v] = "1";
+        } // 高级搜索的开关 默认选中
+        if (xtype == 'date-range' &amp;&amp; selectedObj[v] === "") selectedObj[v] = "all"; // 高级搜索的开关 默认选中
+        if (selectedObj[v] !== "") {
+          WIS_EMAP_INPUT.setValue(ele, v, xtype, selectedObj, "");
+        }
+      }
+      WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+    };
+
+    // 生成搜索条件
+    //  blank_condition 是否允许搜索条件中存在空值
+    _getSearchCondition = function (options, name, blank_condition) {
+      var conditionResult = [];
+      var easyArray = options.$advanced.data('easyarray');
+      var modalarray = options.$advanced.data('modalarray')
+      var orCondition = [];
+      if (options.searchModel == 'easy') {
+        var searchKey = $.trim($('.bh-advancedQuery-quick-search-wrap input', options.$advanced).val());
+        // 简单搜索
+        if (searchKey != "") {
+          if (name) {
+            //简单搜索的下拉框搜索
+            var searchItem = _findModel(name, easyArray);
+            var conditionData = {
+              "caption": searchItem.caption,
+              "name": searchItem.name,
+              "value": searchKey,
+              "builder": (searchItem.defaultBuilder == "equal" ? "include" : searchItem.defaultBuilder), // equal时强制转换为include
+              "linkOpt": "AND"
+            };
+            conditionResult.push(conditionData);
+          } else {
+            for (var i = 0; i &lt; easyArray.length; i++) {
+              var conditionData = {
+                "caption": easyArray[i].caption,
+                "name": easyArray[i].name,
+                "value": searchKey,
+                "builder": (easyArray[i].defaultBuilder == "equal" ? "include" : easyArray[i].defaultBuilder), // equal时强制转换为include
+                "linkOpt": "OR"
+              };
+              orCondition.push(conditionData);
+            }
+            conditionResult.push(orCondition);
+          }
+        }
+        conditionResult = conditionResult.concat(_getConditionFromForm($('[bh-advanced-query-role=quickSearchForm]', options.$advanced), options));
+      } else if (options.searchModel == 'advanced') {
+        var advancedKeyWord = $.trim($('[bh-advanced-query-role=advancedInput]', options.$advanced).val());
+        // 高级搜索
+        if (advancedKeyWord != '') {
+          for (var i = 0; i &lt; easyArray.length; i++) {
+            if (!easyArray[i].xtype || easyArray[i].xtype == 'text') {
+              orCondition.push({
+                "caption": easyArray[i].caption,
+                "name": easyArray[i].name,
+                "value": advancedKeyWord,
+                "builder": (easyArray[i].defaultBuilder == "equal" ? "include" : easyArray[i].defaultBuilder), // equal时强制转换为include,
+                "linkOpt": "OR"
+              });
+            }
+          }
+          conditionResult.push(orCondition);
+        }
+        conditionResult = conditionResult.concat(_getConditionFromForm($('[bh-advanced-query-role=advanceSearchForm]', options.$advanced), options));
+      }
+      if (blank_condition !== true) {
+        conditionResult = filterCondition(conditionResult);
+      }
+
+      var trimInclueValue = function (conditionArray) {
+        conditionArray.forEach(function (condition) {
+          if ($.isArray(condition)) {
+            trimInclueValue(condition);
+          } else {
+            var value = condition.value;
+            if (value) {
+              value = value.toString();
+              if (value.indexOf(',') > -1) {
+                condition.value = value.split(',').map(function (val) {
+                  return $.trim(val);
+                }).join(',');
+                // condition.builder = 'm_value_include';
+              }
+            }
+          }
+        });
+      };
+      trimInclueValue(conditionResult);
+      return JSON.stringify(conditionResult);
+    };
+
+    _getConditionFromForm = function (form, options) {
+      var model = options.$advanced.data('modalarray');
+      var conditionArray = [];
+      var formElement = $('[xtype]', form);
+
+      var formValue = WIS_EMAP_INPUT.formGetValue(form, options);
+      return WIS_EMAP_INPUT.getConvertCondition(formValue, model);
+    };
+
+    _findModel = function (name, modelArray) {
+      for (var i = 0; i &lt; modelArray.length; i++) {
+        if (modelArray[i].name == name) {
+          return modelArray[i];
+        }
+      }
+    };
+
+    // 初始化方案
+    _initSchema = function (element, options) {
+      options = $.extend(options, {
+        schemaType: "aq"
+      });
+      $.fn.emapSchema &amp;&amp; $(element).emapSchema(options);
+      _renderFixedSchema(element, options);
+    };
+
+    // 关闭搜索方案
+    _closeSchema = function (options) {
+      var wrap = $('.bh-schema-btn-wrap', options.$advanced);
+      wrap.removeClass('active');
+      $('.bh-schema-name-input', wrap).val('');
+      $('[bh-schema-role=fixCheckbox]', wrap).prop('checked', false);
+    };
+
+    // 渲染固定的搜索方案
+    _renderFixedSchema = function (element, options) {
+      options.schemaList = element.emapSchema('getSchemaList');
+      options.schemaList = options.schemaList ? options.schemaList : [];
+      var $advanced = options.$advanced;
+      var programContainer = $('.bh-rules-program', $advanced);
+      if (options.schemaList.length > 0) {
+        var fixedSchema = options.schemaList.filter(function (val) {
+          return val.FIXED == 1;
+        })
+        if (fixedSchema.length == 0) {
+          programContainer.html('&lt;label>'+$.i18n('bh_aq_commonScheme') +': &lt;/label>&lt;a bh-schema-role="more" href="javascript:void(0)">'+$.i18n('bh_aq_more') +' >&lt;/a>')
+        } else {
+          $(fixedSchema).each(function () {
+            var sch = $('&lt;a  data-name="' + this.SCHEMA_NAME + '" href="javascript:void(0)">' + this.SCHEMA_NAME + '&lt;/a>');
+            sch.data('info', this);
+            $('[bh-schema-role=more]', programContainer).before(sch);
+          });
+          programContainer.show()
+        }
+      } else {
+        programContainer.hide();
+      }
+    };
+
+    // 方案侧边弹窗事件绑定
+    _schemaDialogEventBind = function (element, options) {
+      var dialog = $('#schemaDialog');
+      // 删除
+      dialog.on('click', '[bh-schema-role=delete]', function (e) {
+        e.stopPropagation();
+        var li = $(this).parent();
+        var name = li.data('info').SCHEMA_NAME;
+        if (element.emapSchema('deleteSchema', name)) {
+          li.remove();
+          $('.bh-rules-program', element).find('[data-name="' + name + '"]').remove();
+          $(options.schemaList).each(function (i) {
+            if (this.SCHEMA_NAME == name) {
+              options.schemaList.splice(i, 1);
+            }
+          })
+          _refreshUnfixNum($('[bh-schema-role=unFixedUl]', dialog));
+        }
+      });
+
+      // 点击选择方案
+      dialog.on('click', 'li', function (event) {
+        var condition = $(this).data('info');
+        element.emapAdvancedQuery('setValue', condition.CONTENT);
+        //qiyu 2016-12-14 点击方案的查询与直接查询的条件不一致，应过滤掉为空的条件 RS-2973
+        // element.trigger('search', [condition.CONTENT, options, event]);
+
+        triggerSearch(element, options, JSON.stringify(filterCondition(condition.CONTENT)), event);
+        // element.trigger('search', [JSON.stringify(filterCondition(condition.CONTENT)), options, event]);
+        $.bhPropertyDialog.hide();
+        $.bhTip &amp;&amp; $.bhTip({
+          content: condition.SCHEMA_NAME + ' 方案执行成功',
+          state: 'success',
+          iconClass: 'icon-checkcircle'
+        });
+      });
+
+      // 置顶
+      dialog.on('click', '[bh-schema-role=fixed]', function (e) {
+        e.stopPropagation();
+        var li = $(this).closest('li');
+        var info = li.data('info');
+        var name = info.SCHEMA_NAME;
+        var conditionData = info.CONTENT;
+        element.emapSchema('saveSchema', [name, conditionData, 1]).done(function () {
+          _closeSchema(options);
+          var infoData = {
+            "CONTENT": conditionData,
+            "SCHEMA_NAME": name,
+            "FIXED": 1
+          }
+          options.schemaList.filter(function (val) {
+            return val.SCHEMA_NAME == name;
+          })[0].FIXED = 1;
+          $('[bh-schema-role=fixedUl]', dialog).append(li);
+          var sch = $('&lt;a  data-name="' + name + '" href="javascript:void(0)">' + name + '&lt;/a>');
+          sch.data('info', infoData);
+          $('.bh-rules-program [bh-schema-role=more]', element).before(sch);
+          _refreshUnfixNum($('[bh-schema-role=unFixedUl]', dialog));
+        }).fail(function (res) {
+          console &amp;&amp; console.log(res)
+        });
+      });
+      // 取消置顶
+      dialog.on('click', '[bh-schema-role=unfixed]', function (e) {
+        e.stopPropagation();
+        var li = $(this).closest('li');
+        var info = li.data('info');
+        var name = info.SCHEMA_NAME;
+        var conditionData = info.CONTENT;
+        element.emapSchema('saveSchema', [name, conditionData, 0]).done(function () {
+          _closeSchema(options);
+          options.schemaList.filter(function (val) {
+            return val.SCHEMA_NAME == name;
+          })[0].FIXED = 0;
+          $('[bh-schema-role=unFixedUl]', dialog).append(li);
+          $('.bh-rules-program', element).find('[data-name="' + name + '"]').remove()
+          _refreshUnfixNum($('[bh-schema-role=unFixedUl]', dialog));
+        }).fail(function (res) {
+          console &amp;&amp; console.log(res)
+        });
+      })
+    };
+
+    function filterCondition(condition) {
+      return WIS_EMAP_INPUT.filterCondition(condition);
+    }
+
+    element.css({
+      "position": "relative",
+      "z-index": 358
+    }).html('&lt;div class="bh-advancedQuery bh-mb-16" bh-advanced-query-role="advancedQuery">' +
+      '&lt;div class="bh-advancedQuery-dropDown ">' +
+      '&lt;div class="" style="display: table-cell">' +
+      '&lt;div class="bh-rules-header bh-clearfix">' +
+      '&lt;h4>&lt;i class="iconfont icon-search">&lt;/i>'+ $.i18n('bh_aq_advancedSearch') +'&lt;/h4>' +
+      '&lt;p class="bh-rules-program">' +
+      '&lt;label>'+$.i18n('bh_aq_commonScheme')+': &lt;/label>' +
+      '&lt;a bh-schema-role="more" href="javascript:void(0)">'+ $.i18n('bh_aq_more') +' >&lt;/a>' +
+      '&lt;/p>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-advancedQuery-form" bh-advanced-query-role="advanceSearchForm" >' +
+      '&lt;div class="bh-advancedQuery-form-row bh-advancedQuery-h-28">' +
+      '&lt;div class="bh-advancedQuery-groupName">' + $.i18n('bh_aq_keyWord') + '：&lt;/div>' +
+      '&lt;div class="bh-advancedQuery-groupList">' +
+      '&lt;input type="text" bh-advanced-query-role="advancedInput" class="bh-form-control">' +
+      '&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-advancedQuery-form-row bh-advancedQuery-form-btn-row bh-advancedQuery-h-28" bh-advanced-query-role="dropDownBtnWrap"> ' +
+      '&lt;div class="bh-advancedQuery-groupName">&lt;/div>' +
+      '&lt;div class="bh-advancedQuery-groupList">' +
+      '&lt;a class="bh-btn bh-btn-primary bh-btn-small" bh-advanced-query-role="advancedSearchBtn" >' + $.i18n('bh_aq_doAdvancedSearch') + '&lt;/a>' +
+      '&lt;a class="bh-btn bh-btn-default bh-btn-small" bh-advanced-query-role="addCondition" >' + $.i18n('bh_aq_advancedSearch') + '&lt;/a>' +
+      '&lt;div class="bh-schema-btn-wrap">' +
+      '&lt;div class="bh-schema-edit-div">' +
+      '&lt;input type="text" placeholder="请输入方案名称" maxlength="20" class="bh-form-control bh-schema-name-input" />' +
+      '&lt;a  class="bh-btn bh-btn-success bh-btn-small"  bh-advanced-query-role="saveSchemaConfirm">' + $.i18n('bh_aq_save') + '&lt;/a>' +
+      '&lt;a class="bh-btn bh-btn-default bh-btn-small" bh-advanced-query-role="saveSchemaCancel">' + $.i18n('bh_aq_cancel') + '&lt;/a>' +
+      '&lt;span class="bh-checkbox" style="display:inline-block;vertical-align:middle;margin-left:8px;padding-top: 0;">&lt;label>' +
+      '&lt;input type="checkbox" bh-schema-role="fixCheckbox">&lt;i class="bh-choice-helper">&lt;/i>'+$.i18n('bh_aq_fixedToSearchBar') +
+      '&lt;/label>&lt;/span>' +
+      '&lt;/div>' +
+      '&lt;a class="bh-btn bh-btn-default bh-btn-small " bh-advanced-query-role="saveSchema" href="javascript:void(0)">'+$.i18n('bh_aq_saveAsScheme')+'&lt;/a>' +
+      '&lt;/div>' +
+      '&lt;a class="bh-mh-4" bh-advanced-query-role="advancedClose" href="javascript:void(0)">' + $.i18n('bh_aq_closeAdvancedSearch') + '&lt;/a>' +
+      '&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-advancedQuery-quick">' +
+      '&lt;div class="bh-advancedQuery-inputGroup bh-clearfix" style="padding-bottom: 8px;background: #fff;">' +
+      '&lt;div class="bh-advancedQuery-quick-search-wrap" >' +
+      '&lt;input type="text" class="bh-form-control"/>' +
+      '&lt;i class="iconfont icon-search" style="position: absolute;left: 6px;top: 6px;">&lt;/i>' +
+      //'&lt;div class="bh-advancedQuery-quick-select" bh-advanced-query-role="advancedEasySelect">' +
+      //'&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;a class="bh-btn bh-btn bh-btn-primary bh-btn-small" bh-advanced-query-role="easySearchBtn" >' + $.i18n('bh_aq_search') + '&lt;/a>' +
+      '&lt;a href="javascript:void(0);" class="bh-mh-8" bh-advanced-query-role="advancedOpen">[' + $.i18n('bh_aq_advancedSearch') + ']&lt;/a>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-advancedQuery-form" bh-advanced-query-role="quickSearchForm">' +
+      '&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-clearfix bh-advancedQuery-totalNum-wrap">' +
+      '&lt;p class="bh-advancedQuery-totalNum bh-pull-left">&lt;span>&lt;/span>' + $.i18n('bh_aq_recorders') + ' &lt;a href="javascript:void(0)" bh-advanced-query-role="clearBtn">[' + $.i18n('bh_aq_clearSearch') + ']&lt;/a>&lt;/p>' +
+      '&lt;div class="bh-advancedQuery-totalNum-line">&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;/div>');
+    options.$advanced = $('div[bh-advanced-query-role=advancedQuery]', element).css({
+      'overflow': 'hidden'
+    });
+    options.guid = guid;
+    $('body').append('&lt;div class="bh-advancedQuery-quick-select" bh-advanced-query-role="advancedEasySelect" data-guid="' + guid + '" >&lt;/div>');
+    _eventBind(options, element);
+
+    var easySearchPlaceholder = '';
+    $(modalData).each(function (i) {
+      //移除 hidden 项
+      var index = modalData.indexOf(this);
+      if (this.get('hidden')) {
+        modalData.splice(index, 1);
+        return true;
+      }
+      if (!this.xtype || this.xtype == 'text') {
+        // easySearchPlaceholder += this.caption + '/'; // 高级搜索关键词输入框placeholder
+      } else if ($.inArray(this.xtype, ["radiolist", "checkboxlist", "buttonlist", "multi-buttonlist"]) > -1) {
+        options._initCount++;
+      }
+      if (this.quickSearch) {
+        if (!this.xtype || this.xtype == 'text') {
+          easySearchPlaceholder += this.caption + '/';
+          easyArray.push(this);
+        } else {
+          quickArray.push(this);
+        }
+      }
+    });
+    // 高级搜索关键词字段添加placeholder
+    $('[bh-advanced-query-role=advancedInput]', element).attr('placeholder', easySearchPlaceholder.substr(0, easySearchPlaceholder.length - 1));
+    options.$advanced.data('modalarray', modalData);
+    options.$advanced.data('easyarray', easyArray);
+    options.$advanced.data('quickarray', quickArray);
+    if (options.searchModel !== 'easy') {
+      options._initCount = quickArray.length;
+    }
+    if (easyArray.length == 0 &amp;&amp; quickArray.length == 0) {
+      console &amp;&amp; console.warn("没有配置快速搜索字段,所以高级搜索控件无法展示!");
+    }
+
+    // 简单搜索 条件渲染
+    _renderEasySearch(easyArray, options);
+
+    // 快速搜索条件渲染
+    quickArray = JSON.parse(JSON.stringify(quickArray));
+    options.quickArray = quickArray;
+    var formOpt = {
+      root: '',
+      defaultOptions: {
+        tree: {
+          // checkboxes: true,
+          width: 300,
+          unblind: '/',
+          search: true // 高级搜索下拉树默认开启 搜索
+        },
+        "multi-tree": {
+          width: "300px",
+          unblind: '/',
+          search: true // 高级搜索下拉树默认开启 搜索
+        },
+        tree2: {
+          // checkboxes: true,
+          width: 300,
+          unblind: '/',
+          search: true // 高级搜索下拉树默认开启 搜索
+        },
+        "multi-tree2": {
+          width: "300px",
+          unblind: '/',
+          search: true // 高级搜索下拉树默认开启 搜索
+        },
+        switcher: {
+          checked: true
+        },
+        "date-range": {
+          defaultType: 'all'
+        },
+        "select": {
+          width: "300px"
+        },
+        "multi-select": {
+          width: "300px"
+        },
+        "multi-select2": {
+          width: "300px"
+        },
+        "date-local": {
+          width: "300px"
+        },
+        "date-ym": {
+          width: "300px"
+        },
+        "date-full": {
+          width: "300px"
+        }
+      },
+      showBlankOption: options.showBlankOption
+    };
+    formOpt.defaultOptions = $.extend({}, formOpt.defaultOptions, options.defaultOptions);
+    $('[bh-advanced-query-role=quickSearchForm]', options.$advanced).html(_renderQuickSearch(quickArray))
+      .emapFormInputInit(formOpt);
+
+    _renderAdvanceSearchForm(options, options.defaultItem);
+    // 初始化 方案 模块
+    if (options.schema) {
+      $.fn.emapSchema &amp;&amp; _initSchema(element, options);
+    } else {
+      $('.bh-rules-program, .bh-schema-btn-wrap', options.$advanced).hide();
+
+    }
+    if (document.documentMode == 9 &amp;&amp; JPlaceHolder) {
+      // WIS_EMAP_INPUT.placeHolder();
+      JPlaceHolder.fix(element);
+    }
+  };
+
+
+  $.fn.emapAdvancedQuery = function (options, params) {
+    var instance;
+    instance = this.data('plugin');
+    if (!instance) {
+      return this.each(function () {
+        return $(this).data('plugin', new Plugin(this, options));
+      });
+    }
+    if (options === true) return instance;
+    if ($.type(options) === 'string') return instance[options](params);
+    return this;
+  };
+
+  /**
+   * @memberof module:emapAdvancedQuery
+   * @event search
+   * @description 搜索触发的事件
+   * @param {Object} event - 事件对象
+   * @param {Stirng} conditions - 搜索条件字符串
+   * @param {Object} options - 搜索组件options对象
+   * @example
+   * $search.on('search'. function (event, conditions) {
+   *  console.log(event);
+   *  console.log(conditions);
+   *  $table.emapdatatable('reload', {querySetting: conditions});
+   * })
+   */
+
+   /**
+   * @memberof module:emapAdvancedQuery
+   * @event window-open
+   * @description 弹出选择字段弹窗的事件
+   * @param {Object} event - 事件对象
+   */
+
+  /**
+   * @memberof module:emapAdvancedQuery
+   * @prop {Object} data - 搜索数据模型
+   * @prop {Boolean} [allowAllOption=true] - 快速搜索的按钮组是否显示[全部]选项
+   * @prop {Boolean} [contextPath] - 快速搜索的按钮组是否显示[全部]选项
+   * @prop {Object} [defaultItem=[]] - 高级搜索模式默认展示的字段 [{name: "xxx"}]
+   * @prop {String} [searchModel=easy] - 默认搜索模式 可选值： 'easy' 简单模式  'advanced' 高级模式
+   * @prop {Boolean} [schema=true] - 是否开启保存搜索方案功能
+   * @prop {Boolean} [showTotalNum=false] - 是否展示表格数据联动显示
+   * @prop {Function} [initComplete] - 初始化成功的回调函数
+   * @prop {Boolean} [useGroup=false] - 在添加搜索字段中，是否将字段按照分组进行排序
+   * @prop {Boolean} [showBlankOption=true] - 下拉和下拉树是否添加空值选项
+   * @prop {Function} [beforeSearch] - 搜索触发前的回调函数， 如果返回false则不触发搜索
+   * @prop {Boolean} [useNewDropdownTree] - 是否使用ztee的下拉树替换原有的下拉树
+   * 
+   */
+  $.fn.emapAdvancedQuery.defaults = {
+    allowAllOption: true,
+    defaultItem: [],
+    searchModel: 'easy',
+    schema: true,
+    useGroup: false,
+    showTotalNum: false,
+    defaultOptions: {},
+    beforeSearch: undefined
+  };
+
+}).call(this);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:34 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

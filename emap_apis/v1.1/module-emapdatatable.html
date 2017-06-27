@@ -1,0 +1,4633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Module: emapdatatable</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title"> emapdatatable </h1> -->
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        
+            
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description">数据表格</div>
+        
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line8">line 8</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">配置</h3>
+
+        
+            
+<h4 class="name" id=".$.fn.emapdatatable.defaults"><span class="type-signature">(static) </span>$.fn.emapdatatable.defaults<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    其他参数参考jqxDatatable<a href="http://www.jqwidgets.com/jquery-widgets-documentation/documentation/jqxdatatable/jquery-datatable-api.htm?search=">http://www.jqwidgets.com/jquery-widgets-documentation/documentation/jqxdatatable/jquery-datatable-api.htm?search=</a>
+</div>
+
+
+
+
+
+
+
+    <h5 class="subsection-title">属性:</h5>
+
+    
+
+<table class="props ">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+        <th>属性</th>
+        
+
+        
+        <th>默认值</th>
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pk</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    WID
+                
+                </td>
+            
+
+            <td class="description last">数据主键字段</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>url</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">请求表格数据的后台接口, url和pagePath二选一必填</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pagePath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">请求表格数据页面地址, url和pagePath二选一必填</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">请求参数</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>datamodel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">一般为emap返回的数据模型</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>action</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">emap动作名</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>customColumns</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">自定义表格列,colIndex:该自定义位于表格第几列，从0开始，最后一列可以设置‘last’； colField: 自定义列作用的列模型字段； type: 自定义列类型，支持checkbox，link，tpl。chekcbox不可定义colField参数，如果定义了colIndex，则customColumns数组必须按照colIndex值由小到大排序</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>height</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Int</span>
+|
+
+<span class="param-type">Stirng</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">高度, 表格自适应高度传null</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pageable</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">是否分页</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pagerMode</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    advanced
+                
+                </td>
+            
+
+            <td class="description last">分页形式 'advanced' 'simple'</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverProcessing</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">是否开启服务端分页</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pageSizeOptions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    ['10', '20', '50', '100']
+                
+                </td>
+            
+
+            <td class="description last">分页条数选项</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>localization</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'zh-CN'
+                
+                </td>
+            
+
+            <td class="description last">语言选择</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>sortable</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">排序</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>selectionMode</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'custom'
+                
+                </td>
+            
+
+            <td class="description last">Sets or gets the selection mode. Possible values: "multipleRows", "singleRow" and "custom". In the "custom" mode, rows could be selected/unselected only through the API.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>enableBrowserSelection</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">Enables or disables the default text selection of the web browser.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>columnsResize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">Sets or gets the jqxDataTable's columnsResize.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>colHasMinWidth</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">列宽是否有默认最小值100px</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>schema</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">启用schema，必须定义 contextPath   &&  未定义contextPath时   schema 不生效</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>contextPath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">根路径</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>minLineNum</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Int</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">最小高度行数</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fastRender</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">快速渲染， 用于提高表格渲染速度</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>beforeSend</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">请求发送前的回调函数</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>downloadComplete</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">表格数据请求完成的回调</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mustSelect</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">自定义显示列弹窗是否开启必须勾选字段校验</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>columnsReorder</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">是否开启列拖拽排序</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line2250">line 2250</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>$el.emapdatatable({
+            pagePath: bs.api.pageModel,
+            action: 'T_PXXX_XSJBXX_QUERY',
+            customColumns: [{
+                colIndex: '0',
+                type: 'checkbox'
+            }]
+        });</code></pre>
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">方法API</h3>
+
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~addRow">addRow<span class="signature">(obj<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    编辑模式下添加行
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+        <th>属性</th>
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>obj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+        <th>属性</th>
+        
+
+        
+        <th>默认值</th>
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>rowIndex</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">在添加到第几行</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>rowData</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">添加的数据</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>rowPosition</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'first'
+                
+                </td>
+            
+
+            <td class="description last">添加到第一行或者最后一行</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line556">line 556</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~cancelDeleteRowInEditMode">cancelDeleteRowInEditMode<span class="signature">(opt, Number<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+        <th>属性</th>
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>opt</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">入参，因组件对字符做特殊处理，用于查询，所以此处规定入参为Object</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Number</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">opt.rowIndex 行索引</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line507">line 507</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~checkedRecords">checkedRecords<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    获取选中的数据
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line137">line 137</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~checkedRowsIndex">checkedRowsIndex<span class="signature">()</span><span class="type-signature"> &rarr; {Array}</span></h4>
+
+    
+
+
+
+<div class="description">
+    获取被勾选行的索引
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line171">line 171</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>返回:</h5>
+
+        
+<div class="param-desc">
+    行索引数组
+</div>
+
+
+
+<dl>
+    <dt>
+        类型：
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~deleteRow">deleteRow<span class="signature">(obj<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    编辑模式下删除行
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+        <th>属性</th>
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>obj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>rowIndex</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">删除第几行</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line582">line 582</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~deleteRowInEditMode">deleteRowInEditMode<span class="signature">(opt)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>opt</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">入参，因组件对字符做特殊处理，用于查询，所以此处规定入参为Object
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>rowIndex</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">行索引</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line485">line 485</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~enterEditMode">enterEditMode<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    进入表格编辑模式
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line371">line 371</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~export">export<span class="signature">(config)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    导出表格数据
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>config</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">配置参数，导出请求参数
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>root</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">根路径</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line329">line 329</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~getChangedRows">getChangedRows<span class="signature">()</span><span class="type-signature"> &rarr; {Array}</span></h4>
+
+    
+
+
+
+<div class="description">
+    获取已改变的数据，不包含待删除的数据
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line445">line 445</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>返回:</h5>
+
+        
+<div class="param-desc">
+    所有已改变的行的数据
+</div>
+
+
+
+<dl>
+    <dt>
+        类型：
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~getCurrentQueryParams">getCurrentQueryParams<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+
+    
+
+
+
+<div class="description">
+    获取当钱表格传到后台的查询条件，包含排序
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line116">line 116</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>返回:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        类型：
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~getModel">getModel<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    获取表格数据
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line232">line 232</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~getResult">getResult<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    获取当前表格内数据
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line199">line 199</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~getSort">getSort<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    获取表格排序
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line207">line 207</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~getToDeleteRows">getToDeleteRows<span class="signature">()</span><span class="type-signature"> &rarr; {Array}</span></h4>
+
+    
+
+
+
+<div class="description">
+    获取将要被删除的行索引
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line465">line 465</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>返回:</h5>
+
+        
+<div class="param-desc">
+    索引数组
+</div>
+
+
+
+<dl>
+    <dt>
+        类型：
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~getTotalRecords">getTotalRecords<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    获取数据总条数
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line191">line 191</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~getVisibleColumns">getVisibleColumns<span class="signature">()</span><span class="type-signature"> &rarr; {Array}</span></h4>
+
+    
+
+
+
+<div class="description">
+    获取当前表格内所有显示的列
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line356">line 356</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>返回:</h5>
+
+        
+<div class="param-desc">
+    可视的列
+</div>
+
+
+
+<dl>
+    <dt>
+        类型：
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~isInEditMode">isInEditMode<span class="signature">()</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+
+    
+
+
+
+<div class="description">
+    判断表格是否处于编辑模式
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line529">line 529</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>返回:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        类型：
+    </dt>
+    <dd>
+        
+<span class="param-type">Boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~leaveEditMode">leaveEditMode<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    退出表格编辑模式
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line389">line 389</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~reload">reload<span class="signature">(params)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    刷新表格数据
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">附带参数
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>_gotoFirstPage</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">callback 可以是function 或者是 true，true的话意味着强制跳回第一页_gotoFirstPage 如果callback为回调函数，此时需要调回第一页 则可以设置params._gotoFirstPage为true</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line63">line 63</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~reloadFirstPage">reloadFirstPage<span class="signature">(params, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    默认刷新表格回到首页
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">附带参数</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">回调函数</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line125">line 125</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~selectColumnsExport">selectColumnsExport<span class="signature">(params)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    导出 表格数据， 列为选择列
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">【url】：
+            /[root]/sys/emapcomponent/imexport/export.do
+
+           【参数 params】：
+            root: 
+            app：调用导出的应用名称，必填
+            module：调用导出的模块名，必填
+            page：调用导出的页面，必填
+            action：调用导出的动作，必填
+            colnames：导出时自定义的字段，多个用逗号分隔，选填  toUpperCase
+            analyse：自定义的导出过程分析服务，实现IImportAnalyse，选填
+            write：自定义的导出写文件服务，实现IExportWrite，选填
+            filename：自定义的导出文件名，选填</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line240">line 240</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~selectToShowColumns">selectToShowColumns<span class="signature">(action, params)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    展开选择列窗口
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>action</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">动作   {       type: //action type, 内置动作有 toggle(默认),export       handler: //action handler       param:  //action hander 的参数       columnsReorder:   //是否开启表格列排序   }   'toggle'  显示选择的列，隐藏未选择的列,默认值   'export'  导出表单， 支持选择列</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">action 动作 所需的参数</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line268">line 268</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~validateTable">validateTable<span class="signature">()</span><span class="type-signature"> &rarr; {Bollean}</span></h4>
+
+    
+
+
+
+<div class="description">
+    校验表格输入是否合法
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line538">line 538</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>返回:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        类型：
+    </dt>
+    <dd>
+        
+<span class="param-type">Bollean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+            </div>
+        
+    
+
+    
+
+    
+        <h3 class="subsection-title">事件</h3>
+
+        
+            
+
+    
+
+    <h4 class="name jd-api-title" id=".event:'editabletatable.cell.change'">'editabletatable.cell.change'</h4>
+
+    
+
+
+
+<div class="description">
+    可编辑表格单元格值改变事件
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>$tr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">DOM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">发生改变的行元素</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">改变后整行的值</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>key</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">发生改变的字段</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line2198">line 2198</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>示例</h5>
+    
+    <pre class="prettyprint"><code>$el.on('editabletatable.cell.change',function(e,$tr,value,key){    console.log(value);})</code></pre>
+
+
+
+        
+            
+
+    
+
+    <h4 class="name jd-api-title" id=".event:'editabletatable.complete'">'editabletatable.complete'</h4>
+
+    
+
+
+
+<div class="description">
+    可编辑表格渲染完成的事件
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line2188">line 2188</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>示例</h5>
+    
+    <pre class="prettyprint"><code>$el.on('editabletatable.complete',function(e){    console.log(instance.getResult());})</code></pre>
+
+
+
+        
+            
+
+    
+
+    <h4 class="name jd-api-title" id=".event:'editabletatable.renderingcomponent'">'editabletatable.renderingcomponent'</h4>
+
+    
+
+
+
+<div class="description">
+    可编辑表格开始渲染组件的事件
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line2178">line 2178</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>示例</h5>
+    
+    <pre class="prettyprint"><code>$el.on('editabletatable.renderingcomponent',function(e){    console.log(e);})</code></pre>
+
+
+
+        
+            
+
+    
+
+    <h4 class="name jd-api-title" id=".event:'emapdatatable.created'">'emapdatatable.created'</h4>
+
+    
+
+
+
+<div class="description">
+    表格初次渲染完成后触发的事件
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapDataTable.js.html">emapDataTable.js</a>, <a href="emapDataTable.js.html#line2168">line 2168</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>示例</h5>
+    
+    <pre class="prettyprint"><code>$el.on('emapdatatable.created',function(e,instance){    console.log(instance.getResult());})</code></pre>
+
+
+
+        
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapAvatarUpload.html">emapAvatarUpload</a>&nbsp;(头像裁剪上传)</li><li><a href="module-emapCard.html">emapCard</a>&nbsp;(卡片列表)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownTable.html">emapDropdownTable</a>&nbsp;(下拉表格/模糊搜索)</li><li><a href="module-emapDropdownTree.html">emapDropdownTree</a>&nbsp;(下拉树)</li><li><a href="module-emapEditableDataTable.html">emapEditableDataTable</a>&nbsp;(编辑表格)</li><li><a href="module-emapEditor.html">emapEditor</a></li><li><a href="module-emapFileDownload.html">emapFileDownload</a>&nbsp;(文件下载)</li><li><a href="module-emapFileUpload.html">emapFileUpload</a>&nbsp;(文件上传)</li><li><a href="module-emapForm.html">emapForm</a>&nbsp;(表单)</li><li><a href="module-emapgrid.html">emapgrid</a>&nbsp;(grid列表)</li><li><a href="module-emapImageUpload.html">emapImageUpload</a>&nbsp;(多图片上传)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapLinkage.html">emapLinkage</a>&nbsp;(表单联动)</li><li><a href="module-emapPDFViewer.html">emapPDFViewer</a>&nbsp;(PDF文件预览)</li><li><a href="module-emapRulesConstructor.html">emapRulesConstructor</a>&nbsp;(条件构造器)</li><li><a href="module-emapSchema.html">emapSchema</a>&nbsp;(方案模块)</li><li><a href="module-emapSingleImageUpload.html">emapSingleImageUpload</a>&nbsp;(单图片上传)</li><li><a href="module-emapUploadCore.html">emapUploadCore</a>&nbsp;(上传核心模块)</li><li><a href="module-emapValidate.html">emapValidate</a>&nbsp;(表单校验)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_EMAP_SERV.html">WIS_EMAP_SERV</a>&nbsp;(公共方法)</li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:35 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

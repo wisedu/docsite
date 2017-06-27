@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapImport/emapImportview.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapImport/emapImportview.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function($) {
+    /**
+     * @module WIS_IMPORT_VIEW
+     * @alias 导入view模块
+     * @description 导入组件view层
+     * @param  {object} option 
+     * @example
+    var option = {
+        title: '导入数据',
+        btns: {},
+        params: {
+            height: 450,
+            close: function() {
+                if ($.isFunction(opt.closeCallback)) {
+                    opt.closeCallback();
+                }
+            }
+        },
+        callback: function(){}
+    };
+    var view = new WIS_IMPORT_VIEW(option);
+    view.show();
+     */
+    var importView = function(option, queryTimes) {
+        this.option = option;
+        this.option.queryTimes = queryTimes;
+    };
+
+    var proto = importView.prototype;
+
+    /**
+     * @method show
+     * @description 显示导入窗口
+     */
+    proto.show = function() {
+        var title = this.option.title;
+        var btns = this.option.btns || {};
+        var params = $.extend({
+            height: 450
+        }, this.option.params);
+        var callback = this.option.callback;
+        this.$window = BH_UTILS.bhWindow(content, title, btns, params, callback);
+    };
+
+    /**
+     * @method hide
+     * @description 隐藏导入窗口
+     */
+    proto.hide = function() {
+        this.$window.jqxWindow('close');
+    };
+
+    /**
+     * @method getUploadBtn
+     * @description 获取上传按钮
+     */
+    proto.getUploadBtn = function() {
+        return this.$window.find('[role=fileInput]');
+    };
+
+    /**
+     * @method getDownloadImportTplBtn
+     * @description 获取下载导入模板按钮
+     */
+    proto.getDownloadImportTplBtn = function() {
+        return this.$window.find('[role="downTplBtn"]');
+    };
+
+    /**
+     * @method getImportConfirmBtn
+     * @description 获取导入确认按钮
+     */
+    proto.getImportConfirmBtn = function() {
+        return this.$window.find('[role=importConfirmBtn]');
+    };
+
+    /**
+     * @method getReImportBtn
+     * @description 获取重新导入按钮
+     */
+    proto.getReImportBtn = function() {
+        return this.$window.find('[role=reImportBtn]');
+    };
+
+    /**
+     * @method getDownloadResultBtn
+     * @description 获取下载导入结果按钮
+     */
+    proto.getDownloadResultBtn = function() {
+        return this.$window.find('a.emap-import-export');
+    };
+
+    /**
+     * @method getCloseBtn
+     * @description 获取关闭导入窗口按钮
+     */
+    proto.getCloseBtn = function() {
+        return this.$window.find('[role=closeConfirmBtn]');
+    };
+
+    /**
+     * @method renderImportTempFileResult
+     * @description 渲染导入临时文件结果
+     * @param {object} result - 导入结果
+     */
+    proto.renderImportTempFileResult = function(result) {
+        var step1Contents = this.$window.find(".emap-import-step-content");
+        // if (e.target.files) {
+        step1Contents.eq(0).hide();
+        step1Contents.eq(1).show();
+        if (result.isSuccess) {
+            step1Contents.eq(1).find('span.emap-import-file-name').text(result.file[0].name).attr('title', result.file[0].name);
+            if (result.fileReader) {
+                step1Contents.eq(1).find('span.emap-import-file-size').text('(' + parseInt(result.file[0].size / 1024) + 'k)');
+            } else {
+                step1Contents.eq(1).find('span.emap-import-file-size').hide();
+            }
+            this.getImportConfirmBtn().attr('disabled', false);
+        } else {
+            step1Contents.eq(1).find('span.emap-import-file-name').html('&lt;span class="bh-color-danger">' + $.i18n('bh-ip-uploadRightExcel') + '&lt;/span>').attr("title", result.file[0].name);
+            this.getImportConfirmBtn().attr('disabled', true);
+        }
+    };
+
+    /**
+     * @method renderImportingFileProgress
+     * @description 渲染导入文件进度条
+     */
+    proto.renderImportingFileProgress = function() {
+        var stepContent = this.$window.find('.emap-import-step1-content');
+        stepContent.children('a').hide();
+        stepContent.prepend('&lt;div class="emap-import-step1-loading-block bh-pull-right">&lt;div class="emap-sk-spinner emap-sk-spinner-fading-circle bh-pull-right" style="height: 28px; width: 28px;">' +
+            '&lt;div class="emap-sk-circle1 emap-sk-circle">&lt;/div>' +
+            '&lt;div class="emap-sk-circle2 emap-sk-circle">&lt;/div>' +
+            '&lt;div class="emap-sk-circle3 emap-sk-circle">&lt;/div>' +
+            '&lt;div class="emap-sk-circle4 emap-sk-circle">&lt;/div>' +
+            '&lt;div class="emap-sk-circle5 emap-sk-circle">&lt;/div>' +
+            '&lt;div class="emap-sk-circle6 emap-sk-circle">&lt;/div>' +
+            '&lt;div class="emap-sk-circle7 emap-sk-circle">&lt;/div>' +
+            '&lt;div class="emap-sk-circle8 emap-sk-circle">&lt;/div>' +
+            '&lt;div class="emap-sk-circle9 emap-sk-circle">&lt;/div>' +
+            '&lt;div class="emap-sk-circle10 emap-sk-circle">&lt;/div>' +
+            '&lt;div class="emap-sk-circle11 emap-sk-circle">&lt;/div>' +
+            '&lt;div class="emap-sk-circle12 emap-sk-circle">&lt;/div>' +
+            '&lt;/div>' +
+            '&lt;p class="bh-pull-right" style="margin-right: 12px;line-height:28px;">' + $.i18n('bh-ip-uploading') + '……&lt;/p>&lt;/div>');
+    };
+
+    /**
+     * @method renderProgress
+     * @description 根据后台数据渲染导入文件进度条
+     */
+    proto.changeProgressBar = function(resp) {
+        var width = resp.YWCS / resp.ZS * 100 + '%';
+        $('.emap-import-loading-bar div', this.$window).stop().animate({
+            width: width
+        }, this.option.queryTimes + 10);
+    };
+
+    /**
+     * @method renderUploadTempFileResult
+     * @description 渲染导入文件进度条
+     */
+    proto.renderUploadTempFileResult = function() {
+
+    };
+
+    /**
+     * @method renderSaveAttachmentResult
+     * @description 渲染保存临时文件结果
+     */
+    proto.renderSaveAttachmentResult = function() {
+
+    };
+
+    /**
+     * @method renderImportRownumResult
+     * @description 渲染导入数据条数结果
+     */
+    proto.renderImportRownumResult = function(result) {
+        if (result.code == '500') {
+            $('div.emap-import-step-content:eq(2)', this.$window).html('&lt;p>&lt;/p>');
+            $('.emap-import-step1-content', this.$window).find('div.emap-import-step1-loading-block').remove();
+            $('div.emap-import-step:eq(2)', this.$window).addClass('active').find('.emap-import-result-detail').html('&lt;span style="color: red">' + (result.msg || result.message || $.i18n('bh-ip-importFailed')) + '&lt;/span>');
+            return;
+        }
+
+        $('.emap-import-step2-count', this.$window).html($.i18n('bh-ip-numOfImportDatas') + result.rowNumber + $.i18n('bh-ip-piece'));
+        $('.emap-import-step1-content', this.$window).find('div.emap-import-step1-loading-block').remove();
+        $('div.emap-import-step:eq(1)', this.$window).addClass('active');
+        if (!result.useNewImport) {
+            $('.emap-import-loading-bar div', this.$window).animate({
+                width: '87%'
+            }, 3000);
+        }
+    };
+
+    /**
+     * @method renderImportCompleteResult
+     * @description 渲染导入完成后的结果视图
+     */
+    proto.renderImportCompleteResult = function(result, opt) {
+        var self = this;
+        if (result.status == 1) {
+            $('.emap-import-loading-bar div', self.$window).stop().animate({
+                'width': '100%'
+            }, 500, function() {
+                var callback = function() {};
+                if ($.isFunction(opt.importCallback)) {
+                    callback = opt.importCallback(result.total, result.success);
+                }
+                $("div.emap-import-step-content:eq(2)", self.$window).html('&lt;p class="bh-color-success">' + $.i18n('bh-ip-successInImport') + '&lt;/p>');
+                $("div.emap-import-step:eq(2)", self.$window).addClass("active").find(".emap-import-result-detail").html($.i18n('bh-ip-importFinished') + "， " + $.i18n('bh-ip-numOfSuccess') + result.success + $.i18n('bh-ip-piece') + "，" + $.i18n('bh-ip-numOfFail') + (result.total - result.success) + $.i18n('bh-ip-piece'));
+                if (callback) {
+                    callback($("div.emap-import-step:eq(2)", self.$window).find(".emap-import-export"));
+                }
+                if (result.downLoadUrl) {
+                    self.getDownloadResultBtn().attr('href', result.downLoadUrl).parent().show();
+                } else {
+                    self.getDownloadResultBtn().parent().show();
+                }
+                if (opt.autoClose) {
+                    self.hide();
+                }
+            });
+        } else {
+            $('div.emap-import-step-content:eq(2)', self.$window).html('&lt;p>&lt;/p>');
+            $('div.emap-import-step:eq(2)', self.$window).addClass('active').find('.emap-import-result-detail').html('&lt;span style="color: red">' + $.i18n('bh-ip-numOfFail') + (': ' + result.msg || ': ' + result.message || '') + '&lt;/span>');
+            if (!result.attachment) {
+                $('div.emap-import-step:eq(2)', self.$window).find('.emap-import-export').parent().hide();
+            }
+        }
+    };
+
+    /**
+     * @method renderReUploadBehaviour
+     * @description 渲染重新上传按钮
+     */
+    proto.renderReUploadBehaviour = function() {
+        var contents = this.$window.find('.emap-import-step1-content');
+        contents.eq(0).show();
+        contents.eq(1).hide();
+    };
+
+    window.WIS_IMPORT_VIEW = importView;
+
+    var content = '&lt;div class="emap-import-content">' +
+        '&lt;div class="emap-import-step active">' +
+        '&lt;h5 class="emap-import-step-title">' +
+
+        '&lt;span>1&lt;/span>' +
+        $.i18n('bh-ip-uploadFile') +
+        '&lt;div class="bh-color-caption emap-import-p emap-import-step1-intro bh-mb-8" style="line-height:20px;white-space:initial">' + $.i18n('bh-ip-firstTimeTips') + '&lt;a role="downTplBtn" href="javascript:void(0)">' + $.i18n('bh-ip-downloadModules') + '&lt;/a>' + $.i18n('bh-ip-viewing') + '&lt;/div>' +
+        '&lt;/h5>' +
+
+        '&lt;div class="emap-import-step-content emap-import-step1-content">' +
+        '&lt;a href="javascript:void(0)" class="bh-btn bh-btn-primary bh-btn-small emap-import-input-a">' +
+        $.i18n('bh-ip-startUploading') +
+        '&lt;input type="file" role="fileInput"/>' +
+        '&lt;/a>' +
+
+        '&lt;/p>' +
+        '&lt;/div>' +
+        '&lt;div class="emap-import-step-content emap-import-step1-content" style="display: none;">' +
+        '&lt;p class="bh-color-caption emap-import-p  emap-import-step1-file">' +
+        '&lt;span class="emap-import-file-name">&lt;/span>' +
+        '&lt;span class="emap-import-file-size">&lt;/span>' +
+        '&lt;/p>' +
+        '&lt;a href="javascript:void(0)" class="emap-import-reload-a bh-mh-8" role="reImportBtn">' + $.i18n('bh-ip-reupload') + '&lt;/a>' +
+        '&lt;a href="javascript:void(0)" role="importConfirmBtn" class="bh-btn bh-btn-primary bh-btn-small">' +
+        $.i18n('bh-ip-sureUpload') +
+        '&lt;/a>' +
+
+
+        '&lt;/div>' +
+        '&lt;/div>' +
+        '&lt;div class="emap-import-step ">' +
+        '&lt;h5 class="emap-import-step-title">' +
+        '&lt;span>2&lt;/span>' +
+        $.i18n('bh-ip-importDatas') +
+        '&lt;/h5>' +
+
+        '&lt;div class="emap-import-step-content">' +
+        '&lt;p class="emap-import-step2-intro">' + $.i18n('bh-ip-waitUploadedAutoImporting') + '&lt;/p>' +
+
+        '&lt;div class="emap-import-step2-content">' +
+        '&lt;div class="emap-import-loading-bar">' +
+        '&lt;div>&lt;/div>' +
+        '&lt;/div>' +
+        '&lt;p class="emap-import-step2-count">&lt;/p>' +
+        '&lt;/div>' +
+        '&lt;/div>' +
+        '&lt;/div>' +
+
+        '&lt;div class="emap-import-step ">' +
+        '&lt;h5 class="emap-import-step-title">' +
+        '&lt;span>3&lt;/span>' +
+        $.i18n('bh-ip-finish') +
+        '&lt;/h5>' +
+
+        '&lt;div class="emap-import-step-content emap-import-step3-content">' +
+
+        '&lt;p class="emap-import-result-detail">' + $.i18n('bh-ip-importDetails') + '&lt;/p>' +
+        '&lt;p>' + $.i18n('bh-ip-viewDetails') + '&lt;a class="emap-import-export" href="javascript:void(0)">' + $.i18n('bh-ip-downloadResult') + '&lt;/a>' + $.i18n('bh-ip-viewing') + '&lt;/p>' +
+        '&lt;button role="closeConfirmBtn" class="bh-btn bh-btn-default bh-btn-small bh-pull-right bh-mh-8 bh-mv-8">' + $.i18n('bh-ip-sureClose') + '&lt;/button>' +
+        '&lt;/div>' +
+        '&lt;/div>' +
+        '&lt;/div>';
+})(jQuery);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:34 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

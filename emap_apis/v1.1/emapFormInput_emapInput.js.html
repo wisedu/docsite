@@ -1,0 +1,2506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapFormInput/emapInput.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapFormInput/emapInput.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function (WIS_EMAP_INPUT, undefined) {
+  /**
+   * @module WIS_EMAP_INPUT
+   * @alias 表单控件公共方法
+   * @description WIS_EMAP_INPUT是一个封装了常用表单组件方法的全局对象，表单控件是以标签上的xtype属性作为控件类型的标识符，
+   * 所有带有xtype属性的标签都认为是一个表单控件，以data-name属性为字段name 的标识符
+   * @example
+   WIS_EMAP_INPUT.init($form, {root: '/emap'})
+   */
+
+
+  /**
+   * @method init
+   * @description 表单控件初始化
+   * @param {Object} element - 要实例化的控件占位DOM, 可以是单个控件占位或者表单外框
+   * @param {Object=} opt - 表单控件options 对象
+   * @example
+   * WIS_EMAP_INPUT.init($container, {});
+   */
+  WIS_EMAP_INPUT.init = function (element, opt) {
+    //控件初始化
+    opt = opt || {};
+    var options = $.extend({}, {
+      'root': ''
+    }, opt);
+    if ($(element).attr('xtype')) {
+      if ($(element).hasClass('bh-form-static') || $(element).attr('data-disabled') === true || $(element).attr('data-disabled') === 'true') {
+        var readonly = WIS_EMAP_INPUT.component[$(element).attr('xtype')].readonly
+        if (readonly) {
+          inputInit(element, options, 'readonly');
+        }
+        return;
+      } // 静态展示字段不做实例化
+      inputInit(element, options);
+    } else {
+      opt._inputInitCount = 0;
+      opt._inputInitCounter = 0;
+      $(element).find('[xtype]').each(function () {
+        if ($(this).hasClass('bh-form-static') || $(this).attr('data-disabled') === true || $(this).attr('data-disabled') === 'true' || (this.nodeName == 'TEXTAREA' &amp;&amp; this.hasAttribute('readOnly'))) {
+          if (WIS_EMAP_INPUT.component[$(this).attr('xtype')]['readonly']) {
+            inputInit(this, options, 'readonly');
+          } else {
+            return true;
+          }
+        } else {
+          // checkboxlist  radiolist 使用了jqx.dataAdapter 是同步请求渲染，不算在异步计数内
+          if ($.inArray($(this).attr('xtype'), ['buttonlist', 'multi-buttonlist', 'uploadfile', 'uploadsingleimage', 'uploadmuiltimage']) > -1) {
+            opt._inputInitCount++;
+          }
+          inputInit(this, options);
+        }
+      });
+      if (opt._inputInitCount === 0) {
+        // 当表单内不存在异步渲染的控件时
+        $(element).trigger('_init');
+      } else {
+        $(element).on('bhInputInitComplete', function () {
+          opt._inputInitCounter++;
+          if (opt._inputInitCounter == opt._inputInitCount) {
+            $(this).trigger('_init');
+          }
+        });
+      }
+    }
+
+    function inputInit(ele, options, method) {
+      var _this = $(ele);
+      var attr = _this.data('attr');
+      var jsonParam = {};
+      if (attr) {
+        jsonParam = attr.JSONParam || {};
+      }else{
+        jsonParam = _this.data('jsonparam') || {};
+      }
+      var metd = method || 'init';
+      if (typeof jsonParam == 'string') {
+        try {
+          jsonParam = JSON.parse(jsonParam.replace(/'/g, '"'));
+        } catch (e) {
+          console &amp;&amp; console.warn('无效的json param格式!');
+          jsonParam = {};
+        }
+      }
+
+      var inputParam = options.defaultOptions ? (options.defaultOptions[_this.attr('xtype')] || {}) : {};
+      // 对 itemOptions 的处理
+      if (options.itemOptions &amp;&amp; options.itemOptions[_this.data('name')]) {
+        $.extend(inputParam, options.itemOptions[_this.data('name')]);
+      }
+      var params = $.extend({}, inputParam, jsonParam);
+      var xtype = _this.attr('xtype') || 'text';
+      if (!WIS_EMAP_INPUT.component[xtype]) {
+        return console &amp;&amp; console.error(xtype + '控件类型未定义！');
+      }
+      WIS_EMAP_INPUT.component[xtype][metd](_this, params, options);
+    }
+  };
+
+  /**
+   * @method setValue
+   * @description 表单控件赋值
+   * @param {Object} element - 需要初始化的控件DOM
+   * @param {String} name - 字段的name
+   * @param {String} xtype - 控件类型
+   * @param {Object} val - 数据对象 如 {WID: 123}
+   * @param {String} root - emap跟路径, 上传控件时必传
+   * @example
+   * WIS_EMAP_INPUT.setValue($itemElement, 'WID', 'text', {WID: '123456', ''})
+   */
+  WIS_EMAP_INPUT.setValue = function (element, name, xtype, val, root) {
+    var _this = $(element);
+    if (!name) {
+      name = _this.data('name');
+    }
+
+    if (xtype == "undefined") xtype = "text";
+    xtype = xtype || 'text';
+    WIS_EMAP_INPUT.component[xtype].setValue(element, name, val, root);
+  };
+
+  /**
+   * @method formSetValue
+   * @description 表单赋值
+   * @param {Object} element - 表单容器
+   * @param {Object} val - 数据对象  如 {WID: 123}
+   * @param {Object} options - 表单的options对象
+   * @example 
+   * WIS_EMAP_INPUT.formSetValue($container, {
+   *      'WID': '123456',
+   *      'XB': '1',
+   *      'XB_DISPLAY': '男'
+   * }) 
+   */
+  WIS_EMAP_INPUT.formSetValue = function (element, val, options) {
+    var $element = $(element);
+    if (options &amp;&amp; options.readonly) {
+      // 只读表单
+      options.formValue = val;
+      $element.find('[xtype]').each(function () {
+        var name = $(this).data('name');
+        var _this = $(this);
+        var nameDisplay = null;
+        if (val[name] !== undefined &amp;&amp; val[name] !== null) {
+          switch ($(this).attr('xtype')) {
+          case 'multi-select':
+          case 'select':
+          case 'multi-select2':
+            if (val[name + '_DISPLAY']) {
+              setItemVal(val[name + '_DISPLAY'], val[name]);
+            } else {
+              var valueArr = val[name].split(',');
+              var nameArr = [];
+              if (_this.data('attr') &amp;&amp; _this.data('attr').optionData) {
+                var option_data = _this.data('attr').optionData;
+                if (option_data) {
+                  if (typeof option_data === 'string') {
+                    try {
+                      option_data = JSON.parse(option_data);
+                    } catch (e) {
+                      conosle &amp;&amp; console.error('非法的 optionData json 格式！！')
+                    }
+                  }
+                  $(option_data).each(function () {
+                    if ($.inArray(this.id, valueArr) > -1) {
+                      nameArr.push(this.name);
+                    }
+                  });
+                  setItemVal(nameArr.join(','), val[name]);
+                } else {
+                  option_data = WIS_EMAP_SERV.cloneObj(option_data)
+                }
+              } else {
+                if (!_this.data("url")) return console &amp;&amp; console.error('缺少url配置');
+                WIS_EMAP_INPUT.getInputOptions(_this.data("url"), function (res) {
+                  _this.data('model', res);
+
+                  $(res).each(function () {
+                    if ($.inArray(this.id, valueArr) > -1) {
+                      nameArr.push(this.name);
+                    }
+                  });
+                  setItemVal(nameArr.join(','), val[name]);
+                });
+              }
+            }
+            break;
+          case 'radiolist':
+            if (val[name + '_DISPLAY']) {
+              setItemVal(val[name + '_DISPLAY'], val[name]);
+            } else {
+              WIS_EMAP_INPUT.getInputOptions(_this.data("url"), function (res) {
+                _this.data('model', res);
+                $(res).each(function () {
+                  if (this.id == val[name]) {
+                    nameDisplay = this.name;
+                    return false;
+                  }
+                });
+              });
+            }
+            break;
+
+          case 'checkboxlist':
+            if (val[name + '_DISPLAY']) {
+              setItemVal(val[name + '_DISPLAY'], val[name]);
+            } else {
+              WIS_EMAP_INPUT.getInputOptions(_this.data("url"), function (res) {
+                _this.data('model', res);
+                var valueArr = val[name].split(',');
+                var nameArr = [];
+                $(res).each(function () {
+                  if ($.inArray(this.id, valueArr) > -1) {
+                    nameArr.push(this.name);
+                  }
+                });
+                setItemVal(nameArr.join(','), val[name]);
+              });
+            }
+
+            break;
+          case 'tree':
+            if (val[name + '_DISPLAY']) {
+              setItemVal(val[name + '_DISPLAY'], val[name]);
+            } else {
+              WIS_EMAP_INPUT.getInputOptions(_this.data("url"), function (res) {
+                _this.data('model', res);
+                var valueArr = val[name].split(',');
+                var nameArr = [];
+                $(res).each(function () {
+                  if ($.inArray(this.id, valueArr) > -1) {
+                    nameArr.push(this.name);
+                  }
+                });
+                setItemVal(nameArr.join(','), val[name]);
+              });
+            }
+            break;
+          case 'uploadfile':
+            $(this).emapFileDownload('destroy');
+            $(this).emapFileDownload($.extend({}, {
+              contextPath: options.root,
+              token: val[name],
+            }, JSON.parse(
+              decodeURI($(this).data('jsonparam')).replace(/"/g, '').replace(/'/g, '"')
+            )));
+            break;
+          case 'uploadsingleimage':
+          case 'uploadmuiltimage':
+            $(this).emapFileDownload('destroy');
+            $(this).emapFileDownload($.extend({}, {
+              model: 'image',
+              contextPath: options.root,
+              token: val[name]
+            }, JSON.parse(
+              decodeURI($(this).data('jsonparam')).replace(/"/g, '').replace(/'/g, '"')
+            )));
+            break;
+          case 'uploadphoto':
+            $(this).emapFilePhoto('destroy');
+            $(this).emapFilePhoto($.extend({}, {
+              token: val[name],
+              contextPath: options.root
+            }, JSON.parse(
+              decodeURI($(this).data('jsonparam')).replace(/"/g, '').replace(/'/g, '"')
+            )));
+            $('a', this).hide();
+            break;
+          case 'cache-upload':
+            $(this).cacheUpload('destroy');
+            $(this).cacheUpload($.extend({}, {
+              token: val[name],
+              readonly: true,
+            }, JSON.parse(
+              decodeURI($(this).data('jsonparam')).replace(/"/g, '').replace(/'/g, '"')
+            )));
+            break;
+          case 'switcher':
+            val[name + '_DISPLAY'] = parseInt(val[name]) ? '是' : '否';
+            setItemVal(val[name + '_DISPLAY'], val[name]);
+            break;
+          case 'textarea':
+            setItemVal(val[name], _this.data('attr'));
+            _this.trigger('input')
+          break;
+          default:
+            // 存在自定义组件含有字典值的情况
+            if (val[name + '_DISPLAY'] !== undefined) {
+              setItemVal(val[name + '_DISPLAY'], val[name], _this.data('attr'));
+            } else {
+              setItemVal(val[name], _this.data('attr'));
+            }
+          }
+        }
+
+        function setItemVal(val_dis, val, attr) {
+          if (val_dis != null) {
+            _this.text(val_dis).attr('title', val_dis).data('value', val);
+          } else if (attr) {
+            var option_data = attr.optionData;
+            var valueArr = val.split(',');
+            var nameArr = [];
+            if (option_data) {
+              if (typeof option_data === 'string') {
+                try {
+                  option_data = JSON.parse(option_data);
+                } catch (e) {
+                  return console &amp;&amp; console.error('无效的optionData json 格式！！');
+                }
+              } else {
+                option_data = WIS_EMAP_SERV.cloneObj(option_data);
+              }
+
+              $(option_data).each(function () {
+                if ($.inArray(this.id, valueArr) > -1) {
+                  nameArr.push(this.name);
+                }
+              });
+              var renderMethod = WIS_EMAP_CONFIG.xssSafeRender ? 'text' : 'html';
+              _this[renderMethod](nameArr.join(',')).attr('title', nameArr.join(',')).data('value', val[name]);
+            }
+          }
+        }
+      });
+    } else {
+      // 编辑表单
+      $element.find('[xtype]').each(function () {
+        var name = $(this).data('name');
+        var _this = $(this);
+        var xtype = _this.attr('xtype');
+        var renderMethod = WIS_EMAP_CONFIG.xssSafeRender ? 'text' : 'html';
+        //qiyu 2016-1-2 清空表单时，传入字段值为空，需要重置该控件
+        //qiyu 2016-3-17 清空表单请使用clear方法，以下这句话将被注释掉
+        //if (val[name] == null) {val[name] = ""}
+
+        // 为表格表单中的 只读字段赋值 &amp; 只读的textarea赋值
+        // if (options &amp;&amp; options.model == 't') {
+        if (_this.hasClass('bh-form-static') || _this.attr('xtype') == 'static') {
+          if (val[name] != null) {
+            if (val[name + '_DISPLAY'] !== undefined &amp;&amp; val[name + '_DISPLAY'] !== null) {
+
+              _this[renderMethod](val[name + '_DISPLAY']).attr('title', val[name + '_DISPLAY']).data('value', val[name]);
+            } else {
+              if (_this.data('attr') &amp;&amp; _this.data('attr').optionData) {
+                var option_data = _this.data('attr').optionData;
+                var valueArr = val[name].toString().split(',');
+                var nameArr = [];
+                if (option_data) {
+                  if (typeof option_data === 'string') {
+                    try {
+                      option_data = JSON.parse(option_data);
+                    } catch (e) {
+                      return console &amp;&amp; console.error('无效的optionData json 格式！！');
+                    }
+                  } else {
+                    option_data = WIS_EMAP_SERV.cloneObj(option_data);
+                  }
+                  $(option_data).each(function () {
+                    if ($.inArray(this.id + '', valueArr) > -1) {
+                      nameArr.push(this.name);
+                    }
+                  });
+                  _this[renderMethod](nameArr.join(',')).attr('title', nameArr.join(',')).data('value', val[name]);
+                }
+              } else {
+                _this[renderMethod](val[name]).attr('title', val[name]).data('value', val[name]);
+              }
+            }
+          }
+          return;
+        } else if (_this.attr('xtype') == 'textarea' &amp;&amp; _this.attr('readonly')) {
+          if (val[name] != null) {
+            var v = WIS_EMAP_CONFIG.xssSafeRender ? val[name] : BH_UTILS.uxss(val[name]);
+            _this.val(v);
+            _this.data('value',v);
+          }
+          return;
+        }
+
+        // }
+
+
+        if (val === undefined) {
+
+        } else if (val[name] !== undefined &amp;&amp; val[name] !== null) {
+          options = options || {}
+          WIS_EMAP_INPUT.setValue(_this, name, xtype, val, options.root || "");
+        }
+      });
+    }
+  };
+
+  /**
+   * @method getInputOptions
+   * @description 获取表单选项数据
+   * @param {String} url - 请求地址
+   * @param {function} callback - 请求成功的回调函数
+   * @description 
+   * WIS_EMAP_INPUT.getInputOptions($item.data('url'), function (res) {
+   *      $item.jqxDropdownList({source: res});
+   * }) 
+   */
+  WIS_EMAP_INPUT.getInputOptions = function (url, callback) {
+    // var dataAdapter = new $.jqx.dataAdapter({
+    //     url: url,
+    //     datatype: "json",
+    //     //async: false,
+    //     root: "datas>code>rows"
+    // }, {
+    //     loadComplete: function(records) {
+    //         callback(records.datas.code.rows);
+    //     }
+    // });
+
+    //qiyu 2016-11-19 将获取mock的url提取函数，在mock文件中重新定义
+    var source = {
+      url: url,
+      datatype: "json",
+      //async: false,
+      root: "datas>code>rows"
+    }
+    if (typeof window.MOCK_CONFIG != 'undefined') {
+      source = getSourceMock(source);
+    }
+    var dataAdapter = new $.jqx.dataAdapter(source, {
+      loadComplete: function (records) {
+        callback(records.datas.code.rows);
+      }
+    });
+
+    dataAdapter.dataBind();
+  };
+
+  /**
+   * @method formClear
+   * @description 表单附件清空,如果不传参数val，则清空表单中所有值; 如果传入参数是个数组，则清空该数组中为字段名称的控件值
+   * @param {Object} element - 表单容器DOM
+   * @param {String | Array} [val] - 需要清空的字段name,若不传则清空容器内所有的字段
+   * @param {Object} [options] - 表单options参数
+   * @example 
+   * WIS_EMAP_INPUT.formClear($container, ['WID', 'XM', 'XH']) 
+   */
+  WIS_EMAP_INPUT.formClear = function (element, val, options) {
+    var $element = $(element);
+    options = options || {};
+    if (options &amp;&amp; options.readonly) { // clear只读表单
+      if (val == undefined) {
+        $element.find('[xtype]').each(function () {
+          $(this).html("");
+        });
+        options.formValue = {};
+
+      } else {
+        for (var i = 0; i &lt; val.length; i++) {
+          $element.find('[data-name=' + val[i] + '][xtype]').html("");
+          options.formValue[val[i]] = "";
+        }
+      }
+    } else {
+      if (val === undefined) {
+        $element.find('[xtype]').each(function () {
+          var name = $(this).data('name');
+          var xtype = $(this).attr('xtype');
+          var _this = $(this);
+          WIS_EMAP_INPUT.setValue(_this, name, xtype, "", options.root);
+        });
+      } else {
+        for (var i = 0; i &lt; val.length; i++) {
+          var name = val[i];
+          var _this = $element.find('[data-name=' + name + '][xtype]');
+          var xtype = _this.attr('xtype');
+          var blank_val = {};
+          blank_val[name] = "";
+          WIS_EMAP_INPUT.setValue(_this, name, xtype, blank_val, options.root);
+        }
+      }
+    }
+  };
+
+  /**
+   * @method formGetValue
+   * @description 表单取值
+   * @param {Object} element - 表单容器DOM
+   * @param {Object} [options] - 表单options对象
+   * @returns {Object} 表单数据JSON对象
+   * @example
+   * WIS_EMAP_INPUT.formGetValue($container); 
+   */
+  WIS_EMAP_INPUT.formGetValue = function (element, options) {
+    var $element = $(element);
+    var formData;
+    if (options &amp;&amp; options.readonly) {
+      formData = options.formValue || {};
+      options.data.map(function (item) {
+        if (formData[item.name] === undefined) {
+          formData[item.name] = '';
+        }
+      });
+      return formData;
+    } else {
+      formData = {};
+      $element.find('[xtype]').each(function () {
+        var itemVal = "";
+
+        // 表格表单静态展示项
+        if ($(this).hasClass('bh-form-static') || ($(this).attr('readOnly') &amp;&amp; $(this).attr('xtype') === 'textarea')) {
+
+          if ($.inArray($(this).attr('xtype'), ['radiolist', 'checkboxlist', 'tree', 'multi-select', 'select']) > -1) {
+            formData[$(this).data('name') + "_DISPLAY"] = $(this).text();
+            itemVal = $(this).data('value');
+          } else {
+            itemVal = $(this).data('value');
+          }
+        } else {
+          itemVal = WIS_EMAP_INPUT.component[$(this).attr('xtype')].getValue($(this), formData);
+        }
+
+        formData[$(this).data('name')] = itemVal;
+      });
+      return formData;
+    }
+  };
+
+  /**
+   * @method getValue
+   * @description 表单项控件取值
+   * @param {Object} ele - 表单项控件DOM
+   * @param {Object} [formData] - 用于存放控件_DISPLAY 值的对象，若字段取值是字典，则将_DISPLAY值写到改对象上
+   * @returns {Object} 表单数据JSON对象
+   * @example
+   * var formData = {};
+   * WIS_EMAP_INPUT.getValue($item, formData); 
+   */
+  WIS_EMAP_INPUT.getValue = function (ele, formData) {
+    if (!$(ele).length) return console &amp;&amp; console.error('WIS_EMAP_INPUT.getValue 方法 ele参数不能为空');
+    var xtype = $(ele).attr('xtype') || 'text';
+    var itemVal = "";
+    // 表格表单静态展示项
+    if ($(ele).hasClass('bh-form-static') || ($(ele).attr('readOnly') &amp;&amp; $(ele).attr('xtype') === 'textarea')) {
+
+      if ($.inArray($(ele).attr('xtype'), ['radiolist', 'checkboxlist', 'tree', 'multi-select', 'select']) > -1) {
+        formData[$(ele).data('name') + "_DISPLAY"] = $(ele).text();
+        itemVal = $(ele).data('value');
+      } else {
+        itemVal = $(ele).data('value');
+      }
+    } else {
+      itemVal = WIS_EMAP_INPUT.component[$(ele).attr('xtype')].getValue($(ele), formData);
+    }
+    return itemVal === undefined ? '' : itemVal;
+  }
+
+  /**
+   * @method disable
+   * @description 表单控件 disable
+   * @param {Object} element - 控件DOM
+   * @example
+   * WIS_EMAP_INPUT.disable($('[data-name="WID"]'))
+   */
+  WIS_EMAP_INPUT.disable = function (element) {
+    if (!element || $(element).length == 0) {
+      console &amp;&amp; console.warn('Can not find field ');
+      return;
+    }
+    var item = $(element);
+    WIS_EMAP_INPUT.component[item.attr('xtype')].disable(item);
+    var formGroup = item.closest('.bh-form-group');
+    if (formGroup.length) {
+      formGroup.addClass('bh-disabled');
+    }
+  };
+
+  /**
+   * @method formDisable
+   * @description 表单disable
+   * @param {Object} element - 表单DOM
+   * @param {String | Array} [names] - 需要disable的字段name, 若不传则禁用表单中所有字段
+   * @example
+   * WIS_EMAP_INPUT.formDisable($container, ['WID', 'XB']) 
+   */
+  WIS_EMAP_INPUT.formDisable = function (element, names) {
+    if (!names) {
+      // 禁用整个表单
+      $('[xtype]', $(element)).each(function () {
+        WIS_EMAP_INPUT.disable(this);
+      });
+    } else if (names instanceof Array) {
+      // 多字段禁用
+      names.map(function (item) {
+        var inputElement = $('[data-name=' + item + ']', $(element));
+        if (inputElement.length == 0) {
+          console &amp;&amp; console.warn('Can not find field ' + item);
+          return;
+        }
+        WIS_EMAP_INPUT.disable(inputElement);
+      });
+    } else {
+      // 单字段禁用
+      var inputElements = $('[data-name=' + names + ']', $(element));
+      if (inputElements.length == 0) {
+        console &amp;&amp; console.warn('Can not find field ' + names);
+        return;
+      }
+      inputElements.each(function () {
+        WIS_EMAP_INPUT.disable(this);
+      });
+    }
+  };
+
+  /**
+   * @method enable
+   * @description 表单控件enable
+   * @param {Object} element - 控件DOM
+   * @example 
+   * WIS_EMAP_INPUT.enable($('[data-name="WID"]'))
+   */
+  WIS_EMAP_INPUT.enable = function (element) {
+    if (!element || $(element).length == 0) {
+      console &amp;&amp; console.warn('Can not find field ');
+      return;
+    }
+    var item = $(element);
+    WIS_EMAP_INPUT.component[item.attr('xtype')].enable(item);
+    var formGroup = item.closest('.bh-form-group');
+    if (formGroup.length) {
+      formGroup.removeClass('bh-disabled');
+    }
+  };
+
+  /**
+   * @method formEnable
+   * @description 表单enable
+   * @param {Object} element - 表单DOM
+   * @param {String | Array} [names] - 需要enable的字段name, 若不传则启用表单中所有字段
+   * @example 
+   *  WIS_EMAP_INPUT.formEnable($container, ['WID', 'XB', 'NL'])
+   */
+  WIS_EMAP_INPUT.formEnable = function (element, names) {
+    if (!names) {
+      // 启用整个表单
+      $('[xtype]', $(element)).each(function () {
+        WIS_EMAP_INPUT.enable(this);
+      });
+    } else if (names instanceof Array) {
+      // 多字段启用
+      names.map(function (item) {
+        var inputElement = $('[data-name=' + item + ']', $(element));
+        if (inputElement.length == 0) {
+          console &amp;&amp; console.warn('Can not find field ' + item);
+          return;
+        }
+        WIS_EMAP_INPUT.enable(inputElement);
+      });
+    } else {
+      // 单字段启用 
+      var inputElements = $('[data-name=' + names + ']', $(element));
+      if (inputElements.length == 0) {
+        console &amp;&amp; console.warn('Can not find field ' + names);
+        return;
+      }
+      inputElements.each(function () {
+        WIS_EMAP_INPUT.enable(this);
+      });
+    }
+  };
+
+  /**
+   * @method renderPlaceHolder   
+   * @description 根据数据模型项渲染单个字段的placeholder
+   * @param {Object} item - 字段数据模型
+   * @param {String} type - 取值类型，可选值： 'form' 'search' 'grid';
+   * @param {Object} [params] - 其他参数
+   * @param {Boolean} [params.showPlaceholder=false] - 是否添加placeHolder
+   * @returns {string}
+   * @example 
+   * WIS_EMAP_INPUT.renderPlaceHolder({
+   *      xtype: 'text',
+   *      name: 'WID',
+   *      caption: '编号'
+   * })
+   */
+  WIS_EMAP_INPUT.renderPlaceHolder = function (item, type, params) {
+    var attr = WIS_EMAP_SERV.getAttr(item, type);
+    var pam = params || {};
+    if (attr.inputReadonly &amp;&amp; !WIS_EMAP_INPUT.component[attr.xtype]['readonly']) {
+      if ($.inArray(attr.xtype, ['uploadfile', 'uploadsingleimage', 'uploadmuiltimage', 'cache-upload', 'direct-upload']) == -1) {
+        attr.xtype = "static";
+      }
+    }
+    var controlHtml = "";
+    switch (attr.xtype) {
+    case undefined:
+    case "text":
+      attr.xtype = "text";
+      controlHtml = '&lt;input class="bh-form-control" data-caption="{{caption}}" data-type="{{dataType}}" data-name="{{name}}" name="{{name}}" xtype="{{xtype}}" type="{{xtype}}" {{checkType}} {{JSONParam}}  {{dataSize}} {{checkSize}} {{checkExp}} ' + (attr.inputReadonly ? 'readOnly' : '') + ' ' + (pam.showPlaceholder ? 'placeholder="' + attr.placeholder + '"' : '') + ' />';
+      break;
+    case "textarea":
+      controlHtml = '&lt;div xtype="{{xtype}}" data-caption="{{caption}}" data-type="{{dataType}}" data-name="{{name}}" {{checkType}} {{dataSize}} {{checkSize}} {{checkExp}} {{JSONParam}} ' + (attr.inputReadonly ? 'readOnly' : '') + ' >&lt;/div>';
+      break;
+    case "radiolist":
+      controlHtml = '&lt;div xtype="{{xtype}}" data-caption="{{caption}}" data-type="{{dataType}}" class="bh-radio jqx-radio-group" data-name="{{name}}" {{url}} {{checkSize}} data-disabled={{inputReadonly}}>&lt;/div>';
+      break;
+    case "checkboxlist":
+      controlHtml = '&lt;div xtype="{{xtype}}" data-caption="{{caption}}" data-type="{{dataType}}" class="bh-checkbox" data-name="{{name}}" {{checkType}} {{url}} {{checkSize}} data-disabled={{inputReadonly}}>&lt;/div>';
+      break;
+    case "selecttable":
+    case "select":
+    case "multi-select2":
+    case "tree":
+    case "multi-tree":
+    case "date-local":
+    case "date-ym":
+    case "date-full":
+    case "date-range":
+    case "date-area":
+    case "switcher":
+    case "uploadfile":
+    case "uploadphoto":
+    case "uploadsingleimage":
+    case "uploadmuiltimage":
+    case "buttonlist":
+    case "multi-buttonlist":
+    case "multi-select":
+    case "div":
+    case "static":
+    case "number":
+    case "number-range":
+    default:
+      controlHtml = '&lt;div xtype="{{xtype}}" data-caption="{{caption}}" data-type="{{dataType}}" data-name="{{name}}" {{url}} {{format}} {{checkType}} {{JSONParam}} {{checkSize}} data-disabled={{inputReadonly}} ' +
+        (pam.showPlaceholder ? 'data-placeholder="' + attr.placeholder + '"' : '') +
+        '>&lt;/div>';
+      break;
+
+    }
+    controlHtml = controlHtml.replace(/\{\{xtype\}\}/g, attr.xtype)
+      .replace(/\{\{name\}\}/g, attr.name)
+      .replace(/\{\{dataType\}\}/g, attr.dataType)
+      .replace(/\{\{inputReadonly\}\}/g, attr.inputReadonly)
+      .replace(/\{\{caption\}\}/g, attr.caption);
+
+    // 解决 $$ 在replace中被 转义为$ 的问题
+    controlHtml = controlHtml.replace(/\{\{url\}\}/g, function () {
+      return attr.url ? ('data-url="' + attr.url + '"') : '';
+    });
+    controlHtml = controlHtml.replace(/\{\{format\}\}/g, attr.format ? ('data-format="' + attr.format + '"') : '');
+    controlHtml = controlHtml.replace(/\{\{checkType\}\}/g, attr.checkType ? ('data-checktype="' + encodeURI(attr.checkType) + '"') : '');
+    controlHtml = controlHtml.replace(/\{\{dataSize\}\}/g, attr.dataSize ? ('data-size="' + attr.dataSize + '"') : '');
+    controlHtml = controlHtml.replace(/\{\{checkSize\}\}/g, attr.checkSize ? ('data-checksize="' + attr.checkSize + '"') : '');
+    controlHtml = controlHtml.replace(/\{\{checkExp\}\}/g, attr.checkExp ? ('data-checkexp=' + encodeURI(attr.checkExp)) : '');
+
+    controlHtml = $(controlHtml);
+    if (attr.optionData) { // optionData 为下拉项数据
+      controlHtml.data('optiondata', attr.optionData);
+    }
+    if (attr.xtype == 'buttonlist' || attr.xtype == 'multi-buttonlist') {
+      controlHtml.addClass('bh-label-radio-group');
+    }
+
+    controlHtml.data('jsonparam', attr.JSONParam);
+    controlHtml.data('attr', attr);
+    return controlHtml;
+  };
+
+
+  /**
+   * @method placeHolder
+   * @description ie9下为文本框/文本域添加placeholder
+   * @param {object} ele 包含文本框的DOM容器 或者 文本框DOM
+   * @method {String} [method=] 执行的方法， 默认为fix， 可选值 resize 用于重新定位 placeHolder
+   * @example WIS_EMAP_INPUT.placeHolder($container);
+   */
+  WIS_EMAP_INPUT.placeHolder = function (ele, method) {
+    if (document.documentMode == 9) {
+      if (!ele) return;
+
+      if (method == 'resize') {
+        if ($(ele)[0].nodeName == 'INPUT') {
+          JPlaceHolder.resize($(ele).parent());
+        } else {
+          JPlaceHolder.resize(ele);
+        }
+        return
+      }
+      if ($(ele)[0].nodeName == 'INPUT' || $(ele)[0].nodeName == 'TEXTAREA') {
+        JPlaceHolder.fix($(ele).parent());
+      } else {
+        JPlaceHolder.fix(ele);
+      }
+    }
+  };
+
+  /**
+   * @method extend
+   * @description 表单控件扩展方法
+   * @param {Object} component - 需要注册的表单控件方法对象
+   * @param {String} component.xtype - 表单控件的xtype
+   * @param {String} component.init - 表单控件的实例化方法 function默认参数  ele, params
+   * @param {String} component.setValue - 表单控件的赋值方法 function默认参数  ele, name, val, root
+   * @param {String} component.getValue - 表单控件的取值方法 function默认参数  ele, formData
+   * @param {String} component.disable - 表单控件的禁用方法 function默认参数  ele
+   * @param {String} component.enable - 表单控件的启用方法 function默认参数  ele
+   * @example 
+   * WIS_EMAP_INPUT.extend({
+   *  xtype: 'xxx',
+   *  init: function(ele, params) {},
+   *  setValue: function(ele, name, val, root) {},
+   *  getValue: function(ele, formData) {},
+   *  disable: function(ele) {},
+   *  enable: function(ele) {}
+   * })
+   */
+  WIS_EMAP_INPUT.extend = function (component) {
+    if (!component.xtype) return console &amp;&amp; console.error('未指定自定义表单控件的xtype！');
+    if (WIS_EMAP_INPUT.core[component.xtype]) return console &amp;&amp; console.error('不能覆写表单默认控件类型' + compponent.xtype);
+    WIS_EMAP_INPUT.component[component.xtype] = component;
+  };
+
+  /**
+   * @memberof module:WIS_EMAP_INPUT
+   * @description 表单控件注册对象
+   * @prop {Object} select - 单选下拉，基于jqxDropdownList 封装
+   * @prop {Object} multi-select2 - 多选下拉， 基于jqxDropdownList封装
+   * @prop {Object} multi-select - 旧版多选下拉， 基于jqxCombobox封装，不推荐使用
+   * @prop {Object} selecttable - 下拉表格/模糊搜索， 基于jqxCombobox封装
+   * @prop {Object} date-ym - 年月选择框,基于jqxDateTimeInput封装， 默认 yyyy-MM
+   * @prop {Object} date-local - 日期选择框,基于jqxDateTimeInput封装， 默认 yyyy-MM-dd
+   * @prop {Object} date-full - 日期时间选择框,基于jqxDateTimeInput封装， 默认 yyyy-MM-dd HH:mm
+   * @prop {Object} date-range - 日期范围选择, 只能在高级搜索中使用，基于jqxDateTimeInput封装， 默认 yyyy-MM-dd
+   * @prop {Object} radiolist - 单选按钮组
+   * @prop {Object} checkboxlist - 多选按钮组
+   * @prop {Object} tree - 单选下拉树
+   * @prop {Object} multi-tree - 多选下拉树
+   * @prop {Object} switcher - 开关， 基于jqxSwitcheButton封装
+   * @prop {Object} buttonlist - 单选按钮组
+   * @prop {Object} multi-buttonlist - 多选按钮组
+   * @prop {Object} textarea - 计数文本域，基于bhTxtInput封装
+   * @prop {Object} number - 数字文本框，基于jqxNumberInput封装
+   * @prop {Object} number-range - 数字区间，基于jqxNumberInput封装
+   * @prop {Object} uploadfile - 文件上传，基于emapFileUpload封装
+   * @prop {Object} uploadsingleimage - 单图片上传，基于emapSingleFileUpload封装
+   * @prop {Object} uploadmuiltimage - 多图片上传，基于emapFileUpload封装
+   * @prop {Object} text - 文本
+   * @prop {Object} div - div占位
+   * @prop {Object} static - 表单静态字段
+   */
+  WIS_EMAP_INPUT.core = {
+    // 下拉框
+    "select": {
+      "init": _initSelect,
+      "setValue": function (ele, name, val, root) {
+        if (val[name] === undefined || val[name] === null || val[name] === '') {
+          // 清空字段
+          ele.jqxDropDownList('clearSelection');
+          return;
+        }
+
+        if (ele.jqxDropDownList('getItemByValue', val[name])) {
+          _setSelectValue(ele, val[name]);
+        } else {
+          if (val[name + '_DISPLAY']) {
+            ele.jqxDropDownList('addItem', {
+              id: val[name],
+              name: val[name + '_DISPLAY']
+            });
+            _setSelectValue(ele, val[name]);
+          } else {
+            loadSelectData(ele, undefined, undefined, undefined, function () {
+              _setSelectValue(ele, val[name]);
+            });
+            // WIS_EMAP_INPUT.getInputOptions(ele.data("url"), function (res) {
+            //     ele.jqxDropDownList('clear');
+            //     $(res).each(function () {
+            //         ele.jqxDropDownList('addItem', this);
+            //     });
+            //     _setSelectValue(ele, val[name]);
+            //     ele.data('loaded', true);
+            // });
+          }
+        }
+      },
+      "getValue": function (ele, formData) {
+        /**
+         * 已知 jqxDropdownList bug
+         * 通过下拉的搜索筛选后，选择的下拉项在取值时可能会与实际显示值不一致，初步检查是由于jqxDropdownList的取值是根据下拉项的index来计算的，
+         * 所以此处避免使用 getSelectedItem api
+         */
+        var value = ele.val()
+        var name = ele.data('name')
+        formData[name + "_DISPLAY"] = ''
+        if (value !== '' &amp;&amp; value !== undefined) {
+          var source = ele.jqxDropDownList('getItems')
+          if (source.length > 0) {
+            var source_item = source.filter(function (item) {return item.value === value})[0]
+            if (source_item) {
+              formData[name + "_DISPLAY"] = source_item.label
+            }
+          }
+        }
+        return value
+      },
+      "disable": function (ele) {
+        ele.jqxDropDownList({
+          disabled: true
+        });
+      },
+      "enable": function (ele) {
+        ele.jqxDropDownList({
+          disabled: false
+        });
+      }
+    },
+
+    "multi-select2": {
+      "init": _initSelect,
+      "setValue": function (ele, name, val, root) {
+        if (val[name] === undefined || val[name] === null || val[name] === '') {
+          // 清空字段
+          ele.jqxDropDownList('uncheckAll');
+          return;
+        }
+        var select2ValueArr = val[name].split(',');
+        if (val[name + '_DISPLAY'] === undefined || val[name + '_DISPLAY'] === null) {
+          WIS_EMAP_INPUT.getInputOptions(ele.data("url"), function (res) {
+            if (!ele.data('loaded')) {
+              $(res).each(function () {
+                ele.jqxDropDownList('addItem', this);
+              });
+              ele.data('loaded', true);
+            }
+
+            select2ValueArr.map(function (val) {
+              ele.jqxDropDownList('checkItem', val);
+            })
+          });
+          return;
+        }
+
+        var select2DisplayArr = val[name + '_DISPLAY'].split(',');
+
+        $(select2ValueArr).each(function (i) {
+          if (ele.jqxDropDownList('getItemByValue', select2ValueArr[i])) {
+            ele.jqxDropDownList('checkItem', select2ValueArr[i]);
+          } else {
+            ele.jqxDropDownList('addItem', {
+              id: select2ValueArr[i],
+              name: select2DisplayArr[i]
+            });
+            ele.jqxDropDownList('checkItem', select2ValueArr[i]);
+          }
+        });
+      },
+      "getValue": function (ele, formData) {
+        var items = ele.jqxDropDownList('getCheckedItems');
+        if (items &amp;&amp; items.length > 0) {
+          formData[ele.data('name') + "_DISPLAY"] = items.map(function (val) {
+            return val.label;
+          }).join(',');
+        }
+        return ele.val() === undefined ? "" : ele.val();
+      },
+      "disable": function (ele) {
+        ele.jqxDropDownList({
+          disabled: true
+        });
+      },
+      "enable": function (ele) {
+        ele.jqxDropDownList({
+          disabled: false
+        });
+      }
+    },
+
+    "multi-select": {
+      "init": function (ele, params) {
+        var _this = ele;
+        //qiyu 2016-11-19 将获取mock的url提取函数，在mock文件中重新定义
+        var source = {
+          url: _this.data("url"),
+          datatype: "json",
+          root: "datas>code>rows",
+          beforeLoadComplete: function (records) {
+            if (!_this.data('initdata')) {
+              _this.data('initdata', records);
+            }
+            return records;
+          },
+          formatData: function (data) {
+            data.pageSize = 10;
+            data.pageNumber = 1;
+            data.queryopt = JSON.stringify({
+              "name": "name",
+              "value": _this.jqxComboBox('searchString'),
+              "builder": "include",
+              "linkOpt": "AND"
+            });
+            return data;
+          }
+        };
+        if (typeof window.MOCK_CONFIG != 'undefined') {
+          source = getSourceMock(source);
+        }
+        var dataAdapter = new $.jqx.dataAdapter(source);
+        var inputOptions = $.extend({}, {
+          placeHolder: $.i18n('bh-eip-pleaseChoose'),
+          source: dataAdapter,
+          displayMember: "name",
+          multiSelect: true,
+          remoteAutoComplete: true,
+          // autoDropDownHeight: true,
+          enableBrowserBoundsDetection: true,
+          valueMember: "id",
+          minLength: 1,
+          width: "100%",
+          height: "26px",
+          disabled: _this.data('disabled') ? true : false,
+          search: function (searchString) {
+            dataAdapter.dataBind();
+          }
+        }, params);
+        _this.jqxComboBox(inputOptions)
+          .on('keyup open', 'input.jqx-combobox-input', function () {
+            var value = $(this).val();
+            var items = _this.jqxComboBox('getItems');
+            if (value == "" &amp;&amp; (!items || items.length == 0)) {
+              var initData = _this.data('initdata');
+              $(initData).each(function () {
+                _this.jqxComboBox('addItem', this);
+              });
+            }
+          });
+        _triggerFormChange(_this, 'select');
+        dataAdapter.dataBind();
+      },
+      "setValue": function (ele, name, val, root) {
+        if (val[name] === undefined || val[name] === null) {
+          // 清空字段
+          ele.jqxComboBox('clearSelection');
+          return;
+        }
+
+        if (val[name + '_DISPLAY'] !== undefined &amp;&amp; val[name + '_DISPLAY'] !== null) {
+          var currentArr = ele.jqxComboBox('getItems').map(function (value) {
+            return value.value;
+          });
+          var displayVal = val[name + '_DISPLAY'].split(',');
+          val[name].split(',').map(function (v, i) {
+            if ($.inArray(v, currentArr) &lt; 0) {
+              ele.jqxComboBox('addItem', {
+                id: v,
+                name: displayVal[i]
+              });
+            }
+            ele.jqxComboBox('selectItem', v);
+          });
+        } else {
+          if (val[name] === undefined || val[name] === null) {
+            // 清空表单的情况
+            ele.jqxComboBox('clearSelection');
+          } else {
+            WIS_EMAP_INPUT.getInputOptions(ele.data("url"), function (res) {
+              ele.data('model', res);
+              var valueArr = val[name].split(',');
+              var currentArr = ele.jqxComboBox('getItems').map(function (val) {
+                return val.value;
+              });
+              $(res).each(function () {
+                if ($.inArray(this.id, valueArr) > -1) {
+                  if ($.inArray(this.id, currentArr) &lt; 0) {
+                    ele.jqxComboBox('addItem', this);
+                  }
+                  ele.jqxComboBox('selectItem', this.id);
+                }
+              });
+            });
+          }
+        }
+      },
+      "getValue": function (ele, formData) {
+        var valueArray = [],
+          displayArray = [];
+        $(ele.jqxComboBox('getSelectedItems')).each(function () {
+          valueArray.push(this.value);
+          displayArray.push(this.label);
+        });
+        formData[ele.data('name') + "_DISPLAY"] = displayArray.join(',');
+        return valueArray.join(',');
+      },
+      "disable": function (ele) {
+        ele.jqxComboBox({
+          disabled: true
+        });
+      },
+      "enable": function (ele) {
+        ele.jqxComboBox({
+          disabled: false
+        });
+      }
+    },
+
+    "selecttable": {
+      "init": function (ele, params) {
+        var inputOptions = $.extend({}, {
+          url: ele.data('url'),
+          width: '100%'
+        }, params);
+        ele.emapDropdownTable(inputOptions);
+        _triggerFormChange(ele, 'select');
+      },
+      "setValue": function (ele, name, val, root) {
+        ele.emapDropdownTable('setValue', [val[name], val[name + '_DISPLAY']]);
+      },
+      "getValue": function (ele, formData) {
+        formData[ele.data('name') + '_DISPLAY'] = ele.emapDropdownTable('getText');
+        return ele.emapDropdownTable('getValue');
+        // return ele.val();
+      },
+      "disable": function (ele) {
+        ele.jqxComboBox({
+          disabled: true
+        });
+      },
+      "enable": function (ele) {
+        ele.jqxComboBox({
+          disabled: false
+        });
+      }
+    },
+
+    "date-ym": {
+      "init": _initDateInput,
+      "setValue": _setTextValue,
+      "getValue": function (ele, formData) {
+        return ele.val();
+      },
+      "disable": function (ele) {
+        ele.jqxDateTimeInput({
+          disabled: true
+        });
+      },
+      "enable": function (ele) {
+        ele.jqxDateTimeInput({
+          disabled: false
+        });
+      }
+    },
+
+    "date-local": {
+      "init": _initDateInput,
+      "setValue": _setTextValue,
+      "disable": function (ele) {
+        ele.jqxDateTimeInput({
+          disabled: true
+        });
+      },
+      "getValue": function (ele, formData) {
+        return ele.val();
+      },
+      "enable": function (ele) {
+        ele.jqxDateTimeInput({
+          disabled: false
+        });
+      }
+    },
+
+    "date-full": {
+      "init": _initDateInput,
+      "setValue": _setTextValue,
+      "getValue": function (ele, formData) {
+        return ele.val();
+      },
+      "disable": function (ele) {
+        ele.jqxDateTimeInput({
+          disabled: true
+        });
+      },
+      "enable": function (ele) {
+        ele.jqxDateTimeInput({
+          disabled: false
+        });
+      }
+    },
+
+    "date-range": {
+      "init": function (ele, params) {
+        // range: {//可选，设置时间可选的范围
+        //     max: 'today',  //可选，设置时间的最大可选范围，可传入'today'表示今天，或传入时间字符串，格式如'2015/02/05'
+        //     min: '2015/02/05' //可选，设置时间的最小可选范围，可传入'today'表示今天，或传入时间字符串，格式如'2015/02/05'
+        // },
+        // time:{//可选，初始化时显示的时间范围
+        //     start: '2015/01/05', //必填，时间字符串，格式如'2015/02/05'
+        //     end: '2015/06/01'//必填，时间字符串，格式如'2015/02/05'
+        // },
+        // selected: function(startTime, endTime){ //可选，选择时间后的回调，返回的参数startTime是选择的开始时间，endTime是选择的结束时间，返回的是时间字符串格式如'2015/02/05'
+        // }
+        var inputOptions = $.extend({}, {
+          format: ele.data('format')
+        }, params);
+
+        ele.bhTimePicker(inputOptions);
+
+        // TODO 需要 _formChange 事件触发
+      },
+      "setValue": function (ele, name, val, root) {
+        if (val === '' || val === undefined || val[name] === "") {
+          ele.bhTimePicker('setType', 'all');
+        } else {
+          var val_arr = val[name].split(',');
+          if (val_arr.length == 2) {
+            ele.bhTimePicker('setType', 'custom');
+            ele.bhTimePicker('setValue', {
+              startTime: val_arr[0],
+              endTime: val_arr[1]
+            });
+          }
+        }
+      },
+      "getValue": function (ele, formData) {
+        var rangeValue = ele.bhTimePicker('getValue');
+        var sValue = (rangeValue.startTime || '') + ',' + (rangeValue.endTime || '');
+        return sValue === ',' ? '' : sValue;
+      },
+      "disable": _defaultDisabled,
+      "enable": _defaultEnable
+    },
+
+    "radiolist": {
+      "init": function (ele, params) {
+        if (ele.data('init')) {
+          return;
+        }
+
+        if (ele.data('optiondata')) {
+          var option_data = ele.data('optiondata');
+          if (typeof option_data == 'string') {
+            try {
+              option_data = JSON.parse(option_data);
+            } catch (e) {
+              console &amp;&amp; console.error(_this.data('name') + 'optionData 格式错误, 必须是json格式');
+            }
+          } else {
+            option_data = WIS_EMAP_SERV.cloneObj(option_data)
+          }
+          _renderHtml(option_data, ele);
+          return
+        }
+
+        //qiyu 2016-11-19 将获取mock的url提取函数，在mock文件中重新定义
+        var source = {
+          url: ele.data("url"),
+          datatype: "json",
+          async: false,
+          root: "datas>code>rows"
+        };
+        if (typeof window.MOCK_CONFIG != 'undefined') {
+          source = getSourceMock(source);
+        }
+        var dataAdapter = new $.jqx.dataAdapter(source, {
+          loadComplete: function (records) {
+            var random = '_' + parseInt(Math.random() * 100000);
+            _renderHtml(records.datas.code.rows, ele);
+          }
+        });
+        dataAdapter.dataBind();
+        _triggerFormChange(ele, 'change');
+
+        function _renderHtml(data, ele) {
+          var listHtml = '';
+          $(data).each(function () {
+            listHtml += '&lt;label>' +
+              '&lt;input type="radio" name="' + ele.data('name') + '" value="' + this.id + '" data-caption="' + this.name + '" />' +
+              '&lt;i class="bh-choice-helper">&lt;/i>' + this.name +
+              '&lt;/label>';
+          });
+          ele.html(listHtml).data('init', true).trigger('bhInputInitComplete');
+        }
+      },
+      "setValue": function (ele, name, val, root) {
+        if (val[name] !== undefined &amp;&amp; val[name] !== null &amp;&amp; val[name] !== "") {
+          $('input[type=radio][value=' + val[name] + ']', ele).prop('checked', true);
+        } else {
+          $('input[type=radio]', ele).prop('checked', false);
+        }
+      },
+      "getValue": function (ele, formData) {
+        var itemText = ele.find('input[type=radio]:checked').map(function () {
+          return $(this).data('caption');
+        }).get().join(',');
+        formData[ele.data('name') + "_DISPLAY"] = itemText;
+        return ele.find('input[type=radio]:checked').map(function () {
+          return $(this).val();
+        }).get().join(',');
+      },
+      "disable": function (ele) {
+        $('input[type=radio]', ele).prop('disabled', true);
+      },
+      "enable": function (ele) {
+        $('input[type=radio]', ele).prop('disabled', false);
+      }
+    },
+
+    "checkboxlist": {
+      "init": function (ele, params) {
+        if (ele.data('init')) {
+          return;
+        }
+
+        if (ele.data('optiondata')) {
+          var option_data = ele.data('optiondata');
+          if (typeof option_data == 'string') {
+            try {
+              option_data = JSON.parse(option_data);
+            } catch (e) {
+              console &amp;&amp; console.error(_this.data('name') + 'optionData 格式错误, 必须是json格式');
+            }
+          } else {
+            option_data = WIS_EMAP_SERV.cloneObj(option_data)
+          }
+          _renderHtml(option_data, ele);
+          return
+        }
+
+        //qiyu 2016-11-19 将获取mock的url提取函数，在mock文件中重新定义
+        var source = {
+          url: ele.data("url"),
+          datatype: "json",
+          async: false,
+          root: "datas>code>rows"
+        };
+        if (typeof window.MOCK_CONFIG != 'undefined') {
+          source = getSourceMock(source);
+        }
+        var dataAdapter = new $.jqx.dataAdapter(source, {
+          loadComplete: function (records) {
+            var random = '_' + parseInt(Math.random() * 1000);
+            _renderHtml(records.datas.code.rows, ele);
+            // $(records.datas.code.rows).each(function () {
+            //  listHtml += '&lt;label>' +
+            //          '&lt;input type="checkbox" name="' + ele.data('name') + '" value="' + this.id + '" data-caption="' + this.name + '" />' +
+            //          '&lt;i class="bh-choice-helper">&lt;/i>' + this.name +
+            //          '&lt;/label>';
+            // });
+            // ele.html(listHtml).data('init', true);
+          }
+        });
+
+        // var dataAdapter = new $.jqx.dataAdapter({
+        //     url: ele.data("url"),
+        //     datatype: "json",
+        //     async: false,
+        //     root: "datas>code>rows"
+        // }, {
+        //     loadComplete: function(records) {
+        //         var random = '_' + parseInt(Math.random() * 1000);
+        //         _renderHtml(records.datas.code.rows, ele);
+        //         // $(records.datas.code.rows).each(function () {
+        //         //  listHtml += '&lt;label>' +
+        //         //          '&lt;input type="checkbox" name="' + ele.data('name') + '" value="' + this.id + '" data-caption="' + this.name + '" />' +
+        //         //          '&lt;i class="bh-choice-helper">&lt;/i>' + this.name +
+        //         //          '&lt;/label>';
+        //         // });
+        //         // ele.html(listHtml).data('init', true);
+        //     }
+        // });
+        dataAdapter.dataBind();
+        _triggerFormChange(ele, 'change');
+
+        function _renderHtml(data, ele) {
+          var listHtml = '';
+          $(data).each(function () {
+            listHtml += '&lt;label>' +
+              '&lt;input type="checkbox" name="' + ele.data('name') + '" value="' + this.id + '" data-caption="' + this.name + '" />' +
+              '&lt;i class="bh-choice-helper">&lt;/i>' + this.name +
+              '&lt;/label>';
+          });
+          ele.html(listHtml).data('init', true).trigger('bhInputInitComplete');
+        }
+      },
+      "setValue": function (ele, name, val, root) {
+        if (val[name] !== undefined &amp;&amp; val[name] !== null &amp;&amp; val[name] !== "") {
+          $(val[name].toString().split(',')).each(function () {
+            $('input[type=checkbox][value="' + this + '"]', ele).prop('checked', true);
+          });
+        } else {
+          $('input[type=checkbox]', ele).prop('checked', false);
+        }
+        ele.emapRepeater('setValue', val[name]);
+      },
+      "getValue": function (ele, formData) {
+        var itemText = ele.find('input[type=checkbox]:checked').map(function () {
+          return $(this).data('caption');
+        }).get().join(',');
+        formData[ele.data('name') + "_DISPLAY"] = itemText;
+        return ele.find('input[type=checkbox]:checked').map(function () {
+          return $(this).val();
+        }).get().join(',');
+      },
+      "disable": function (ele) {
+        $('input[type=checkbox]', ele).prop('disabled', true);
+      },
+      "enable": function (ele) {
+        $('input[type=checkbox]', ele).prop('disabled', false);
+      }
+    },
+
+    "tree": {
+      "init": _initTree,
+      "setValue": function (ele, name, val, root) {
+        //qiyu 2016-1-16
+        if (val[name] === undefined || val[name] === null || val[name] === '') {
+          // 清空下拉树 zhuhui 5-24
+          ele.emapDropdownTree("setValue", ['', $.i18n('bh-eip-pleaseChoose')]);
+          return;
+        }
+
+        if (val[name + '_DISPLAY']) {
+          ele.emapDropdownTree("setValue", [val[name], val[name + "_DISPLAY"]]);
+        } else {
+          WIS_EMAP_INPUT.getInputOptions(ele.data("url"), function (res) {
+            ele.data('model', res);
+            $(res).each(function () {
+              if (this.id == val[name]) {
+                ele.emapDropdownTree("setValue", [this.id, this.name]);
+                return false;
+              }
+            });
+          });
+        }
+      },
+      "getValue": function (ele, formData) {
+        formData[ele.data('name') + "_DISPLAY"] = ele.emapDropdownTree('getText');
+        return ele.emapDropdownTree('getValue');
+      },
+      "disable": function (ele) {
+        ele.emapDropdownTree('disable');
+      },
+      "enable": function (ele) {
+        ele.emapDropdownTree('enable');
+      }
+    },
+
+    "multi-tree": {
+      "init": _initTree,
+      "setValue": function (ele, name, val, root) {
+        //qiyu 2016-1-16
+        if (val[name] === undefined || val[name] === null || val[name] === '') {
+          // 清空下拉树 zhuhui 5-24
+          ele.emapDropdownTree("setValue", ['', $.i18n('bh-eip-pleaseChoose')]);
+          return;
+        }
+        ele.emapDropdownTree("setValue", [val[name], val[name + "_DISPLAY"]]);
+
+      },
+      "getValue": function (ele, formData) {
+        formData[ele.data('name') + "_DISPLAY"] = ele.emapDropdownTree('getText');
+        return ele.emapDropdownTree('getValue');
+      },
+      "disable": _defaultDisabled,
+      "enable": _defaultEnable
+    },
+
+    "tree2": {
+      "init": _initTree2,
+      "setValue": function (ele, name, val, root) {
+        //qiyu 2016-1-16
+        if (val[name] === undefined || val[name] === null || val[name] === '') {
+          // 清空下拉树 zhuhui 5-24
+          ele.emapDropdownZTree("setValue", ['', $.i18n('bh-eip-pleaseChoose')]);
+          return;
+        }
+
+        if (val[name + '_DISPLAY']) {
+          ele.emapDropdownZTree("setValue", [val[name], val[name + "_DISPLAY"]]);
+        } else {
+          WIS_EMAP_INPUT.getInputOptions(ele.data("url"), function (res) {
+            ele.data('model', res);
+            $(res).each(function () {
+              if (this.id == val[name]) {
+                ele.emapDropdownZTree("setValue", [this.id, this.name]);
+                return false;
+              }
+            });
+          });
+        }
+      },
+      "getValue": function (ele, formData) {
+        formData[ele.data('name') + "_DISPLAY"] = ele.emapDropdownZTree('getText');
+        return ele.emapDropdownZTree('getValue');
+      },
+      "disable": function (ele) {
+        ele.emapDropdownZTree('disable');
+      },
+      "enable": function (ele) {
+        ele.emapDropdownZTree('enable');
+      }
+    },
+    "multi-tree2": {
+      "init": _initTree2,
+      "setValue": function (ele, name, val, root) {
+        //qiyu 2016-1-16
+        if (val[name] === undefined || val[name] === null || val[name] === '') {
+          // 清空下拉树 zhuhui 5-24
+          ele.emapDropdownZTree("setValue", ['', $.i18n('bh-eip-pleaseChoose')]);
+          return;
+        }
+        ele.emapDropdownZTree("setValue", [val[name], val[name + "_DISPLAY"]]);
+      },
+      "getValue": function (ele, formData) {
+        formData[ele.data('name') + "_DISPLAY"] = ele.emapDropdownZTree('getText');
+        return ele.emapDropdownZTree('getValue');
+      },
+      "disable": function (ele) {
+        ele.emapDropdownZTree('disable');
+      },
+      "enable": function (ele) {
+        ele.emapDropdownZTree('enable');
+      }
+    },
+    "switcher": {
+      "init": function (ele, params) {
+        var inputOptions = $.extend({}, {
+          checked: false,
+          onLabel: '是',
+          offLabel: '否'
+        }, params);
+        ele.jqxSwitchButton(inputOptions);
+        _triggerFormChange(ele, 'change');
+      },
+      "setValue": function (ele, name, val, root) {
+        ele.jqxSwitchButton({
+          checked: val[name] * 1
+        });
+      },
+      "getValue": function (ele, formData) {
+        var itemVal = (ele.val() ? 1 : 0);
+        formData[ele.data('name') + "_DISPLAY"] = (itemVal ? $.i18n('bh-eip-yes') : $.i18n('bh-eip-no'));
+        return itemVal;
+      },
+      "disable": function (ele) {
+        ele.jqxSwitchButton('disable');
+      },
+      "enable": function (ele) {
+        ele.jqxSwitchButton('enable');
+      }
+    },
+
+    "uploadfile": {
+      "init": _initFileUpload,
+      "setValue": function (ele, name, val, root) {
+        var opt = $.extend({}, ele.data('defaultoptions'), {
+          contextPath: root,
+          token: val[name]
+        });
+        if (ele.data('disabled') == true || ele.data('disabled') == 'true') {
+          ele.emapFileDownload('destroy');
+          ele.emapFileDownload(opt);
+          return;
+        }
+        ele.emapFileUpload('destroy');
+        ele.emapFileUpload(opt);
+      },
+      "getValue": function (ele, formData) {
+        if (ele.data('disabled') == true || ele.data('disabled') == 'true') {
+          return ele.emapFileDownload('getValue');
+        }
+        return ele.emapFileUpload('getFileToken');
+      },
+      "disable": _disabledFileUpload,
+      "enable": _enableFileUpload
+    },
+
+    "uploadphoto": {
+      "init": _initFileUpload,
+      "setValue": function (ele, name, val, root) {
+        ele.emapFilePhoto('destroy');
+        ele.emapFilePhoto($.extend({}, ele.data('defaultoptions'), {
+          contextPath: root,
+          token: val[name]
+        }));
+      },
+      "getValue": function (ele, formData) {
+        return ele.emapFilePhoto('getFileToken');
+      },
+      "disable": _disabledFileUpload,
+      "enable": _enableFileUpload
+    },
+    "uploadsingleimage": {
+      "init": _initFileUpload,
+      "setValue": function (ele, name, val, root) {
+        var opt = $.extend({}, ele.data('defaultoptions'), {
+          contextPath: root,
+          token: val[name]
+        });
+        if (ele.data('disabled') == true || ele.data('disabled') == 'true') {
+          ele.emapFileDownload('destroy');
+          opt.model = 'image';
+          ele.emapFileDownload(opt);
+          return;
+        }
+        ele.emapSingleImageUpload('destroy');
+        ele.emapSingleImageUpload(opt);
+
+      },
+      "getValue": function (ele, formData) {
+        if (ele.data('disabled') == true || ele.data('disabled') == 'true') {
+          return ele.emapFileDownload('getValue');
+        }
+        return ele.emapSingleImageUpload('getFileToken');
+      },
+      "disable": _disabledFileUpload,
+      "enable": _enableFileUpload
+    },
+    "uploadmuiltimage": {
+      "init": _initFileUpload,
+      "setValue": function (ele, name, val, root) {
+        var opt = $.extend({}, ele.data('defaultoptions'), {
+          contextPath: root,
+          token: val[name]
+        })
+        if (ele.data('disabled') == true || ele.data('disabled') == 'true') {
+          ele.emapFileDownload('destroy');
+          opt.model = 'image';
+          ele.emapFileDownload(opt);
+          return;
+        }
+        ele.emapImageUpload('destroy');
+        ele.emapImageUpload(opt);
+      },
+      "getValue": function (ele, formData) {
+        return ele.emapImageUpload('getFileToken');
+      },
+      "disable": _disabledFileUpload,
+      "enable": _enableFileUpload
+    },
+
+    "buttonlist": {
+      "init": _initButtonList,
+      "setValue": function (ele, name, val, root) {
+        $('.bh-label-radio.bh-active', ele).removeClass('bh-active');
+        if (val[name] === undefined || val[name] === null || val[name] === '') {
+          var allBtn = $('.bh-label-radio[data-id=ALL]', ele);
+          if (allBtn.length > 0) {
+            allBtn.addClass('bh-active');
+          }
+        } else {
+          var selectBtn = $('.bh-label-radio[data-id="' + val[name] + '"]', ele);
+          if (selectBtn.length > 0) {
+            selectBtn.addClass('bh-active');
+          }
+        }
+      },
+      "getValue": function (ele, formData) {
+        var selectedItems = $('.bh-label-radio.bh-active', ele);
+        if (selectedItems.length) {
+          formData[ele.data('name') + "_DISPLAY"] = selectedItems.map(function (i, item) {
+            return $(item).data('name');
+          }).get().join(',');
+        }
+        return ele.bhButtonGroup('getValue');
+      },
+      "disable": _defaultDisabled,
+      "enable": _defaultEnable
+    },
+    "multi-buttonlist": {
+      "init": _initButtonList,
+      "setValue": function () {
+        // TODO
+      },
+      "getValue": function (ele, formData) {
+        var selectedItems = $('.bh-label-radio.bh-active', ele);
+        if (selectedItems.length) {
+          formData[ele.data('name') + "_DISPLAY"] = selectedItems.map(function (item) {
+            return $(item).data('name');
+          }).join(',');
+        }
+        return ele.bhButtonGroup('getValue');
+      },
+      "disable": _defaultDisabled,
+      "enable": _defaultEnable
+    },
+
+    "div": {
+      "init": function (ele, params, options) {},
+      "setValue": function () {},
+      "getValue": function (ele, formData) {
+        return ele.val();
+      },
+      "disable": _defaultDisabled,
+      "enable": _defaultEnable
+    },
+
+    "textarea": {
+      "init": function (ele, params, options) {
+        var inputOptions = $.extend({}, {
+          checkSize: ele.data('checksize'),
+          dataSize: ele.data('size'),
+          name: ele.data('name'),
+          placeholder: ele.data('attr') ? ele.data('attr').placeholder : '',
+          readonly: ele.data('attr') ? ele.data('attr').inputReadonly : false,
+          textareaEasyCheck: options.textareaEasyCheck
+        }, params);
+        // 对于 h 和 v的表单， 不渲染placeholder
+        if (options &amp;&amp; (options.model === 'h' || options.model === 'v')) {
+          inputOptions.placeholder = undefined
+        }
+        if (!options || options.textareaEasyCheck) {
+          inputOptions.limit = ele.data('checksize') ? ele.data('checksize') : parseInt(ele.data('size') / 3);
+        } else {
+          inputOptions.limit = ele.data('checksize') ? ele.data('checksize') : ele.data('size');
+        }
+        ele.bhTxtInput(inputOptions);
+        _triggerFormChange(ele, 'change');
+      },
+      "setValue": function (ele, name, val, root) {
+        ele.bhTxtInput('setValue', (val[name] !== null &amp;&amp; val[name] !== undefined) ? val[name] : "")
+      },
+      "getValue": function (ele, formData) {
+        return ele.bhTxtInput('getValue');
+      },
+      "disable": function (ele) {
+        ele.bhTxtInput('disabled', true);
+      },
+      "enable": function (ele) {
+        ele.bhTxtInput('disabled', false);
+      },
+      "readonly": function (ele, params, options) {
+        var inputOptions = $.extend({}, {
+          checkSize: ele.data('checksize'),
+          dataSize: ele.data('size'),
+          name: ele.data('name'),
+          textareaEasyCheck: options.textareaEasyCheck
+        }, params);
+        if (inputOptions.height !== undefined) {
+          ele.css('height', inputOptions.height)
+          return
+        }
+        if (inputOptions.autoHeight === true) {
+          var $heightHook = $('&lt;div style="z-index: -1000;word-break: break-all;padding: 2px;position: fixed;opacity: 0;">&lt;/div>').width(ele.width());
+          $('body').append($heightHook);
+          ele.on('input', function () {
+            var value = this.value
+            var minHeight = 74;
+            // 动态计算高度
+            $heightHook.html(handleHookValue(value));
+            var hookHeight = $heightHook.height();
+            if (hookHeight >= 74) {
+              if (ele.height() != hookHeight) {
+                ele.height(hookHeight);
+              }
+            } else if (ele.height() > minHeight) {
+              ele.height(minHeight);
+            }
+          })
+        }
+        function handleHookValue(val) {
+          return val.replace(/&lt;/g, '&amp;lt;').replace(/>/g, '&amp;gt;').replace(/\n|\t/g, '&lt;br>');
+        }
+      }
+    },
+
+    "static": {
+      "init": function () {},
+      "setValue": function (ele, name, val, root) {
+        if (val[name + "_DISPLAY"] !== undefined) {
+          ele.text(val[name + "_DISPLAY"])
+          ele.data('valuedisplay', val[name + '_DISPLAY'])
+        } else {
+          ele.text(val[name])
+        }
+        ele.data('value', val[name]);
+      },
+      "getValue": function (ele, formData) {
+        if (ele.data('valuedisplay') !== undefined) {
+          formData[ele.data('name') + "_DISPLAY"] = ele.data('valuedisplay')
+        }
+        return ele.data('value');
+      },
+      "disable": _defaultDisabled,
+      "enable": _defaultEnable
+    },
+
+    "number": {
+      "init": function (ele, params) {
+        var inputOptions = $.extend({}, {
+          inputMode: 'simple',
+          spinButtons: true,
+          decimal: null,
+          decimalDigits: 0,
+          promptChar: ''
+        }, params);
+        ele.jqxNumberInput(inputOptions);
+        _triggerFormChange(ele, 'change');
+      },
+      "setValue": function (ele, name, val, root) {
+        var value = '';
+        if ($.isPlainObject(val)) {
+          value = (val[name] !== null &amp;&amp; val[name] !== undefined) ? val[name] : "";
+        } else {
+          value = val;
+        }
+        if (value === '') {
+          ele.val(null);
+        } else {
+          _setTextValue(ele, name, val, root);
+        }
+      },
+      "getValue": function (ele, formData) {
+        return ele.val() || ele.find('input').val();
+      },
+      "disable": function (ele) {
+        ele.jqxNumberInput({
+          disabled: true
+        });
+      },
+      "enable": function (ele) {
+        ele.jqxNumberInput({
+          disabled: false
+        });
+      }
+    },
+
+    "number-range": {
+      "init": function (ele, params) {
+        ele.bhNumRange(params);
+      },
+      "setValue": function (ele, name, val, root) {
+        if (val[name] === undefined || val[name] === null || val[name] === '') {
+          ele.bhNumRange('setValue', {
+            input1: null,
+            input2: null
+          });
+        } else {
+          var valArr = val[name].toString().split(',');
+          if (valArr.length == 1) valArr[1] = valArr[0];
+          ele.bhNumRange('setValue', {
+            input1: valArr[0],
+            input2: valArr[1]
+          });
+        }
+      },
+      "getValue": function (ele, formData) {
+        return ele.bhNumRange('getValue');
+      },
+      "disable": function (ele) {
+        ele.bhNumRange('disabled', true);
+      },
+      "enable": function (ele) {
+        ele.bhNumRange('disabled', false);
+      }
+    },
+
+    "text": {
+      "init": function (ele, params) {
+        ele.jqxInput({
+          width: '100%'
+        });
+        _triggerFormChange(ele, 'change');
+      },
+      "setValue": function(ele, name, val, root) {
+        ele.val((val[name] !== null &amp;&amp; val[name] !== undefined) ? val[name] : "");
+        ele.keyup();
+      },
+      "getValue": function (ele, formData) {
+        var value = $.trim(ele.val());
+        var dataType = ele.data('type');
+        if (value === '') return '';
+        if (dataType) {
+          if ($.inArray(dataType.toLowerCase(), ['number', 'int', 'integer']) > -1) {
+            value = value * 1;
+            if (!isNaN(value)) {
+              return value;
+            }
+          }
+        }
+        return $.trim(ele.val());
+      },
+      "disable": _defaultDisabled,
+      "enable": _defaultEnable
+    }
+
+  };
+
+  WIS_EMAP_INPUT.component = (function () {
+    return $.extend({}, WIS_EMAP_INPUT.core, {});
+  })();
+
+  /**
+   * @method getConvertCondition
+   * @description 将表单取值数据转化为搜索条件
+   * @param {Object} form_data - 表单数据
+   * @param {Object} model - 数据模型
+   * @param {Boolean} [operate_blank_value=false] - 是否处理空值（包含两部分 1.去除Value为空的数据  2.将value为@__blank__value的数据value变为""）
+   * @return 高级搜索条件 
+   */
+  WIS_EMAP_INPUT.getConvertCondition = function (form_data, model, operate_blank_value) {
+    var condition = [];
+    var text_fields = model.map(function (item) {
+      if (!item.xtype || item.xtype == 'text') {
+        return item.name;
+      }
+    });
+    for (var k in form_data) {
+      if (operate_blank_value === true &amp;&amp; form_data[k] === '') {
+        continue;
+      }
+      if (/_DISPLAY$/.test(k)) continue;
+      var modelItem = model.filter(function (item) {
+        return item.name == k
+      })[0];
+      if (!modelItem) continue;
+      var item_filter = {
+        name: k,
+        caption: modelItem.caption,
+        linkOpt: "AND",
+        builderList: modelItem.builderList,
+        builder: modelItem.defaultBuilder,
+        value: form_data[k]
+      };
+      if (form_data[k + '_DISPLAY'] !== undefined) {
+        item_filter.value_display = form_data[k + '_DISPLAY'];
+      }
+      if (operate_blank_value === true) {
+        item_filter.value = item_filter.value === '@__blank__value' ? '' : item_filter.value;
+      }
+      condition.push(item_filter);
+    }
+    return _adaptCondition(condition, model);
+    // 搜索条件数据适配
+    function _adaptCondition(condition, model) {
+      var resultCondition = [];
+      var len = condition.length;
+      for (var i = 0; i &lt; len; i++) {
+        var condition_item = condition[i];
+        if (!(condition_item instanceof Array)) {
+          var model_item = model.filter(function (m_item) {
+            return m_item.name == condition_item.name;
+          })[0];
+          var attr = WIS_EMAP_SERV.getAttr(model_item);
+          // 文本类型控件包含 , 时  builder转化为多值包含
+          if ((!attr.xtype || attr.xtype == 'text') &amp;&amp; condition_item.value.toString().indexOf(',') > 0) {
+            condition_item.builder = 'm_value_include';
+          }
+          // 按钮组类型的控件，将value转为string
+          else if (attr.xtype === 'buttonlist' || attr.xtype === 'multi-buttonlist') {
+            if (condition_item.value !== undefined &amp;&amp; condition_item.value !== null) {
+              condition_item.value = condition_item.value + '';
+            }
+          }
+          // number 类型，过滤value中的非数字
+          else if (attr.xtype === 'number') {
+            if (condition_item.value) {
+              condition_item.value = condition_item.value.toString().replace(/\D/g, '')
+            }
+            condition_item.value = condition_item.value === null ? '' : numVal * 1;
+          }
+          // 下拉多选、复选框、多选按钮组类型, builder 转化为多值相等
+          else if (attr.xtype == 'multi-select2' || attr.xtype == 'checkboxlist' || attr.xtype == 'multi-buttonlist' || /multi-tree/.test(attr.xtype)) {
+            // 对于空值选项 不支持多值相等
+            if (condition_item.value !== '@__blank__value' &amp;&amp; /,/.test(condition_item.value)) {
+              if (condition_item.builder === 'equal' || condition_item.builder === 'include') {
+                condition_item.builder = 'm_value_' + condition_item.builder 
+              }
+            } else if (condition_item.value === '@__blank__value' &amp;&amp; (condition_item.builder === 'm_value_equal' || condition_item.builder === 'm_value_include')) {
+              // 多值相等或多值包含 下 选择空值时， 转为相等或包含
+              condition_item.builder = condition_item.builder.replace(/m_value_/, '');
+            }
+          }
+          // 类型为date-range日期范围  num-range数字区间 时, 拆分成 两个条件
+          else if (attr.xtype == 'date-range' || attr.xtype == 'number-range') {
+            var date_value = condition_item.value.split(',');
+            if (date_value[0] !== "") {
+              condition_item.builder = 'moreEqual';
+              condition_item.value = date_value[0];
+            }
+            if (date_value[1] !== "" &amp;&amp; date_value[1] !== undefined) {
+              resultCondition.push({
+                name: condition_item.name,
+                caption: condition_item.caption,
+                builder: 'lessEqual',
+                linkOpt: 'AND',
+                builderList: 'cbl_Other',
+                value: date_value[1]
+              });
+            }
+          }
+        }
+        resultCondition.push(condition_item)
+      }
+      return resultCondition;
+    }
+  }
+
+  /**
+   * @method filterCondition
+   * @description 过滤搜索条件，将空值('')去掉，将空白值(@__blank__value)设置为空值('')
+   * @param {Array|String} condition - 搜索条件
+   * @return {Array} - 过滤后的搜索条件
+   */
+  WIS_EMAP_INPUT.filterCondition = function (condition) {
+    var con = condition;
+    var result = [];
+    if (typeof condition == 'string') {
+      con = JSON.parse(con);
+    }
+    con.map(function (item, i) {
+      if (item instanceof Array) {
+        result.push(WIS_EMAP_INPUT.filterCondition(item));
+      } else {
+        if (item.value !== '') {
+          if (item.value === '@__blank__value') {
+            item.value = '';
+          }
+          result.push(item);
+        }
+      }
+    })
+    return result;
+  }
+
+  function _initSelect(ele, params, options) {
+    var _this = $(ele);
+    var xtype = _this.attr('xtype');
+    var placeholder_option = {
+      id: '',
+      name: $.i18n('bh-eip-pleaseChoose'),
+      uid: ''
+    };
+    var blank_option = {
+      id: '@__blank__value',
+      name: $.i18n('bh-eip-empty'),
+      uid: ''
+    };
+    var source = [placeholder_option];
+    var inputOptions = $.extend({}, {
+      placeHolder: ele.attr('data-placeholder') || $.i18n('bh-eip-pleaseChoose'),
+      source: source,
+      displayMember: "name",
+      valueMember: "id",
+      itemHeight: 28,
+      enableBrowserBoundsDetection: true,
+      filterable: true,
+      width: "100%",
+      filterPlaceHolder: $.i18n('bh-eip-pleaseSeach'),
+      searchMode: 'containsignorecase',
+      disabled: _this.data('disabled') ? true : false
+    }, params);
+
+    if (WIS_EMAP_CONFIG.dropDownOneKeySelect) {
+      inputOptions.oneKeySelect = WIS_EMAP_CONFIG.dropDownOneKeySelect;
+    }
+    try {
+      delete inputOptions.formatData;
+    } catch (e) {}
+
+    var changeEvent = 'change';
+
+    if (xtype === 'multi-select2') {
+      inputOptions.source = [];
+      inputOptions.checkboxes = true;
+      changeEvent = 'close';
+    }
+    // 高级搜索匹配空值@__blank__value
+    if (options &amp;&amp; options.showBlankOption) {
+      source.push(blank_option);
+    }
+    _triggerFormChange(_this, changeEvent);
+    if (_this.data('optiondata') || (_this.data('attr') &amp;&amp; _this.data('attr').optionData)) {
+      var option_data = _this.data('optiondata') || _this.data('attr').optionData;
+      if (typeof option_data == 'string') {
+        try {
+          option_data = JSON.parse(option_data);
+        } catch (e) {
+          console &amp;&amp; console.error(_this.data('name') + 'optionData 格式错误, 必须是json格式');
+        }
+      } else {
+        option_data = WIS_EMAP_SERV.cloneObj(option_data)
+      }
+      if (inputOptions.checkboxes !== true) {
+        option_data.splice(0, 0, placeholder_option);
+      }
+      if (inputOptions.optionData !== undefined) {
+        delete inputOptions.optionData
+      }
+      _this.jqxDropDownList(inputOptions);
+      _this.jqxDropDownList({
+        source: option_data
+      });
+      return;
+    }
+
+    _this.jqxDropDownList(inputOptions).on('open', function (e) {
+      loadSelectData($(this), e, params, options);
+    });
+
+    // 下拉框收起时，将下拉框的搜索框中内容清空， 否则会对select取值造成影响
+    _this.on('close', function () {
+      $(this).jqxDropDownList('clearFilter');
+      // 下拉框关闭时.重新定位下拉元素， 防止在纸质弹窗中 将页脚撑开
+      // 延迟300 避免收起过程中的定位闪动
+      setTimeout(function () {
+        ele.jqxDropDownList('listBoxContainer').parent().css({top: 0})
+      }, 300)
+    });
+
+    // 高级搜索中，下拉多选的空值联动， 当选中空值项时，将其他项取消勾选
+    var flag = false;
+    if (options &amp;&amp; options.showBlankOption &amp;&amp; xtype === 'multi-select2') {
+      _this.on('checkChange', function (e) {
+        var args = e.args;
+        if (!args || flag) return;
+        flag = true;
+        // 勾选空值时，将其他选项取消勾选
+        if (args.value === '@__blank__value' &amp;&amp; args.checked === true) {
+          _this.jqxDropDownList('uncheckAll');
+          _this.jqxDropDownList('checkItem', args.item);
+        } else if (args.value !== '@__blank__value') { // 勾选其他值时，将空值项取消勾选
+          var checked_items = _this.jqxDropDownList('getCheckedItems');
+          if (checked_items &amp;&amp; checked_items.length > 0) {
+            var blank_item = checked_items.filter(function (item) {
+              return item.value === '@__blank__value';
+            });
+            if (blank_item.length > 0) { //空值选项在勾选时
+              _this.jqxDropDownList('uncheckItem', blank_item[0]);
+            }
+          }
+          console.log(_this.jqxDropDownList('getCheckedItems'))
+        }
+        flag = false;
+      })
+    }
+  }
+
+  function loadSelectData(ele, e, params, options, cb) {
+    var _this = ele;
+    var xtype = _this.attr('xtype');
+    var placeholder_option = {
+      id: '',
+      name: $.i18n('bh-eip-pleaseChoose'),
+      uid: ''
+    };
+    var blank_option = {
+      id: '@__blank__value',
+      name: $.i18n('bh-eip-empty'),
+      uid: ''
+    };
+    var $filterInput = _this.jqxDropDownList('listBoxContainer').jqxListBox('filter');
+    $filterInput.css('position', 'relative');
+    if (!$filterInput.find('[role="bh-placeholder-wrap"]').length) {
+      WIS_EMAP_INPUT.placeHolder($filterInput);
+    }
+
+    if (!_this.data('loaded')) {
+      _this.data('loaded', false);
+      e &amp;&amp; e.stopPropagation();
+      var curVal = _this.val().split(',');
+      //2016-5-6 qiyu 增加下拉后，仍然能选中值; 提出人：吴涛
+      var curSelectIndex = [];
+
+      //qiyu 2016-11-19 将获取mock的url提取函数，在mock文件中重新定义
+      var source = {
+        url: _this.data("url"),
+        datatype: "json",
+        async: false,
+        type: WIS_EMAP_CONFIG.getOptionType,
+        root: "datas>code>rows",
+        formatData: function (data) {
+          if (_this.data('jsonparam')) {
+            var jParam = {};
+            if (typeof _this.data('jsonparam') === 'string') {
+              try {
+                jParam = JSON.parse(_this.data('jsonparam').replace(/\'/g, '"'))
+              } catch (e) {
+                console &amp;&amp; console.warn('无效的JSONParam参数！');
+              }
+            } else if (typeof _this.data('jsonparam') === 'object') {
+              jParam = _this.data('jsonparam');
+            }
+
+            // 处理从JSONParam中传入的formatData， 由于emap配置中JSONParam只能传字符串，所以目前此场景只会在公有云环境中使用
+            // if (jParam.formatData &amp;&amp; typeof jParam.formatData == 'function') {
+            //     data = jParam.formatData(data);
+            // }
+          }
+          // 处理从defaultOptions中传入的formatData
+          if (params &amp;&amp; params.formatData) {
+            data = params.formatData(data);
+          }
+          return data;
+        }
+      };
+      if (typeof window.MOCK_CONFIG != 'undefined') {
+        source = getSourceMock(source);
+      }
+      var selectDataAdapter = new $.jqx.dataAdapter(source, {
+        beforeLoadComplete: function (records) {
+          if (options &amp;&amp; options.showBlankOption) {
+            records.unshift(blank_option);
+          }
+          if (xtype === 'select') {
+            records.unshift(placeholder_option);
+          }
+          //2016-5-6 qiyu 增加下拉后，仍然能选中值; 提出人：吴涛
+          for (var i = 0; i &lt; records.length; i++) {
+            //qiyu 2017-2-23 放置XSS攻击处理
+            records[i].name = BH_UTILS.fxss(records[i].name);
+            if ($.inArray(records[i].id, curVal) > -1 &amp;&amp; records[i].id !== "") { // 避免将空值放入数组 zhuhui 0815
+              curSelectIndex.push(i);
+            }
+          }
+        },
+        loadComplete: function (data) {
+          var selectMethod = xtype == 'select' ? 'selectIndex' : 'checkIndex';
+          //2016-5-6 qiyu 增加下拉后，仍然能选中值; 提出人：吴涛
+          if (curSelectIndex.length > 0) {
+            $(curSelectIndex).each(function () {
+              _this.jqxDropDownList(selectMethod, this);
+            });
+          } else {
+            _this.jqxDropDownList(selectMethod, -1);
+          }
+          setTimeout(function () {
+            cb &amp;&amp; cb();
+            _this.data('loaded', true);
+          }, 1);
+        }
+      });
+      _this.jqxDropDownList({
+        source: selectDataAdapter
+      });
+      //2016-3-31 qiyu，重复加载数据了
+      //selectDataAdapter.dataBind();
+    }
+  }
+
+  function _initDateInput(ele, params) {
+    var _this = ele;
+    var xtype = _this.attr('xtype');
+    var inputOptions = $.extend({}, {
+      width: "100%",
+      disabled: _this.data('disabled'),
+      value: null,
+      formatString: 'yyyy-MM',
+      culture: 'zh-CN',
+      showFooter: true,
+      clearString: $.i18n('bh-eip-clear'),
+      enableBrowserBoundsDetection: true,
+      todayString: $.i18n('bh-eip-today')
+    }, params);
+    if (xtype == 'date-local') {
+      inputOptions.formatString = 'yyyy-MM-dd';
+    } else if (xtype == 'date-full') {
+      inputOptions.formatString = _this.data('format') ? _this.data('format') : 'yyyy-MM-dd HH:mm';
+      inputOptions.showTimeButton = true;
+    }
+    inputOptions.formatString = _this.data('format') || inputOptions.formatString;
+    _this.jqxDateTimeInput(inputOptions);
+    // 不为date-full时， 点击文本框也会弹出下拉
+    // 为date-full 时， 则不做处理，因为可能会出现 HH : mm 的情况
+    if (xtype != 'date-full') {
+      _this.on("click", function (e) {
+        e.stopPropagation();
+        var disabled = $(this).jqxDateTimeInput('disabled');
+        if (!disabled) $(this).jqxDateTimeInput('open');
+
+      });
+
+      // 清除输入的 非数字
+      _this.on('input', function () {
+        if (isNaN(parseInt(_this.val()))) {
+          _this.val('');
+        }
+      });
+    }
+    _triggerFormChange(_this, 'change');
+  }
+
+  function _initTree(ele, params, options) {
+    var xtype = ele.attr('xtype');
+    var inputOptions = $.extend({}, {
+      url: ele.data('url'),
+      checkboxes: false,
+      search: true,
+      placeholder: ele.attr('data-placeholder') || $.i18n('bh-eip-pleaseChoose'),
+      showBlankOption: options.showBlankOption,
+      treeParams: {}
+    }, params);
+    if (xtype === 'multi-tree') {
+      inputOptions.checkboxes = true;
+    }
+    if (params.hasThreeStates !== undefined) {
+      // 无法与现有下拉树异步加载兼容
+      // inputOptions.treeParams.hasThreeStates = params.hasThreeStates;
+    }
+    ele.emapDropdownTree(inputOptions);
+    if (ele.data('disabled')) {
+      ele.emapDropdownTree('disable');
+      var formGroup = ele.closest('.bh-form-group');
+      if (formGroup.length > 0) {
+        formGroup.addClass('disabled');
+      }
+    }
+    var changeEvent = 'change';
+    if (xtype == 'multi-tree') {
+      changeEvent = 'close';
+    }
+    _triggerFormChange(ele, changeEvent);
+  }
+
+  function _initTree2(ele, params, options) {
+    // TODO: 添加新的下拉树
+    var xtype = ele.attr('xtype');
+    var inputOptions = $.extend({}, {
+      url: ele.data('url'),
+      checkboxes: false,
+      search: true,
+      placeholder: ele.attr('data-placeholder') || $.i18n('bh-eip-pleaseChoose'),
+      showBlankOption: options.showBlankOption,
+      treeParams: {}
+    }, params);
+    if (xtype === 'multi-tree2') {
+      inputOptions.checkboxes = true;
+    }
+    if (params.hasThreeStates !== undefined) {
+      // 无法与现有下拉树异步加载兼容
+      // inputOptions.treeParams.hasThreeStates = params.hasThreeStates;
+    }
+    ele.emapDropdownZTree(inputOptions);
+    if (ele.data('disabled')) {
+      ele.emapDropdownZTree('disable');
+      var formGroup = ele.closest('.bh-form-group');
+      if (formGroup.length > 0) {
+        formGroup.addClass('disabled');
+      }
+    }
+    var changeEvent = 'change';
+    if (xtype == 'multi-tree2') {
+      changeEvent = 'close';
+    }
+    _triggerFormChange(ele, changeEvent);
+  }
+
+  function _initFileUpload(ele, params, options) {
+    var _this = ele;
+    var xtype = _this.attr('xtype');
+    var readonly = (_this.data('disabled') == 'true' || _this.data('disabled') == true || options.readonly);
+    var inputOptions = $.extend({}, {
+      contextPath: options.root
+    }, params);
+    _this.data('defaultoptions', inputOptions);
+    if (xtype == 'uploadfile') {
+      if (readonly) {
+        _this.emapFileDownload(inputOptions);
+        return;
+      }
+      _this.emapFileUpload(inputOptions);
+    } else if (xtype == 'uploadphoto') {
+      _this.emapFilePhoto(inputOptions);
+    } else if (xtype == 'uploadsingleimage') {
+      _this.emapSingleImageUpload(inputOptions);
+    } else if (xtype == 'uploadmuiltimage') {
+      _this.emapImageUpload(inputOptions);
+    }
+    if (_this.data('disabled') == true) {
+      $('input[type=file]', _this).attr('disabled', true);
+    }
+    _this.on('bh.file.upload.done', function () {
+      _this.trigger('_formChange');
+    });
+  }
+
+  function _initButtonList(ele, params) {
+    var xtype = ele.attr('xtype');
+    var inputOptions = $.extend({}, {
+      url: ele.data('url'),
+      allOption: ele.data('alloption')
+    }, params);
+    if (xtype == 'multi-buttonlist') {
+      inputOptions.multiple = true;
+      inputOptions.allOption = false;
+    }
+    // 添加按钮组对optionData的兼容
+    if (ele.data('attr') &amp;&amp; ele.data('attr').optionData) {
+      inputOptions.data = ele.data('attr').optionData
+      if (typeof inputOptions.data === 'string') {
+        try {
+          inputOptions.data = JSON.parse(inputOptions.data)
+        } catch (e) {
+          console &amp;&amp; console.error('无效的json格式')
+        }
+      }
+    }
+    ele.bhButtonGroup(inputOptions);
+    _triggerFormChange(ele, 'change');
+  }
+
+  function _setSelectValue(ele, val) {
+    if (typeof val == "object") {
+      ele.jqxDropDownList('addItem', val[0])
+      ele.jqxDropDownList('checkAll');
+    } else {
+      //qiyu 2016-1-2 判断为空时，清空所有选项
+      if (val === "" || val === undefined) {
+        ele.jqxDropDownList('clearSelection');
+      } else {
+        ele.val(val);
+      }
+    }
+  }
+
+  function _setTextValue(ele, name, val, root) {
+    ele.val((val[name] !== null &amp;&amp; val[name] !== undefined) ? val[name] : "");
+  }
+
+  function _triggerFormChange(ele, eventName) {
+    ele.on(eventName, function () {
+      ele.trigger('_formChange');
+    });
+  }
+
+  function _disabledFileUpload(ele) {
+    $('input[type=file]', ele).attr('disabled', true);
+    var editBar = $('.bh-file-img-single-edit', ele);
+    if (editBar.length > 0) {
+      editBar.hide();
+    }
+    var infoP = $('.bh-file-img-info', ele);
+    if (infoP.length > 0) {
+      infoP.hide();
+    }
+  }
+
+  function _enableFileUpload(ele) {
+    $('input[type=file]', ele).attr('disabled', false);
+    var editBar = $('.bh-file-img-single-edit', ele);
+    if (editBar.length > 0) {
+      $('.bh-file-img-single-edit', ele).show();
+    }
+    var infoP = $('.bh-file-img-info', ele);
+    if (infoP.length > 0) {
+      infoP.show();
+    }
+  }
+
+  function _defaultDisabled(ele) {
+    ele.attr('disabled', true);
+  }
+
+  function _defaultEnable(ele) {
+    ele.attr('disabled', false);
+  }
+
+})(window.WIS_EMAP_INPUT = window.WIS_EMAP_INPUT || {});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapAvatarUpload.html">emapAvatarUpload</a>&nbsp;(头像裁剪上传)</li><li><a href="module-emapCard.html">emapCard</a>&nbsp;(卡片列表)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownTable.html">emapDropdownTable</a>&nbsp;(下拉表格/模糊搜索)</li><li><a href="module-emapDropdownTree.html">emapDropdownTree</a>&nbsp;(下拉树)</li><li><a href="module-emapEditableDataTable.html">emapEditableDataTable</a>&nbsp;(编辑表格)</li><li><a href="module-emapEditor.html">emapEditor</a></li><li><a href="module-emapFileDownload.html">emapFileDownload</a>&nbsp;(文件下载)</li><li><a href="module-emapFileUpload.html">emapFileUpload</a>&nbsp;(文件上传)</li><li><a href="module-emapForm.html">emapForm</a>&nbsp;(表单)</li><li><a href="module-emapgrid.html">emapgrid</a>&nbsp;(grid列表)</li><li><a href="module-emapImageUpload.html">emapImageUpload</a>&nbsp;(多图片上传)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapLinkage.html">emapLinkage</a>&nbsp;(表单联动)</li><li><a href="module-emapPDFViewer.html">emapPDFViewer</a>&nbsp;(PDF文件预览)</li><li><a href="module-emapRulesConstructor.html">emapRulesConstructor</a>&nbsp;(条件构造器)</li><li><a href="module-emapSchema.html">emapSchema</a>&nbsp;(方案模块)</li><li><a href="module-emapSingleImageUpload.html">emapSingleImageUpload</a>&nbsp;(单图片上传)</li><li><a href="module-emapUploadCore.html">emapUploadCore</a>&nbsp;(上传核心模块)</li><li><a href="module-emapValidate.html">emapValidate</a>&nbsp;(表单校验)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_EMAP_SERV.html">WIS_EMAP_SERV</a>&nbsp;(公共方法)</li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:35 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

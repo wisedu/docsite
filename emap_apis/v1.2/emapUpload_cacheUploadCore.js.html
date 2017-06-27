@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapUpload/cacheUploadCore.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapUpload/cacheUploadCore.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function (UPLOAD) {
+    /**
+     * @module WIS_EMAP_UPLOAD.cacheCore
+     * @alias 缓存上传核心模块
+     * @description 这是封装了emap上传逻辑的功能模块，与WIS_UPLOAD_VIEW模块组合在一起构成cacheUpload组件
+     */
+    UPLOAD.cacheCore = $.extend({}, {
+        /**
+         * @method init
+         * @description 初始化
+         * @param {Object} element - dom对象
+         * @param {Object} options - 配置 
+         * @param {Object} cbObj - 包含回调函数的对象 init add submit done
+         */
+        init: function (element, options, cbObj) {
+            // 初始化adaptor
+            options.adaptor = options.adaptor || UPLOAD.cacheAdaptor;
+
+            options.filesToDelete = [];
+            cbObj = cbObj || {};
+            if (options.autoSave) {
+                options.uploadUrl = options.adaptor.autoSaveUploadUrl;
+            } else {
+                options.uploadUrl = options.adaptor.uploadUrl;
+            }
+            // 获取已有token下的所有文件
+            if (options.token !== undefined &amp;&amp; options.token !== '') {
+                WIS_EMAP_UPLOAD.cacheCore.getTokenData(element, options).done(function (fileItems) {
+                    cbObj.init &amp;&amp; cbObj.init(fileItems);
+                });
+            } else {
+                options.scope = new Date().getTime() + "" + parseInt(Math.random() * 100).toString();
+                options.token = options.scope + 1;
+                cbObj.init &amp;&amp; cbObj.init();
+            }
+
+            this.uploadInputInit(element, options, cbObj);
+        },
+
+        uploadInputInit: function (element, options, cbObj) {
+            var formData = {
+                scope: options.scope,
+                fileToken: options.token,
+                size: options.size,
+                type: options.type,
+                storeId: options.storeId,
+                isSingle: options.isSingle == "1" ? "1" : "0",
+                fileName: options.fileName ? options.fileName : ""
+            };
+            $.extend(formData, options.uploadParam);
+            if (options.adaptor.uploadFormatData) {
+                formData = options.adaptor.uploadFormatData(formData, options);
+            }
+            var fileInput;
+            if ($(element)[0].nodeName === 'INPUT' &amp;&amp; $(element).attr('type') === 'file') {
+                fileInput = $(element);
+            } else {
+                options.fileInput = fileInput = options.fileInput || $('input[type=file]', element);
+            }
+
+            fileInput.fileupload({
+                url: options.uploadUrl,
+                autoUpload: (options.autoUpload === false ? false : true),
+                multiple: (options.multiple === false ? false : true),
+                dataType: 'json',
+                paramName: options.paramName,
+                limitMultiFileUploads: 10,
+                formData: formData,
+                add: function (e, data) {
+                    var isSubmit;
+                    if (cbObj.add) {
+                        isSubmit = cbObj.add(e, data);
+                    }
+                    if (isSubmit === undefined) {
+                        data.submit();
+                    }
+                },
+                submit: function (e, data) {
+                    if (cbObj.submit) {
+                        if (cbObj.submit(e, data) === false) {
+                            return false;
+                        }
+                    }
+                },
+                done: function (e, data) {
+                    if (options.adaptor.uploadCallback) {
+                        data.result = options.adaptor.uploadCallback(data.result, options);
+                    }
+                    if (data.result.success) {
+                        // 上传成功
+                        if (cbObj.done) {
+                            cbObj.done(e, data);
+                        }
+
+                    } else {
+                        $.bhTip &amp;&amp; $.bhTip({
+                            content: data.result.msg || '上传临时文件失败',
+                            state: 'danger',
+                            iconClass: 'icon-close'
+                        });
+                        if (cbObj.fail) {
+                            cbObj.fail(e, data);
+                        }
+                    }
+                    WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+                },
+                fail: function (e, data) {
+                    if (data.textStatus != 'abort') {
+                        $.bhTip &amp;&amp; $.bhTip({
+                            content: '上传临时文件失败',
+                            state: 'danger',
+                            iconClass: 'icon-close'
+                        });
+                    }
+                    cbObj.fail(e, data);
+                }
+            });
+        },
+
+        getTokenData: function (element, options) {
+            var defer = $.Deferred();
+            if (options.readonly &amp;&amp; (options.token instanceof Array || options.token.indexOf(',') > -1)) {
+                // 兼容只读模式下多token的情况
+                var token = options.token;
+                if (typeof token === 'string') {
+                    token = token.split(',');
+                }
+                var length = token.length;
+                var i = 0;
+                var filesArray = [];
+                token.map(function (tokenItem) {
+                    if (!tokenItem) return console &amp;&amp; console.warn('token为空！');
+                    options.adaptor.getTokenDataAction(element, options, tokenItem).done(function (res) {
+                        i++;
+                        if (res.success) {
+                            if (res.items) {
+                                filesArray = filesArray.concat(res.items);
+                            }
+                        } else {
+                            $.bhTip &amp;&amp; $.bhTip({
+                                content: res.msg || '请求token数据失败',
+                                state: 'danger',
+                                iconClass: 'icon-close'
+                            });
+                        }
+
+                        if (i === length) {
+                            defer.resolve(filesArray);
+                            // cbObj.init &amp;&amp; cbObj.init(filesArray);
+                        }
+                    });
+                })
+            } else {
+                if (typeof options.token !== 'string') {
+                    console &amp;&amp; console.error('token必须为字符串！多token批量下载请将readonly设置为true')
+                }
+                if (!options.token) return console &amp;&amp; console.warn('token为空！');
+                options.adaptor.getTokenDataAction &amp;&amp; options.adaptor.getTokenDataAction(element, options).done(function (res) {
+                    if (res.success) {
+                        // if (res.items) {
+                            defer.resolve(res.items || []);
+                            // cbObj.init &amp;&amp; cbObj.init(res.items);
+                        // }
+                    } else {
+                        $.bhTip &amp;&amp; $.bhTip({
+                            content: res.msg || '请求token数据失败',
+                            state: 'danger',
+                            iconClass: 'icon-close'
+                        });
+                    }
+                });
+                options.scope = options.token.substring(0, options.token.length - 1);
+            }
+            return defer;
+        },
+
+        /**
+         * @method save
+         * @description 缓存上传的保存操作
+         * @param {Object} element - dom对象
+         * @param {Object} options - 配置对象
+         * @param {Object} [param] - 请求附带的参数
+         */
+        save: function (element, options, params) {
+            return options.adaptor.saveAction(element, options, params);
+        },
+
+        /**
+         * @method deleteTempFile
+         * @description 删除临时文件
+         */
+        deleteTempFile: function (options, id) {
+            return options.adaptor.deleteTempFileAction(options, id);
+        },
+
+        /**
+         * @method deleteFormalFile
+         * @description 删除正式文件
+         */
+        deleteFormalFile: function (options, id) {
+            return options.adaptor.deleteFormalFileAction(options, id);
+        },
+
+        importRownum: function (options, data) {
+            return options.adaptor.importRownum(options, data);
+        },
+
+        downloadImportTpl: function (options, data) {
+            return options.adaptor.downloadImportTpl(options, data);
+        }, 
+
+        importFile: function (options, data) {
+            return options.adaptor.importFile(options, data);
+        },
+
+        getImportProgress:function(options, data){
+            return options.adaptor.getImportProgress(options, data);
+        },
+
+        getDownloadResultUrl: function (options, result) {
+            return options.adaptor.getDownloadResultUrl(options, data);
+        }
+
+    }, UPLOAD.cacheCore || {});
+
+})(WIS_EMAP_UPLOAD = window.WIS_EMAP_UPLOAD || {});</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:34 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

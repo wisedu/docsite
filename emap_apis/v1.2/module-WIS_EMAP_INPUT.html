@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Module: WIS_EMAP_INPUT</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title"> WIS_EMAP_INPUT </h1> -->
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">配置</h3>
+
+        
+            
+<h4 class="name" id=".WIS_EMAP_INPUT.core"><span class="type-signature">(static) </span>WIS_EMAP_INPUT.core<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    表单控件注册对象,基于1.1版本进行修改和扩展
+</div>
+
+
+
+
+
+
+
+    <h5 class="subsection-title">属性:</h5>
+
+    
+
+<table class="props ">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>date-ym</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">年月选择框,基于bhDateTimePicker封装， 默认 yyyy-MM</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>date-local</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">日期选择框,基于bhDateTimePicker封装， 默认 yyyy-MM-dd</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>date-full</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">日期时间选择框,基于bhDateTimePicker封装， 默认 yyyy-MM-dd HH:mm</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>date-range</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">日期范围选择, 只能在高级搜索中使用，基于bhDateTimePicker封装， 默认 yyyy-MM-dd</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>date-area</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">日期范围选择, 在表单中使用，基于bhDateTimePicker封装， 默认 yyyy-MM-dd</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>cache-upload</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">缓存上传， 基于cacheUpload封装</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>direct-upload</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">直接上传， 基于directUpload封装</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapFormInput_emapInput.js.html">emapFormInput/emapInput.js</a>, <a href="emapFormInput_emapInput.js.html#line22">line 22</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">方法API</h3>
+
+        
+            <div style="margin-bottom: 48px;">
+                
+
+    
+
+    <h4 class="name jd-api-title" id="~extendValidateRule">extendValidateRule<span class="signature">(rule)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    扩展校验规则
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>参数:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>rule</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">添加的校验规则
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">校验规则名称，使用时将其配置在字段模型的checkType属性上</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>regex</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">RegExp</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">校验规则的正则表达式，与func 二选一必填</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>func</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">校验规则的处理函数，与func 二选一必填，带参数 value - 字段的值，函数返回Boolean，表示检验通过或者不通过；<br> 
+若是联动校验， 则带参数为 value - 字段的值， filed - 联动字段name， element - 表单DOM</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>alertText</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">校验提示文字，其中使用 '* '字符串来代替字段的caption，<br>
+若是联动校验， 使用'*1'代表当前字段caption，使用'*2'代表联动字段的caption</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="emapFormInput_emapInput.js.html">emapFormInput/emapInput.js</a>, <a href="emapFormInput_emapInput.js.html#line211">line 211</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>示例</h5>
+    
+    <pre class="prettyprint"><code>WIS_EMAP_INPUT.extendValidateRule({
+ name: 'test',
+ alertText: '* 不正确',
+ regex: /\d+/
+})</code></pre>
+
+
+
+            </div>
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:34 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

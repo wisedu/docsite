@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapFormInput/emapValidate.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapFormInput/emapValidate.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function () {
+    var Plugin,
+        _init,
+        _getValidateCondition,
+        _getValueLength; //插件的私有方法
+
+    Plugin = (function () {
+        /**
+         * @module emapValidate
+         * @alias 表单校验
+         * @description 校验组件1.1，基于jqxValidator封装，已集成在emapForm中
+         */
+        function Plugin(element, options) {
+            if ($.fn.emapValidate.rules) {
+                $.fn.emapValidate.allRules = $.extend({}, $.fn.emapValidate.defaultRules, $.fn.emapValidate.rules);
+            } else {
+                $.fn.emapValidate.allRules = $.fn.emapValidate.defaultRules;
+            }
+            this.options = $.extend({}, $.fn.emapValidate.defaults, options);
+            this.$element = $(element);
+            _init($(element), options);
+
+        }
+
+        /**
+         * @method validate
+         * @description 触发校验
+         * @return {Boolean} - 是否通过校验
+         */
+        Plugin.prototype.validate = function () {
+            return this.$element.jqxValidator('validate');
+        };
+
+        /**
+         * @method destroy
+         * @description 销毁校验
+         */
+        Plugin.prototype.destroy = function () {
+            this.options = null;
+            $(this.$element).data('validate', false)
+                .find('.jqx-validator-error-info').remove(); // 修复jqx destroy方法 对日期控件的bug
+            return this.$element.jqxValidator('destroy');
+        };
+        return Plugin;
+    })();
+
+    _init = function (element, options) {
+        var validateRules = _getValidateCondition(element, options);
+        if (options.callback) {
+            options.callback(validateRules);
+        }
+        element.jqxValidator({
+            useHintRender: true,
+            rules: validateRules
+        });
+    };
+
+    _getValidateCondition = function (element, options) {
+        var rules = [];
+        $('[xtype]', element).each(function () {
+            var _this = $(this);
+            var itemRules;
+            // 跳过隐藏字段 跳过disable 字段 跳过表格表单的只读字段和隐藏字段
+            if (_this.closest('.bh-row').attr('hidden') || _this.closest('.bh-form-group').css('display') === 'none' || _this.closest('.bh-form-group').hasClass('bh-disabled') || _this[0].nodeName == 'P' || _this.attr('xtype') == 'div') {
+                return true
+            }
+            //2016-04-20 qiyu 表格表单
+            // var row = _this.closest('.bh-row');
+            var row = _this.closest('.form-validate-block');
+
+            var name = _this.data('name');
+            var label = $('label.bh-form-label', row).text();
+            var xtype = _this.attr('xtype');
+            var dataType = _this.data('type');
+
+            //  必填校验
+            if ($('.bh-required', row).length > 0) {
+
+                if (xtype == 'static') {
+                    return;
+                }
+                itemRules = {
+                    input: '[data-name=' + name + ']',
+                    message: label + $.i18n('bh-ev-noEmpty'),
+                    action: 'change, blur, valuechanged',
+                    rule: 'required'
+                };
+                if (xtype == 'select' || xtype == 'multi-select2' || xtype == 'date-local' || xtype == 'date-ym' || xtype == 'date-full' || xtype == 'selecttable') {
+                    itemRules.rule = function () {
+                        if (_this.hasClass('jqx-rc-b-expanded')) {
+                            return true;
+                        }
+                        return _this.val() != '';
+                    };
+                }
+
+                if (xtype == 'number') {
+                    itemRules.rule = function () {
+                        return _this.find('input').val() != '';
+                    };
+                }
+
+                if (xtype == 'date-local' || xtype == 'date-ym' || xtype == 'date-full') {
+                    itemRules.action = 'change, valuechanged, close';
+                }
+
+                if (xtype == 'select' || xtype == 'multi-select2') {
+                    itemRules.action = 'change, select';
+
+                }
+
+                if (xtype == 'tree' || xtype == 'multi-tree') {
+                    itemRules.rule = function () {
+                        return _this.emapDropdownTree('getValue') != '';
+                    }
+                }
+                if (xtype == 'multi-select') {
+                    itemRules.rule = function () {
+                        return _this.jqxComboBox('getSelectedItems').map(function (item) {
+                            return item.value;
+                        }).join(',') != '';
+                    };
+                }
+                if (xtype === 'textarea') {
+                    itemRules.action = 'c-blur',
+                        itemRules.rule = function () {
+                            return _this.bhTxtInput('getValue') != '';
+                        };
+                }
+                if (xtype === 'number-range') {
+                    itemRules.rule = function () {
+                        var valArr = _this.bhNumRange('getValue').split(',');
+                        return valArr[0] != '' &amp;&amp; valArr[1] != '';
+                    };
+                }
+                // 上传的必填校验
+                if (xtype == 'uploadfile' || xtype == 'uploadsingleimage' || xtype == 'uploadmuiltimage') {
+                    itemRules.action = 'blur';
+                    itemRules.rule = function () {
+                        if (xtype == 'uploadfile') {
+                            return _this.emapFileUpload('getFileNum') != 0;
+                        } else if (xtype == 'uploadsingleimage') {
+                            return _this.emapSingleImageUpload('getFileNum') != 0;
+                        } else if (xtype == 'uploadmuiltimage') {
+                            return _this.emapImageUpload('getFileNum') != 0;
+                        }
+                    }
+                }
+                rules.push(itemRules);
+            }
+
+            // double 类型的字段 自动添加 double 校验和  长度为21的校验
+            if (_this.data('type') == 'double') {
+                rules.push({
+                    input: '[data-name=' + name + ']',
+                    message: $.i18n('bh-ev-invalidNumber'),
+                    action: 'change, blur, valuechanged',
+                    rule: function () {
+                        if (_this.val() === '') return true;
+                        //qiyu 2016-9-1 double类型小数点后位数不限，需求人：吴芳。原始需求人：张毅
+                        // return /^\d+(\.\d{1,2})?$/g.test( _this.val());
+                        return /^(\-)?\d+(\.\d+)?$/.test(_this.val());
+                    }
+                });
+                rules.push({
+                    input: '[data-name=' + name + ']',
+                    message: $.i18n('bh-ev-cnel'),
+                    action: 'change, blur, valuechanged',
+                    rule: function () {
+                        if (_this.val() == '') return true;
+                        //qiyu 2016-9-1 double类型小数点后位数不限，需求人：吴芳。原始需求人：张毅
+                        // return /^\d+(\.\d{1,2})?$/g.test(_this.val());
+                        return /^(\-)?\d+(\.\d+)?$/g.test(_this.val());
+                    }
+                });
+            }
+
+            // int 类型的字段 自动添加 数字校验
+            if (_this.data('type') == 'int') {
+                rules.push({
+                    input: '[data-name=' + name + ']',
+                    message: $.fn.emapValidate.allRules['integer'].alertText,
+                    action: 'change, blur, valuechanged',
+                    rule: function () {
+                        if (_this.val() == "") {
+                            return true;
+                        } // 空值不做校验
+                        var value = _this.val();
+                        // 开关按钮兼容处理
+                        if (_this.attr('xtype') == 'switcher') {
+                            if (value === true) {
+                                value = 1;
+                            } else if (value === false) {
+                                value = 0;
+                            }
+                        }
+                        return new RegExp($.fn.emapValidate.allRules['integer'].regex).test(value);
+                    }
+                });
+            }
+
+            // 内容长度校验
+            /**
+             * 5-16 学工业务线要求,textareaEasyCheck只对文本域有效
+             *
+             */
+
+            // var maxLength = _this.attr('maxlength');
+            var maxLength = _this.data('checksize');
+            if (!maxLength) {
+                if (options.textareaEasyCheck) {
+                    //  bi~bi~bi~ 开启简单长度校验模式,所有字符 都算三个长度
+                    // if (dataType == 'String' &amp;&amp; (!xtype || xtype == 'text' || xtype == 'textarea')) {
+                    if (dataType == 'String' &amp;&amp; (xtype == 'textarea')) {
+                        maxLength = _this.data('size') ? Math.floor(_this.data('size') / 3) : 0;
+                    } else {
+                        maxLength = _this.data('size') ? _this.data('size') : 0;
+                    }
+                } else {
+                    // 默认:  严格校验模式 , 只有汉字算三个长度
+                    maxLength = _this.data('size') ? _this.data('size') : 0;
+                }
+            }
+
+
+
+            if (maxLength) {
+                itemRules = {
+                    input: '[data-name=' + name + ']',
+                    message: label + $.i18n('bh-ev-cnel'),
+                    action: 'change, blur, valuechanged',
+                    rule: function () {
+                        return _getValueLength(_this.val()) &lt;= maxLength;
+                    }
+                };
+
+                if (options.textareaEasyCheck &amp;&amp; xtype == 'textarea') {
+                    itemRules.message = label + $.i18n('bh-ev-mustLess') + maxLength + $.i18n('bh-ev-characters');
+                    itemRules.rule = function () {
+                        return _this.val().length &lt;= maxLength;
+                    }
+                }
+
+                // 文本框金额类的 小数  长度校验
+                if ((xtype == 'text' || !xtype)) {
+                    if (maxLength.toString().indexOf(',') > -1) {
+                        var lengthArr = maxLength.split(',');
+                        itemRules.rule = function () {
+                            if (_this.val() == '') return true;
+                            var valArr = _this.val().toString().split('.');
+                            if (valArr.length > 1) {
+                                if (valArr[1].length > lengthArr[1]) return false
+                            }
+
+                            return valArr[0].length &lt;= lengthArr[0] - lengthArr[1];
+                        };
+
+                        rules.push({
+                            input: '[data-name=' + name + ']',
+                            message: $.i18n('bh-ev-incorrectAmount'),
+                            action: 'change, blur, valuechanged',
+                            rule: function () {
+                                if (_this.val() == '') return true;
+                                return _this.val().length &lt; 22;
+                            }
+                        });
+                    } else {}
+
+                }
+
+                if (xtype == 'multi-select') {
+                    itemRules.message = $.i18n('bh-ev-ChooseAtMost') + maxLength + $.i18n('bh-ev-items');
+                    itemRules.rule = function () {
+                        return _this.jqxComboBox('getSelectedItems').length &lt;= (maxLength);
+                    }
+                }
+
+                if (xtype == 'multi-select2') {
+                    itemRules.message = $.i18n('bh-ev-ChooseAtMost') + maxLength + $.i18n('bh-ev-items');
+                    itemRules.rule = function () {
+                        return _this.jqxDropDownList('getCheckedItems').length &lt;= (maxLength);
+                    }
+                }
+                rules.push(itemRules);
+            }
+
+            // 正则校验
+            var exp = decodeURI(_this.data('checkexp'));
+            if (exp &amp;&amp; exp != "undefined") {
+                rules.push({
+                    input: '[data-name=' + name + ']',
+                    message: label + $.i18n('bh-ev-incorrect'),
+                    action: 'change, blur, valuechanged',
+                    rule: function () {
+                        if (_this.val() == "") {
+                            return true;
+                        } // 空值不做校验
+                        if (typeof exp === 'object') {
+                            return new RegExp(exp).test(_this.val());
+                        } else if (typeof exp === 'string') {
+                            return new RegExp(exp.replace(/^\/(\^)?|(\$)?\/$/g, '')).test(_this.val());
+                        }
+                    }
+                });
+            }
+
+            // 日期控件的 内容附件校验   防止提交奇怪的字符串
+            if ($.inArray(xtype, ['date-local', 'date-ym', 'date-full']) > -1) {
+                rules.push({
+                    input: '[data-name=' + name + ']',
+                    message: $.i18n('bh-ev-dateIncorrect'),
+                    action: 'change, blur, valuechanged',
+                    rule: function () {
+                        if (_this.val() == "") {
+                            return true;
+                        } // 空值不做校验
+                        return !isNaN(parseInt(_this.val()));
+                    }
+                })
+                // 对日期进行强格式校验  必须符合 format 格式
+                rules.push({
+                    input: '[data-name=' + name + ']',
+                    message: $.i18n('bh-ev-dateIncorrect'),
+                    action: 'change, blur, valuechanged',
+                    rule: function () {
+                        if (_this.val() == "") {
+                            return true;
+                        } // 空值不做校验  
+                        var format = _this.data('format');
+                        if (!format) {
+                            if (xtype == 'date-local') {
+                                format = '^\\d{4}-\\d{2}-\\d{2}$';
+                            }
+                        } else {
+                            format = format.replace(/\w/g, '\\d');
+                        }
+                        if (!format) return true;
+                        return new RegExp(format).test(_this.val())
+                    }
+                });
+            }
+            // 类型校验
+            var jsonType = decodeURI(_this.data('jsonparam'));
+            var checkType = decodeURI(_this.data('checktype'));
+            if (!checkType || checkType == 'undefined') checkType = jsonType;
+            checkType = checkType.replace(/\[|\]|\"|\{|\}|custom/g, "");
+            if (checkType &amp;&amp; $.fn.emapValidate.allRules[checkType]) {
+                itemRules = {
+                    input: '[data-name=' + name + ']',
+                    message: $.fn.emapValidate.allRules[checkType].alertText,
+                    action: 'change, blur, valuechanged'
+                };
+                if ($.fn.emapValidate.allRules[checkType].regex) {
+                    itemRules.rule = function () {
+                        var value = _this.val();
+                        if (value == "") {
+                            return true;
+                        } // 空值不做校验
+                        if (xtype == 'number-range') {
+                            value = value.split(',');
+                            return value.every(function (val) {
+                                return new RegExp($.fn.emapValidate.allRules[checkType].regex).test(val);
+                            });
+                        }
+                        return new RegExp($.fn.emapValidate.allRules[checkType].regex).test(_this.val());
+                    }
+                } else if ($.fn.emapValidate.allRules[checkType].func) {
+                    itemRules.rule = function () {
+                        if (_this.val() == "") {
+                            return true;
+                        } // 空值不做校验
+                        return $.fn.emapValidate.allRules[checkType].func(_this.val());
+                    }
+                }
+                rules.push(itemRules);
+            } else if (/^after/g.test(checkType) || /^before/g.test(checkType)) {
+                itemRules = {
+                    input: '[data-name=' + name + ']',
+                    action: 'change, blur, valuechanged'
+                };
+                var formEle = _this.closest('[bh-form-role=bhForm]');
+                var targetLabel; // 参照字段的label
+
+                if (/^before/g.test(checkType)) {
+                    var checkField = checkType.replace('before', '');
+                    if (checkField == 'now') {
+                        targetLabel = $.i18n('bh-ev-today');
+                    } else {
+                        targetLabel = $('[data-name=' + checkField.replace('=', '') + ']', formEle).data('caption');
+                    }
+                    itemRules.message = $.fn.emapValidate.allRules['before'].alertText.replace('*1', label).replace('*2', targetLabel);
+                    if (/=/g.test(checkField)) {
+                        checkField = checkField.replace('=', '');
+                        itemRules.rule = function () {
+                            if (!_this.val()) return true;
+                            return $.fn.emapValidate.allRules['before='].func(_this.val(), checkField, _this.closest('[bh-form-role=bhForm]'));
+                        }
+                    } else {
+                        itemRules.rule = function () {
+                            if (!_this.val()) return true;
+                            return $.fn.emapValidate.allRules.before.func(_this.val(), checkField, _this.closest('[bh-form-role=bhForm]'));
+                        }
+                    }
+
+                }
+                if (/^after/g.test(checkType)) {
+                    var checkField = checkType.replace('after', '');
+                    if (checkField == 'now') {
+                        targetLabel = $.i18n('bh-ev-today');
+                    } else {
+                        targetLabel = $('[data-name=' + checkField.replace('=', '') + ']', formEle).data('caption');
+                    }
+                    itemRules.message = $.fn.emapValidate.allRules['after'].alertText.replace('*1', label).replace('*2', targetLabel);
+                    if (/=/g.test(checkField)) {
+                        checkField = checkField.replace('=', '');
+                        itemRules.rule = function () {
+                            if (!_this.val()) return true;
+                            return $.fn.emapValidate.allRules['after='].func(_this.val(), checkField, _this.closest('[bh-form-role=bhForm]'));
+                        }
+                    } else {
+                        itemRules.rule = function () {
+                            if (!_this.val()) return true;
+                            return $.fn.emapValidate.allRules.after.func(_this.val(), checkField, _this.closest('[bh-form-role=bhForm]'));
+                        }
+                    }
+
+                }
+                rules.push(itemRules);
+            }
+
+            // 对于整数和 数字的校验 添加 最大为22 的长度校验  wuying  0726
+            if ($.inArray(checkType, ['number', 'integer']) > -1) {
+                rules.push({
+                    input: '[data-name=' + name + ']',
+                    message: label + $.i18n('bh-ev-cnel'),
+                    action: 'change, blur, valuechanged',
+                    rule: function () {
+                        return _this.val().length &lt; 22;
+                    }
+                })
+            }
+            if ($.inArray(xtype, ['uploadfile']) > -1) {
+                rules.push({
+                    input: '[data-name=' + name + ']',
+                    message: ' ',
+                    action: 'bh-file-upload-validate',
+                    rule: function () {
+                        return _this.find('.bh-error').length === 0;
+                    }
+                });
+            }
+        });
+        return rules;
+    };
+
+
+    // 获取取值长度   中文为 3个字符
+    _getValueLength = function (val) {
+        return val.replace(/[\u0391-\uFFE5]/g, '***').length;
+    };
+
+    $.fn.emapValidate = function (options) {
+        var instance;
+        instance = this.data('validate');
+        if (!instance) {
+            return this.each(function () {
+                return $(this).data('validate', new Plugin(this, options));
+            });
+        }
+        if (options === true) return instance;
+        if ($.type(options) === 'string') return instance[options]();
+        return this;
+    };
+
+    /**
+     * @memberof module:emapValidate
+     * @prop {Boolean} [textareaEasyCheck=false] - 文本域长度计算方式是中文是否为3个字符
+     */
+    $.fn.emapValidate.defaults = {
+        easyCheck: false,
+        textareaEasyCheck: false
+    };
+
+
+    $.fn.emapValidate.defaultRules = WIS_EMAP_INPUT.validateRules;
+
+}).call(this);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapAvatarUpload.html">emapAvatarUpload</a>&nbsp;(头像裁剪上传)</li><li><a href="module-emapCard.html">emapCard</a>&nbsp;(卡片列表)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownTable.html">emapDropdownTable</a>&nbsp;(下拉表格/模糊搜索)</li><li><a href="module-emapDropdownTree.html">emapDropdownTree</a>&nbsp;(下拉树)</li><li><a href="module-emapEditableDataTable.html">emapEditableDataTable</a>&nbsp;(编辑表格)</li><li><a href="module-emapEditor.html">emapEditor</a></li><li><a href="module-emapFileDownload.html">emapFileDownload</a>&nbsp;(文件下载)</li><li><a href="module-emapFileUpload.html">emapFileUpload</a>&nbsp;(文件上传)</li><li><a href="module-emapForm.html">emapForm</a>&nbsp;(表单)</li><li><a href="module-emapgrid.html">emapgrid</a>&nbsp;(grid列表)</li><li><a href="module-emapImageUpload.html">emapImageUpload</a>&nbsp;(多图片上传)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapLinkage.html">emapLinkage</a>&nbsp;(表单联动)</li><li><a href="module-emapPDFViewer.html">emapPDFViewer</a>&nbsp;(PDF文件预览)</li><li><a href="module-emapRulesConstructor.html">emapRulesConstructor</a>&nbsp;(条件构造器)</li><li><a href="module-emapSchema.html">emapSchema</a>&nbsp;(方案模块)</li><li><a href="module-emapSingleImageUpload.html">emapSingleImageUpload</a>&nbsp;(单图片上传)</li><li><a href="module-emapUploadCore.html">emapUploadCore</a>&nbsp;(上传核心模块)</li><li><a href="module-emapValidate.html">emapValidate</a>&nbsp;(表单校验)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_EMAP_SERV.html">WIS_EMAP_SERV</a>&nbsp;(公共方法)</li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:35 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

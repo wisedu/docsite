@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapFile/emapFileDownload.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapFile/emapFileDownload.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>//下载
+(function () {
+    var Plugin, _init;
+    /**
+     * @module emapFileDownload 
+     * @alias 文件下载
+     * @description 预览下载组件，用于浏览已上传的数据，不可编辑
+     */
+    Plugin = (function () {
+        function Plugin(element, options) {
+            if (options.mode) {
+                options.model = options.mode;
+            }
+            this.options = $.extend({}, $.fn.emapFileDownload.defaults, options);
+            this.$element = $(element);
+            _init(this.$element, this.options);
+        }
+
+        /**
+         * @method destroy
+         * @description 销毁实例 
+         */
+        Plugin.prototype.destroy = function () {
+            this.$element.html('').removeClass('bh-clearfix').off('click');
+            this.options = null;
+            this.$element.data('emapfiledownload', false).empty();
+        };
+
+        /**
+         * @method reload
+         * @description 重新渲染 组件内的文件数据
+         */
+        Plugin.prototype.reload = function () {
+            this.$element.html('');
+            _initDownload(this.$element, this.options);
+        };
+
+        /**
+         * @method getValue
+         * @description 获取组件当前的token
+         */
+        Plugin.prototype.getValue = function () {
+            return this.options.token;
+        };
+
+        return Plugin;
+    })();
+
+    _init = function (element, options) {
+        options.contextPath = options.contextPath || WIS_EMAP_SERV.getContextPath();
+        _initDownload(element, options);
+
+        // 文件模式下 点击文件名 预览图片或者 下载文件
+        $(element).on('click', '.bh-file-upload-filename, .bh-file-upload-file-icon', function () {
+            var block = $(this).closest('.bh-file-upload-file');
+            var fileName = $('.bh-file-upload-filename', block).attr('title');
+            var fileUrl = $('.bh-file-upload-download', block).attr('href');
+
+            if (new RegExp(/\.jpg|\.png|\.jpeg/g).test(fileName.toLowerCase())) {
+                // 预览图片
+                if (!$.bhGallery) {
+                    console &amp;&amp; console.warn('图片轮播插件Gallery未引入');
+                    return;
+                }
+                var imgUrlArr = [];
+                var imgSource = [];
+                var show = 0;
+                $(element).find('.bh-file-upload-file').each(function () {
+                    var name = $('.bh-file-upload-filename', $(this)).attr('title');
+                    if (new RegExp(/\.jpg|\.png|\.jpeg/g).test(name.toLowerCase())) {
+                        var Url = $('.bh-file-upload-download', $(this)).attr('href')
+                        imgUrlArr.push(Url)
+                    }
+                });
+
+                $(imgUrlArr).each(function (i) {
+                    if (fileUrl == this) {
+                        show = i;
+                    }
+                    imgSource.push({
+                        image: this
+                    })
+                });
+
+                $.bhGallery({
+                    dataSource: imgSource,
+                    show: show
+                });
+
+            } else {
+                // pdf
+                if (/\.pdf$/g.test(fileName.toLowerCase())) {
+                    block.trigger('bh.file.click.pdf', [fileName, fileUrl]);
+                    if (options.canPreviewPDF) {
+                        $.emapPDFViewer({
+                            url: fileUrl
+                        })
+                    }
+                    return;
+                }
+                // 下载文件
+                location.href = $('.bh-file-upload-download', block).attr('href');
+            }
+        });
+
+        // 图片模式下
+        $(element).on('click', '.bh-file-img-table img', function () {
+            if (!$.bhGallery) {
+                console &amp;&amp; console.warn('图片轮播插件Gallery未引入');
+                return;
+            }
+            var curUrl = $(this).attr('src');
+            var imgs = $(element).find('.bh-file-img-table img');
+            var imgSource = [];
+            var show = 0;
+            if (imgs.length > 0) {
+                imgs.each(function (i) {
+                    if (!new RegExp(/\.jpg|\.png|\.jpeg/g).test($(this).attr('alt').toLowerCase())) {
+                        return true;
+                    }
+
+                    if (curUrl == $(this).attr('src')) {
+                        show = i;
+                    }
+                    imgSource.push({
+                        image: $(this).attr('src')
+                    })
+                });
+
+                $.bhGallery({
+                    dataSource: imgSource,
+                    show: show
+                });
+            }
+
+        });
+
+        // 点击批量下载
+        $(element).on('click', '.bh-file-batch-download', function () {
+            window.location.href = options.contextPath + '/sys/emapcomponent/file/getFileBatchByToken/' + options.token + '.do';
+        })
+
+    };
+
+    function _initDownload(element, options) {
+        $(element).addClass('bh-clearfix').css({
+            'overflow': 'visible',
+            'clear': 'none'
+        });
+        if (options.token === undefined || options.token === null) {
+            $(element).append(' 无');
+            return;
+        }
+
+        if (options.token instanceof Array) {
+            options.batchTokens = true;
+            options.token.map(function (token) {
+                getTokenData(element, token, options);
+            })
+        } else {
+            options.batchTokens = false;
+            getTokenData(element, options.token, options);
+        }
+    }
+
+    function getTokenData(element, token, options) {
+        $.ajax({
+            type: "post",
+            url: options.contextPath + '/sys/emapcomponent/file/getUploadedAttachment/' + token + '.do',
+            dataType: "json",
+            success: function (res) {
+                if (res.success) {
+                    renderDownload(element, res.items, options);
+                }
+            }
+        });
+    }
+
+    function renderDownload(element, items, options) {
+        var fileHtml = '';
+        if (!items || items.length == 0) {
+            if (options.batchTokens) {
+                if ($.trim($(element).html()) == "") {
+                    fileHtml += ' 无';
+                } else {
+                    return;
+                }
+            } else {
+                fileHtml += ' 无';
+            }
+            $(element).html(fileHtml).trigger('bh.file.download.done', [items]);
+            return;
+        }
+        if (options.model == 'file') {
+            if ($(element).html() == ' 无') {
+                $(element).html('');
+            }
+            fileHtml += renderFile(items);
+            $(element).append(fileHtml);
+        } else if (options.model == 'image') {
+
+            fileHtml += renderImage(items, options);
+            $(element).css('overflow', 'hidden').append(fileHtml);
+        }
+        $(element).trigger('bh.file.download.done', [items]);
+
+        if (options.batchDownload) {
+            $(element).append('&lt;p style="clear: both;">&lt;a class="bh-file-batch-download" href="javascript:void(0)">' + $.i18n('bh-fd-batchDownload') + '&lt;/a>&lt;/p>');
+        }
+    }
+
+    function renderFile(items) {
+        var renderHtml = '';
+        $(items).each(function () {
+            renderHtml += '&lt;div class="bh-pull-left bh-file-upload-file" data-fileId="' + this.id + '" data-fileurl="' + this.fileUrl + '">' +
+                '&lt;div class="bh-file-upload-file-icon bh-pull-left">&lt;i class="iconfont ' + WIS_EMAP_SERV._getIconImgClass(this.name) + '">&lt;/i>&lt;/div>' +
+                '&lt;div class="bh-file-upload-file-info bh-pull-left">' +
+                '&lt;span class="bh-file-upload-filename"  title="' + this.name + '" style="cursor: pointer;">' + this.name + '&lt;/span>' +
+                '&lt;p>&lt;a class="bh-file-upload-download" target="_blank" href="' + this.fileUrl + '">' + $.i18n('bh-fd-download') + '&lt;/a>&lt;/p>' +
+                '&lt;/div>' +
+                '&lt;/div>';
+        });
+        return renderHtml;
+    }
+
+    function renderImage(items, options) {
+        var imgWidth = parseInt(options.width) - 6;
+        var imgHeight = parseInt(options.height) - 6;
+        var renderHtml = '';
+        $(items).each(function () {
+            renderHtml += '&lt;div data-fileid="' + this.id + '" data-name="' + this.name + '" class="bh-file-img-block success" style="width: ' + options.width + 'px;height: ' + options.height + 'px;">' +
+                '&lt;div class="bh-file-img-table" style="width: ' + imgWidth + 'px;height: ' + imgHeight + 'px;">' +
+                '&lt;span style="width: ' + imgWidth + 'px;height: ' + imgHeight + 'px;">' +
+                '&lt;img style="max-width: ' + imgWidth + 'px;max-height: ' + imgHeight + 'px;" src="' + this.fileUrl + '" alt="' + this.name + '" />' +
+                '&lt;/span>' +
+                '&lt;/div>' +
+                '&lt;/div>';
+        });
+        return renderHtml;
+    }
+
+    $.fn.emapFileDownload = function (options) {
+        var instance;  
+        instance = this.data('emapfiledownload');
+        if (!instance) {
+            return this.each(function () {
+                if (options == 'destroy') {
+                    return $(this);
+                }
+                return $(this).data('emapfiledownload', new Plugin(this, options));
+            });
+        }
+        if (options === true) return instance;
+        if ($.type(options) === 'string') return instance[options]();
+        return this;
+    };
+
+    /**
+     * @memberof module:emapFileDownload
+     * @prop {String|Array} token - 文件token(可以为多token)
+     * @prop {String} [model=file] - 展示模式可选值 'file' 文件模式  'image' 图片模式（文件必须全部为图片类型）
+     * @prop {Boolean} [canPreviewPDF=true] - 是否可预览pdf文件
+     * @prop {Boolean} [batchDownload=false] - 是否显示批量下载按钮
+     * @prop {Int} [width=200] - 图片模式下，文件容器的宽度
+     * @prop {Int} [height=150] - 图片模式下，文件容器的高度
+     * @prop {String} [contextPath] - 根路径
+     */
+    $.fn.emapFileDownload.defaults = {
+        model: 'file',
+        canPreviewPDF: true,
+        batchDownload: false,
+        width: 200,
+        height: 150,
+        contextPath: undefined
+    };
+}).call(this);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapAvatarUpload.html">emapAvatarUpload</a>&nbsp;(头像裁剪上传)</li><li><a href="module-emapCard.html">emapCard</a>&nbsp;(卡片列表)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownTable.html">emapDropdownTable</a>&nbsp;(下拉表格/模糊搜索)</li><li><a href="module-emapDropdownTree.html">emapDropdownTree</a>&nbsp;(下拉树)</li><li><a href="module-emapEditableDataTable.html">emapEditableDataTable</a>&nbsp;(编辑表格)</li><li><a href="module-emapEditor.html">emapEditor</a></li><li><a href="module-emapFileDownload.html">emapFileDownload</a>&nbsp;(文件下载)</li><li><a href="module-emapFileUpload.html">emapFileUpload</a>&nbsp;(文件上传)</li><li><a href="module-emapForm.html">emapForm</a>&nbsp;(表单)</li><li><a href="module-emapgrid.html">emapgrid</a>&nbsp;(grid列表)</li><li><a href="module-emapImageUpload.html">emapImageUpload</a>&nbsp;(多图片上传)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapLinkage.html">emapLinkage</a>&nbsp;(表单联动)</li><li><a href="module-emapPDFViewer.html">emapPDFViewer</a>&nbsp;(PDF文件预览)</li><li><a href="module-emapRulesConstructor.html">emapRulesConstructor</a>&nbsp;(条件构造器)</li><li><a href="module-emapSchema.html">emapSchema</a>&nbsp;(方案模块)</li><li><a href="module-emapSingleImageUpload.html">emapSingleImageUpload</a>&nbsp;(单图片上传)</li><li><a href="module-emapUploadCore.html">emapUploadCore</a>&nbsp;(上传核心模块)</li><li><a href="module-emapValidate.html">emapValidate</a>&nbsp;(表单校验)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_EMAP_SERV.html">WIS_EMAP_SERV</a>&nbsp;(公共方法)</li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:35 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapBatchEdit.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapBatchEdit.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>;
+(function() {
+    /**
+     * @module emapBatchEdit
+     * @alias 批量编辑
+     */
+    $.emapBatchEdit = function(options) {
+        options = $.extend({}, $.emapBatchEdit.default, options);
+        if ((!options.tableData || !options.tableData.length) &amp;&amp; !options.number) {
+            $.bhTip({
+                content: $.i18n('bh_be_unchooseTip'),
+                state: 'danger'
+            });
+        } else if (!options.model || !options.model.length || !options.callback || !options.callback instanceof Function) {
+            console.log("入参缺少模型或者回调函数");
+            return;
+        } else {
+            initWindow(options);
+        }
+    };
+
+    /**
+     * @memberof module:emapBatchEdit
+     * @prop {String} width - window的默认宽度
+     * @prop {String} height - window的默认高度
+     * @prop {Array}  model -   表单模型所有字段
+     * @prop {Array}  tableData - 勾选的需要批量编辑的数据
+     * @prop {Int} [number] - 数据条数，若传了number参数，则会覆盖tableData
+     * @prop {Array}  hideMember - 设置的主键,不可被编辑
+     * @prop {Function} callback - 返回表单数据的回调
+     */
+    $.emapBatchEdit.default = {
+        width: 800,
+        height: 500,
+        model: [],
+        tableData: [],
+        number: undefined,
+        hideMember: [],
+        callback: undefined
+    };
+
+    function initWindow(options) {
+        var dataLen;
+        if (options.number) {
+            if (options.number instanceof String) {
+                options.number = parseInt(options.number, 10);
+                if (options.number instanceof Number) {} else {
+                    console.log("必须是数字");
+                    return;
+                }
+            }
+            dataLen = options.number;
+        } else {
+            dataLen = options.tableData.length;
+        }
+
+        var hasLink = false;
+
+        var dailog = $('&lt;div class="bh-batch-edit-head">' + $.i18n('bh-be-choosed') + '&lt;span>' + dataLen + '&lt;/span>' + $.i18n('bh-be-piecesOfDatas') + '&lt;/div>&lt;div class="bh-batch-edit">&lt;nav>&lt;h4>' + $.i18n('bh-be-keysList') + '&lt;/h4>&lt;div class="bh-batch-edit-input">&lt;i class="iconfont">&amp;#xe895;&lt;/i>&lt;input type="text" class="bh-form-control" placeholder="' + $.i18n('bh-be-search') + '">&lt;/div>&lt;div class="bh-batch-edit-list">&lt;ul>&lt;/ul&lt;/div>&lt;/nav>&lt;section>&lt;div class="bh-batch-edit-form-top">&lt;/div>&lt;div id="bhBatchEditForm">&lt;/div>&lt;/section>&lt;/div>');
+        BH_UTILS.bhWindow(dailog, $.i18n('bh-be-bulkEdit'), [{
+            text: $.i18n('bh-be-sureEdit'),
+            className: 'bh-btn-primary',
+            callback: function() {
+                if (!hasLink) {
+                    var isValide = true;
+                    $('#bhBatchEditForm>div[emap-role="form"]').each(function() {
+                        if (!$(this).bhValidate('validate')) {
+                            isValide = false;
+                        }
+                    });
+                    if (!isValide) {
+                        return false;
+                    }
+                }
+                if (!$('#bhBatchEditForm').bhValidate('validate')) return false
+                $.bhPopOver({
+                    content: '&lt;h4>' + $.i18n('bh-be-willBulkEdit') + '&lt;/h4>' +
+                        '&lt;div class="bh-btn-grouped">&lt;button type="button" class="bh-btn bh-btn-circle bh-btn-primary" id="bhBatchEditConfirm">&lt;i class="iconfont icon-check">&lt;/i>&lt;/button>&lt;button type="button" class="bh-btn bh-btn-circle bh-btn-default" id="bhBatchEditClose">&lt;i class="iconfont icon-close">&lt;/i>&lt;/button>&lt;/div>',
+                    selector: $(".jqx-window-content #buttons .bh-btn-primary"),
+                    showCloseButton: false,
+                    width: 220
+                });
+                $("#bhBatchEditConfirm").on('click', function() {
+                    var formData = $("#bhBatchEditForm > div").find(".form-validate-block");
+                    var newData = [];
+                    var newJson = {};
+                    formData.each(function() {
+                        var item = $(this);
+                        var dataField = '';
+                        var inputValue = '';
+                        if (item.css("display") === "block") {
+                            dataField = item.attr("data-field");
+                            var value = WIS_EMAP_INPUT.formGetValue(item);
+                            newJson[dataField] = value[dataField];
+                        }
+                    });
+                    if (options.number === undefined) {
+                        options.tableData.map(function(item) {
+                            $.extend(item, newJson)
+                        })
+                        newData = options.tableData
+                    } else {
+                        newData.push(newJson);
+                    }
+                    $.bhPopOver.close();
+                    if (options.callback(newData) === false) {
+                        return;
+                    }
+                    BH_UTILS.bhWindow.close();
+                });
+                $("#bhBatchEditClose").on('click', function() {
+                    $.bhPopOver.close();
+                });
+                return false;
+            }
+        }, {
+            text: $.i18n('bh-be-back'),
+            className: 'bh-btn-default',
+            callback: function() {
+
+            }
+        }], {
+            close: function() {
+                //确认和取消的时候，都会进入这里
+                dailog.remove(); //需要手动销毁
+            },
+            width: options.width,
+            height: options.height
+        });
+
+        var html = '';
+        var formModel = options.model;
+        formModel.forEach(function(item) {
+            var modelName = item.caption;
+            var name = item.name;
+            if (item['form.linkageBy'] || item.linkageBy) {
+                hasLink = true;
+            }
+            html += '&lt;li>&lt;div class="bh-checkbox">&lt;input type="checkbox" name=' + name + '>&lt;i class="bh-choice-helper">&lt;/i>&lt;/div>&lt;span value=' + name + '>' + modelName + '&lt;/span>&lt;/li>';
+        });
+        $(".bh-batch-edit-list ul").append(html);
+        if (!options.hideMember || options.hideMember.length === 0) {
+            console.log("hideMember字段必须有值");
+        } else {
+            for (var i = 0; i &lt; options.hideMember.length; i++) {
+                $(".bh-batch-edit-list ul li").find('span[value=' + options.hideMember[i] + ']').parent().remove();
+            }
+        }
+        $(".bh-batch-edit-input > input").keyup(function() {
+            var $item = $(this);
+            var model = $item.closest(".bh-batch-edit-input").siblings(".bh-batch-edit-list");
+            var ul = model.find("ul");
+            ul.find("li > span").each(function(i) {
+                var $it = $(this);
+                var input = $it.closest(".bh-batch-edit-list").siblings(".bh-batch-edit-input").find("input");
+                var value = input.val().trim();
+                var reg = new RegExp(value, "i");
+                var text = $it.text();
+                if (text.match(reg) === null) {
+                    $it.parent("li").hide();
+                } else {
+                    $it.parent("li").show();
+                }
+            });
+        });
+
+        if (hasLink) {
+            $('#bhBatchEditForm').emapForm({
+                data: formModel,
+                model: 'h',
+                inputWidth: 9,
+                renderByGroup: false
+            });
+            var fieldNames = formModel.map(function(item) {
+                return item.name;
+            });
+            $('#bhBatchEditForm').emapForm("hideItem", fieldNames);
+            $(".bh-batch-edit-list ul").on('click', 'input[type=checkbox]', function() {
+                var $item = $(this);
+                var data = $item.attr("name");
+                var ul = $item.closest("ul");
+                var form = $("#bhBatchEditForm");
+                var count = ul.find("li input[type=checkbox]:checked").length;
+                $(".bh-batch-edit section").find(".bh-batch-edit-form-top").html('&lt;h4>' + $.i18n('bh-be-choosed') + count + $.i18n('bh-be-piecesOfKeys') + '&lt;/h4>');
+                if ($item.prop("checked")) {
+                    form.find('.form-validate-block[data-field=' + data + ']').show();
+                    form.emapForm("showItem", data);
+                } else {
+                    form.emapForm("hideItem", data);
+                    form.emapForm("clear", [data]);
+                }
+            });
+        } else {
+            var rows = formModel.map(function(item) {
+                return '&lt;div data-row="' + item.name + '">&lt;/div>';
+            }).join('');
+            $('#bhBatchEditForm').html(rows);
+
+            $(".bh-batch-edit-list ul").on('click', 'input[type=checkbox]', function() {
+                var $item = $(this);
+                var data = $item.attr("name");
+                var ul = $item.closest("ul");
+                var form = $('#bhBatchEditForm div[data-row="' + data + '"]');
+                var model;
+                $(formModel).each(function() {
+                    if (this.name === data) {
+                        model = this;
+                        return false;
+                    }
+                });
+                var count = ul.find("li input[type=checkbox]:checked").length;
+                $(".bh-batch-edit section").find(".bh-batch-edit-form-top").html('&lt;h4>' + $.i18n('bh-be-choosed') + count + $.i18n('bh-be-piecesOfKeys') + '&lt;/h4>');
+                if ($item.prop("checked")) {
+                    if (!form.html()) {
+                        form.emapForm({
+                            data: [model],
+                            model: 'h',
+                            inputWidth: 9,
+                            renderByGroup: false
+                        });
+                        form.find('.bh-form-horizontal').css('margin-bottom', 0);
+                    }
+                    form.find('.form-validate-block[data-field=' + data + ']').show();
+                    form.emapForm("showItem", data);
+                } else {
+                    form.emapForm("hideItem", data);
+                    form.emapForm("clear", [data]);
+                }
+            });
+        }
+    }
+})();
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 15:55:34 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
