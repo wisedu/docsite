@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhDateTimePicker/bhDateTimePicker.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhDateTimePicker/bhDateTimePicker.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>//下载
+(function() {
+    /**
+     * @module bhDateTimePicker
+     * @description 时间日期选择器，内部依赖bootstrap-datetimejs，api文档{@link https://github.com/Eonasdan/bootstrap-datetimepicker}
+     * @example
+     * $('#bhDateTimePicker').bhDateTimePicker({
+     * });
+     */
+    var _init;
+
+    //兼容jqxDateTimeInput的val方法
+    var oldVal = $.fn.val;
+    $.fn.val = function() {
+        var args = arguments;
+        var instance = $(this).data('bhdatetimepicker');
+        if (instance) {
+            return instance.val.apply(instance, args);
+        }
+        return oldVal.apply(this, args);
+    };
+
+    var Plugin = function(element, options) {
+        if (options.mode) { options.model = options.mode; }
+        if (BH_UTILS.lang() !== 'ch') {
+            $.fn.bhDateTimePicker.defaults.tooltips = {};
+        }
+        this.options = $.extend({}, $.fn.bhDateTimePicker.defaults, options);
+        this.$element = $(element);
+        _init(this.$element, this.options);
+        return this;
+    };
+
+    /**
+     * @method val
+     * @description 传参数为赋值，不传参数为取值
+     * @param  {String|Data|moment} value 
+     * @return {String|DOM} 不传参返回String，传参返回DOM
+     */
+    Plugin.prototype.val = function(value) {
+        if (value === undefined) {
+            // get
+            return this.getValue();
+        } else {
+            // set
+            return this.setValue(value);
+        }
+    };
+
+    /**
+     * @method val
+     * @description 赋值
+     * @param {String|Data|moment} value
+     * @return {DOM}
+     */
+    Plugin.prototype.setValue = function(value) {
+        var picker = this.getDatePicker();
+        if (value === '') { // clear
+            value = null;
+        }
+        picker.date(value);
+        return this.$element;
+    };
+
+    /**
+     * @method getValue
+     * @description 取值
+     * @return {String}
+     */
+    Plugin.prototype.getValue = function() {
+        return $('[bh-form-role="dateTimeInput"]', this.$element).val();
+    };
+
+    /**
+     * @method disabled
+     * @description 使选择器可用或者不可用
+     * @param  {Boolean} params 
+     * @return {DOM} 
+     */
+    Plugin.prototype.disabled = function(params) {
+        var element = this.$element;
+        if (params === true) {
+            element.addClass('bh-disabled');
+            $('[bh-form-role="dateTimeInput"]', element).attr('disabled', true);
+        } else if (params === false) {
+            element.removeClass('bh-disabled');
+            $('[bh-form-role="dateTimeInput"]', element).attr('disabled', false);
+        }
+        return element;
+    };
+
+    /**
+     * @methos show
+     * @description 显示选择器
+     * @return {DOM}
+     */
+    Plugin.prototype.show = function() {
+        this.getDatePicker().show();
+        return this.element;
+    };
+
+    /**
+     * @methos hide
+     * @description 隐藏选择器
+     * @return {DOM}
+     */
+    Plugin.prototype.hide = function() {
+        this.getDatePicker().hide();
+        return this.element;
+    };
+
+    /**
+     * @method minDate
+     * @description 设置最小日期
+     * @param  {String|Data|moment} date
+     * @return {DOM}
+     */
+    Plugin.prototype.minDate = function(date) {
+        this.getDatePicker().minDate(date);
+        return this.element;
+    };
+
+    /**
+     * @method maxDate
+     * @description 设置最大日期
+     * @param  {String|Data|moment} date
+     * @return {DOM}
+     */
+    Plugin.prototype.maxDate = function(date) {
+        this.getDatePicker().maxDate(date);
+        return this.element;
+    };
+
+    /**
+     * @method date
+     * @description 设置或者返回日期
+     * @param  {String|Data|moment} [date]
+     */
+    Plugin.prototype.date = function(data) {
+        var args = arguments;
+        var picker = this.getDatePicker();
+        if (data === undefined) {
+            return picker.data();
+        }
+        return picker.date.apply(picker, args);
+    };
+
+    /**
+     * @method getDatePicker
+     * @description 返回DateTimePicker实例
+     * @return {DateTimePicker} DateTimePicker实例
+     */
+    Plugin.prototype.getDatePicker = function() {
+        return this.$element.find('input[bh-form-role=dateTimeInput]').data('DateTimePicker');
+    };
+
+    _init = function(element, options) {
+        element.html('&lt;input bh-form-role="dateTimeInput" type="text" class="bh-form-control"/>' +
+            '&lt;span class="bhtc-input-group-addon">' +
+            '&lt;i class="iconfont icon-daterange">&lt;/i>' +
+            '&lt;/span>').addClass('bhtc-input-group');
+        $('[bh-form-role=dateTimeInput]', element).datetimepicker(options);
+
+        $('[bh-form-role=dateTimeInput]', element).on('blur', function() {
+            element.trigger('dateInputBlur');
+        }).on('dp.change', function(e) {
+            e.type = 'change';
+            e.namespace = '';
+            $(this).parent().trigger(e);
+        });
+    };
+
+
+    $.fn.bhDateTimePicker = function(options, params) {
+        var instance;
+        instance = this.data('bhdatetimepicker');
+        if (!instance) {
+            return this.each(function() {
+                return $(this).data('bhdatetimepicker', new Plugin(this, options));
+            });
+        }
+        if (options === true) {
+            return instance;
+        }
+        if ($.type(options) === 'string') {
+            return instance[options](params);
+        }
+        return this;
+    };
+
+    $.fn.bhDateTimePicker.defaults = {
+        format: 'YYYY-MM-DD',
+        tooltips: {
+            today: '跳到今天',
+            clear: '清除选择',
+            close: '关闭选择器',
+            selectMonth: '选择月',
+            prevMonth: '上一月',
+            nextMonth: '下一月',
+            selectYear: '选择年',
+            prevYear: '上一年',
+            nextYear: '上一年',
+            selectDecade: '选择十年',
+            prevDecade: '上个十年',
+            nextDecade: '下个十年',
+            prevCentury: '上个世纪',
+            nextCentury: '下个世纪',
+            pickHour: '选择小时',
+            incrementHour: '加小时',
+            decrementHour: '少小时',
+            pickMinute: '选择分钟',
+            incrementMinute: '加分钟',
+            decrementMinute: '减分钟',
+            pickSecond: '选择秒',
+            incrementSecond: '加秒',
+            decrementSecond: '减秒',
+            togglePeriod: '切换周期',
+            selectTime: '选择时间'
+        }
+    };
+
+    $.fn.bhDateTimePicker.prototype.constructor = Plugin;
+
+}).call(this);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhCalculator.html">bhCalculator</a></li><li><a href="module-bhCustomizeColumn.html">bhCustomizeColumn</a></li><li><a href="module-bhDateAreaPicker.html">bhDateAreaPicker</a></li><li><a href="module-bhDateTimePicker.html">bhDateTimePicker</a></li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhSlider.html">bhSlider</a></li><li><a href="module-bhTree.html">bhTree</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 10:54:40 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

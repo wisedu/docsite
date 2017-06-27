@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhNumRange/bhNumRange.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhNumRange/bhNumRange.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function () {
+  /**
+   * @module bhNumRange
+   * @description 数字区间，内部依赖jqwidgets，文档地址{@link http://www.jqwidgets.com/jquery-widgets-documentation/documentation/jqxnumberinput/jquery-number-input-api.htm?search=}
+   * @example 
+   * $ele.bhNumRange({});
+   */
+  var template = [
+    '&lt;div class="bh-num-range">',
+    '&lt;div class="bh-num-range__input-wrap bh-pull-left">',
+    '&lt;div class="bh-num-range__input bh-num-input__1 ">&lt;/div>',
+    '&lt;/div>',
+    '&lt;span class="bh-num-range__linkLine">&lt;/span>',
+    '&lt;div class="bh-num-range__input-wrap bh-pull-right">',
+    '&lt;div class="bh-num-range__input bh-num-input__2">&lt;/div>',
+    '&lt;/div>',
+    '&lt;/div>'
+  ].join('');
+
+  function jqxBridge($elem, data) {
+    $elem.toggleClass('jqx-widget', true);
+    $elem.data('jqxWidget', data);
+  }
+
+  var NumRange = function (elem, options) {
+    this.$elem = $(elem);
+    this.template = template;
+
+    this.$input1 = null;
+    this.$line = null;
+    this.$input2 = null;
+
+    this.options = $.extend({}, NumRange.DEFAULT, options);
+
+    this.init();
+    jqxBridge(this.$elem, this);
+
+    return this;
+  };
+
+  /**
+   * @memberof module:bhNumRange
+   * @prop {Boolean} [spinButtons=true] - Shows or hides the spin buttons.
+   * @prop {Int} [decimalDigits] - Indicates the number of decimal places to use in numeric values.
+   * @prop {Int} [width] - 指定控件宽度
+   * @prop {Object} [input1] - 第一个数字输入框的配置
+   * @prop {Object} [input2] - 第二个数字输入框的配置
+   */
+  NumRange.DEFAULT = {
+    spinButtons: true,
+    inputMode: 'simple',
+    decimal: null,
+    decimalDigits: 0,
+    promptChar: '',
+    width: null,
+    input1: null, //input1的配置
+    input2: null //input2的配置
+  };
+
+  NumRange.prototype.init = function () {
+    var $c = this.$elem;
+    $c.html(this.template);
+    this.$input1 = $c.find('.bh-num-input__1');
+    this.$input2 = $c.find('.bh-num-input__2');
+    this.$line = $c.find('.bh-num-range__linkLine');
+
+    //input config
+    var options = $.extend(true, this.options, {});
+    var input1_conf = options.input1;
+    var input2_conf = options.input2;
+    var inputWidth
+
+    delete options.input1;
+    delete options.input2;
+    
+    if (options.width !== null) {
+      inputWidth = Math.floor((options.width - 15) / 2)
+    } else {
+      inputWidth = Math.floor((this.$elem.width() - 15) / 2);
+    }
+    this.$elem.find('.bh-num-range__input-wrap').width(inputWidth);
+    delete options.width
+    input1_conf = $.extend({
+      width: inputWidth
+    }, options, input1_conf);
+    input2_conf = $.extend({
+      width: inputWidth
+    }, options, input2_conf);
+
+    this.$input1.jqxNumberInput(input1_conf);
+    this.$input2.jqxNumberInput(input2_conf);
+
+    // this.upgradeInputWidth();
+
+    // 前后大小的限制会导致第二个区间输入无效的情况
+    // this.bindEvent();
+  };
+
+  NumRange.prototype.bindEvent = function () {
+    var self = this;
+    this.$input1.on('change', function (e) {
+      var value = e.args.value;
+      self.$input2.jqxNumberInput({
+        min: value
+      });
+    });
+    this.$input2.on('change', function (e) {
+      var value = e.args.value;
+      self.$input1.jqxNumberInput({
+        max: value
+      });
+    });
+  };
+
+  NumRange.prototype.upgradeInputWidth = function () {
+    var width = Math.floor((this.$elem.width() - 20) / 2);
+    this.$input1.jqxNumberInput('width', width);
+    this.$input2.jqxNumberInput('width', width);
+  };
+
+  /**
+   * @method val
+   * @description 取值
+   * @return {String} 当前值
+   * @example $item.val()
+   */
+  NumRange.prototype.val = function (value) {
+    if (arguments.length) {
+      return this.setValue(value);
+    } else {
+      return this.getValue();
+    }
+  };
+  /**
+   * @method setValue
+   * @description 设置input的值
+   * @param {Object} valObj 
+   * @example 
+   * $item.bhNumRange('setValue', {
+   *  input1: 1,
+   *  input2: 2,
+   * })
+   */
+  NumRange.prototype.setValue = function (valObj) {
+    if (valObj.input1 !== '') {
+      this.$input1.val(valObj.input1);
+    }
+    if (valObj.input2 !== '') {
+      this.$input2.val(valObj.input2);
+    }
+  };
+  /**
+   * @method getValue
+   * @description 获取input的值
+   * @return {String} 当前值
+   * @example 
+   * $item.bhNumRange('getValue')
+   */
+  NumRange.prototype.getValue = function () {
+    var value = [getInputVal(this.$input1), getInputVal(this.$input2)].join(',');
+    return value == ',' ? '' : value;
+  };
+
+  /**
+   * @method disabled
+   * @description 禁用
+   * @param  {Object} inputs - 若inputs为对象,则对两个输入框单独设置，若inputs为Boolean，则对两个输入框统一设置是否禁用
+   * @param  {Object} [inputs.input1] - 第一个输入框是否禁用
+   * @param  {Object} [inputs.input2] - 第二个输入框是否禁用
+   * @example
+   * $dom.bhNumRange('disabled', true);
+   * // or
+   * $dom.bhNumRange('disabled', {
+   *  input1: true,
+   *  input2: false
+   * });
+   */
+  NumRange.prototype.disabled = function (inputs) {
+    if (typeof inputs == 'boolean') {
+      inputs = {
+        input1: inputs,
+        input2: inputs
+      };
+    }
+    this.$input1.jqxNumberInput('disabled', inputs.input1);
+    this.$input2.jqxNumberInput('disabled', inputs.input2);
+  };
+
+  function getInputVal($ele) {
+    var leftValue = $ele.val() || $ele.find('input').val();
+    if (leftValue) {
+      var decimalDigits = $ele.jqxNumberInput('decimalDigits');
+      if (decimalDigits) {
+        var vals = (leftValue + '').split('.');
+        var decimalNum = vals[1] || '0';
+        for (var i = 0; i &lt; decimalDigits - 1; i++) {
+          if (!decimalNum[i]) {
+            decimalNum += '0';
+          }
+        }
+        leftValue = [vals[0] || '0', decimalNum].join('.');
+      }
+    }
+    return leftValue;
+  }
+
+  //jquery adapter
+  function Plugin(option, params) {
+    this.each(function (index, elem) {
+      var $elem = $(elem);
+      var data = $elem.data('we.bhNumRange');
+      //qiyu 2016-12-14 修正JSONParam传进来后，赋值变成了true的问题
+      // var options = typeof option === 'object';
+      var options = {};
+      if (typeof option === 'object') {
+        options = option;
+      }
+
+      if (!data) {
+        $elem.data('we.bhNumRange', data = new NumRange(elem, options));
+      }
+    });
+
+    if (typeof option === 'string') {
+      return this.data('we.bhNumRange')[option](params);
+    }
+  }
+
+
+  $.fn.bhNumRange = Plugin;
+  $.fn.bhNumRange.constructor = NumRange;
+})();</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 10:54:30 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

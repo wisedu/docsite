@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhProgressBar/bhProgressBar.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhProgressBar/bhProgressBar.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function($) {
+    /**
+     * @module bhProgressBar
+     * @description 进度条
+     */
+    var Plugin;
+
+    Plugin = (function() {
+        function Plugin(element, setting) {
+            this.options = $.extend(true, {}, $.fn.bhProgressBar.defaults, setting);
+            this.$element = $(element);
+            init(this);
+        }
+
+        /**
+         * @method setProgress
+         * @description 设置进度值
+         * @param {String | Number} progress 进度值，比例乘以total后的值
+         */
+        Plugin.prototype.setProgress = function(progress) {
+            this.stopProgress();
+
+            refreshProgressInfo(this);
+
+            var proportion = progress / this.options.total;
+            var duration = this.options.time * (progress - this.getProgress()) / this.options.total * 1000;
+            var instance = this;
+            this.$element.find('.bh-current-progress').animate({
+                width: proportion * 100 + '%'
+            }, duration, function() {
+                var progress = instance.getProgress();
+                instance.$element.find('.bh-current-progress-info').text(Math.round(progress || 0));
+                if ($.isFunction(instance.options.progressFinished)) {
+                    instance.options.progressFinished(progress, instance.$element);
+                }
+                instance.stopProgress();
+            });
+
+            return this.$element;
+        };
+
+        /**
+         * @method getProgress
+         * @description 获取当前进度值
+         * @return {Number} 返回值为数字，当前比例乘以total的值
+         */
+        Plugin.prototype.getProgress = function() {
+            var $progress = this.$element.find('.bh-current-progress');
+            return Math.round($progress.width() / $progress.parent().width() * this.options.total);
+        };
+
+        /**
+         * @method stopProgress
+         * @description 停止进度条
+         * @return {DOM}
+         */
+        Plugin.prototype.stopProgress = function() {
+            stopRefreshProgressInfo(this);
+            return this.$element.find('.bh-current-progress').stop();
+        };
+
+        return Plugin;
+
+    })();
+
+    function refreshProgressInfo(instance) {
+        instance['progress-timer'] = setTimeout(function() {
+            stopRefreshProgressInfo(instance);
+            var progress = instance.getProgress();
+            instance.$element.find('.bh-current-progress-info').text(Math.round(progress || 0));
+            refreshProgressInfo(instance);
+        }, 100);
+    }
+
+    function stopRefreshProgressInfo(instance) {
+        var timer = instance['progress-timer'];
+        clearTimeout(timer);
+    }
+
+    function init(instance) {
+        var html = getHtml(instance.options);
+        instance.$element.html(html);
+        instance.setProgress(instance.options.defaultProgress || instance.options.total);
+    }
+
+    function getHtml(options) {
+        return '&lt;div class="bh-progressbar-container" style="width:' + options.width + 'px">' +
+            '&lt;div class="bh-progressbar">' +
+            '   &lt;div class="bh-bg-progress">&lt;/div>' +
+            '   &lt;div class="bh-current-progress" style="width:' + (options.defaultProgress / options.total) * 100 + '%' + '">' +
+            '       &lt;div class="bh-progress-head">&lt;/div>' +
+            '   &lt;/div>' +
+            '&lt;/div>' +
+            '&lt;div class="bh-progress-info bh-mt-4" style="display:' + (options.showInfo ? 'block' : '') + '">' +
+            '   &lt;span class="bh-current-progress-info">' + options.defaultProgress + '&lt;/span>/&lt;span class="bh-total-progress">' + options.total + '&lt;/span>' +
+            '&lt;/div>' +
+            '&lt;/div>';
+    }
+
+
+    $.fn.bhProgressBar = function(options, params) {
+        var instance;
+        instance = this.data('bhProgressBar');
+        if (options === true) {
+            return instance;
+        }
+        if (!instance) {
+            return this.each(function() {
+                return $(this).data('bhProgressBar', new Plugin(this, options));
+            });
+        }
+        if ($.type(options) === 'string') {
+            return instance[options](params);
+        }
+        return this;
+    };
+
+    /**
+     * @description 插件的默认值
+     * @property {Number | String} total 进度最终值
+     * @property {Number} time 进度时长单位为秒
+     * @property {String} width 进度条宽度
+     * @property {Boolean} showInfo 是否显示进度条下方进度信息
+     * @property {Function} progressFinished 进度条结束（包含复制后进度结束）的回调
+     * @type {Object}
+     */
+    $.fn.bhProgressBar.defaults = {
+        total: 100,
+        time: 5,
+        width: '100',
+        showInfo: false,
+        defaultProgress: 0,
+        progressFinished: null
+    };
+
+})(jQuery);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 10:54:30 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

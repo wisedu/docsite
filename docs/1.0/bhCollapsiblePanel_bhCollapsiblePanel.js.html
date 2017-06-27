@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhCollapsiblePanel/bhCollapsiblePanel.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhCollapsiblePanel/bhCollapsiblePanel.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function($) {
+    /**
+     * 定义一个插件
+     */
+    var Plugin;
+    /**
+     * @module bhCollapsiblePanel
+     * @alias 可折叠面板
+     * @description 可折叠面板
+     * @example
+        $control.bhCollapsiblePanel({
+            title: "", //大标题内容，可以是传纯文本或html
+            tag: "", //标签html
+            caption: "", //小标题内容，可以是传纯文本或html
+            toolbar: "", //工具栏的DOM的Html
+            hasBorder: true, //是否显示边框
+            beforeExpand: null, //展开面板前的回调
+            afterExpand: null, //展开面板后的回调
+            beforeCollapse: null, //收缩面板前的回调
+            afterCollapse: null //收缩面板后的回调
+        });
+     */
+    Plugin = (function() {
+
+        /**
+         * 插件实例化部分，初始化时调用的代码可以放这里
+         */
+        function Plugin(element, options) {
+            //将插件的默认参数及用户定义的参数合并到一个新的obj里
+            this.settings = $.extend({}, $.fn.bhCollapsiblePanel.defaults, options);
+            //将dom jquery对象赋值给插件，方便后续调用
+            this.$element = $(element);
+            init(this.settings, this.$element);
+        }
+
+        /**
+         * 展开面板
+         * @method expandPanel
+         * @example
+        $control.bhCollapsiblePanel("expandPanel");
+         */
+        Plugin.prototype.expandPanel = function() {
+            var switchBtn = this.$element.find('[bh-collapsible-panel-flag="switch"]');
+            expandPanel(switchBtn, this.settings);
+        };
+        /**
+         * 收缩面板
+         * @method collapsePanel
+         * @example
+        $control.bhCollapsiblePanel("collapsePanel");
+         */
+        Plugin.prototype.collapsePanel = function() {
+            var switchBtn = this.$element.find('[bh-collapsible-panel-flag="switch"]');
+            collapsePanel(switchBtn, this.settings);
+        };
+
+        return Plugin;
+
+    })();
+
+    function init(options, dom) {
+        var content = dom.html();
+        //初始化头部
+        var _html = getPanelHtml(options);
+        dom.html(_html);
+        var $block = $(".bh-collapsible-panel-content", dom);
+        $block.append(content);
+        dom.show();
+        $block.data("height", $block.outerHeight());
+        $block.css("height", 0).hide();
+        addEventListener(dom, options);
+    }
+
+    function addEventListener(dom, options) {
+        dom.on("click", '.bh-collapsible-panel', function(e) {
+            e = e || window.event;
+            var targetNode = e.target || e.srcElement;
+            if ($(targetNode).attr("bh-collapsible-panel-flag") == "switch") {
+                if ($(targetNode).attr("bh-collapsible-panel-role") == "expand") {
+                    expandPanel($(targetNode), options);
+                } else {
+                    collapsePanel($(targetNode), options);
+                }
+            } else if ($(targetNode).hasClass("bh-collapsible-panel")) {
+                var switchBtn = $(this).find('[bh-collapsible-panel-flag="switch"]');
+                if (switchBtn.attr("bh-collapsible-panel-role") == "expand") {
+                    expandPanel(switchBtn, options);
+                }
+            } else if ($(targetNode).closest(".bh-collapsible-panel-toolbar").length == 0) {
+                var $parent = $(targetNode).closest(".bh-collapsible-panel");
+                var switchBtn = $parent.find('[bh-collapsible-panel-flag="switch"]');
+                if (switchBtn.attr("bh-collapsible-panel-role") == "expand") {
+                    expandPanel(switchBtn, options);
+                }
+            }
+        });
+    }
+
+    function getPanelHtml(options) {
+        var panelClass = "bh-collapsible-panel";
+        if (options.hasBorder) {
+            panelClass += " has-border";
+        }
+        var _html = '&lt;div class="' + panelClass + '">' +
+            '&lt;h3 class="bh-collapsible-panel-title">' + options.title + '&lt;/h3>' +
+            options.tag +
+            '&lt;div class="bh-text-caption bh-caption-default">' + options.caption + '&lt;/div>' +
+            '&lt;div class="bh-collapsible-panel-toolbar">' +
+            options.toolbar +
+            '&lt;a href="javascript:void(0);" class="bh-btn-link" bh-collapsible-panel-flag="switch" bh-collapsible-panel-role="expand">' + $.i18n('bha-panel-expand') + '&lt;/a>' +
+            '&lt;/div>' +
+            '&lt;div class="bh-collapsible-panel-content bh-collapsible-panel-animate">' +
+            '&lt;/div>' +
+            '&lt;/div>';
+        return _html;
+    }
+
+    function collapsePanel(target, options) {
+        if (options &amp;&amp; options.beforeCollapse) {
+            options.beforeCollapse(target);
+        }
+        var $block = $(target).closest(".bh-collapsible-panel").find(".bh-collapsible-panel-content");
+        $block.css({
+            "height": 0
+        });
+        var $card = $block.parent();
+        setTimeout(function() {
+            $block.hide();
+            $card.removeClass("bh-card bh-card-lv2");
+        }, getAnimateTime());
+        var switchBtn = $card.find("[bh-collapsible-panel-flag='switch']");
+        switchBtn.text($.i18n('bha-panel-expand'));
+        switchBtn.attr("bh-collapsible-panel-role", "expand");
+        if (options &amp;&amp; options.afterCollapse) {
+            setTimeout(function() {
+                options.afterCollapse(target);
+            }, getAnimateTime());
+        }
+    }
+
+    function expandPanel(target, options) {
+        if (options &amp;&amp; options.beforeExpand) {
+            options.beforeExpand(target);
+        }
+        var $block = $(target).closest(".bh-collapsible-panel").find(".bh-collapsible-panel-content");
+        var $card = $block.parent();
+        //给自己加阴影
+        $card.addClass("bh-card bh-card-lv2");
+
+        var height = $block.data("height");
+        $block.show();
+        setTimeout(function() {
+            $block.css({
+                "height": height
+            });
+        }, 1);
+        $(target).text($.i18n('bha-panel-collapse'));
+        $(target).attr("bh-collapsible-panel-role", "collapse");
+        if (options &amp;&amp; options.afterExpand) {
+            setTimeout(function() {
+                options.afterExpand(target);
+            }, getAnimateTime());
+        }
+    }
+    /**
+     * 动画的执行的基础时间
+     * @returns {number}
+     */
+    function getAnimateTime() {
+        return 450;
+    }
+    /**
+     * 这里是关键
+     * 定义一个插件 plugin
+     */
+    $.fn.bhCollapsiblePanel = function(options, params) {
+        var instance;
+        instance = this.data('bhCollapsiblePanel');
+        /**
+         * 判断插件是否已经实例化过，如果已经实例化了则直接返回该实例化对象
+         */
+        if (!instance) {
+            return this.each(function() {
+                //将实例化后的插件缓存在dom结构里（内存里）
+                return $(this).data('bhCollapsiblePanel', new Plugin(this, options));
+            });
+        }
+        if (options === true) {
+            return instance;
+        }
+        /**
+         * 优雅处： 如果插件的参数是一个字符串，则 调用 插件的 字符串方法。
+         * 如 $('#id').plugin('doSomething') 则实际调用的是 $('#id).plugin.doSomething();
+         * doSomething是刚才定义的接口。
+         * 这种方法 在 juqery ui 的插件里 很常见。
+         */
+        if ($.type(options) === 'string') {
+            instance[options](params);
+        }
+        return this;
+    };
+
+    /**
+     * @memberof module:bhCollapsiblePanel
+     * @description 内置默认值
+     * @prop {object}  defaults
+     * @prop {string}  defaults.title - 大标题内容，可以是传纯文本或html
+     * @prop {string}  defaults.tag - 标签html
+     * @prop {string}  defaults.caption - 小标题内容，可以是传纯文本或html
+     * @prop {string}  defaults.toolbar - 工具栏的DOM的Html
+     * @prop {boolean}  defaults.hasBorder - 是否显示边框
+     * @prop {function}  defaults.beforeExpand - 展开面板前的回调
+     * @prop {function}  defaults.afterExpand - 展开面板后的回调
+     * @prop {function}  defaults.beforeCollapse - 收缩面板前的回调
+     * @prop {function}  defaults.afterCollapse - 收缩面板后的回调
+     */
+    $.fn.bhCollapsiblePanel.defaults = {
+        title: "", //大标题内容，可以是传纯文本或html
+        tag: "", //标签html
+        caption: "", //小标题内容，可以是传纯文本或html
+        toolbar: "", //工具栏的DOM的Html
+        hasBorder: true, //是否显示边框
+        beforeExpand: null, //展开面板前的回调
+        afterExpand: null, //展开面板后的回调
+        beforeCollapse: null, //收缩面板前的回调
+        afterCollapse: null //收缩面板后的回调
+    };
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 10:54:30 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

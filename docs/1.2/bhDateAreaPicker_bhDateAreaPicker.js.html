@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhDateAreaPicker/bhDateAreaPicker.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhDateAreaPicker/bhDateAreaPicker.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module bhDateAreaPicker
+ * @description 依赖bhDateTimePicker和datetimepicker
+ * @example
+ * $('#bhDateTimePicker').bhDateAreaPicker({
+ *      start: {},
+ *      end: {}
+ * });
+ * 
+ * $('#bhDateTimePicker').bhDateAreaPicker({
+ * });
+ */
+(function() {
+    var _convertOptions, _init, _areaProtection;
+
+    var Plugin = function(element, options) {
+        if (options.mode) { options.model = options.mode; }
+        this.$element = $(element);
+        this.options = _convertOptions(options);
+        _init(this.$element, this.options);
+        return this;
+    };
+
+    /**
+     * @method val 
+     * @description 参数可不传，或者传[Object | String]，传参数为赋值，不传参数为取值
+     * @param [{object | string}] opt 可传可不传，不传为取值，传为赋值
+     */
+    Plugin.prototype.val = function(opt) {
+        if (opt) {
+            return this.setValue(opt);
+        } else {
+            return this.getValue();
+        }
+    };
+
+    /**
+     * @method setValue
+     * @description
+     * Object的结构为
+     * @param {object | string} value 需要赋的值
+     * @param {string} value.startDate 开始日期
+     * @param {string} value.endDate   结束日期
+     */
+    Plugin.prototype.setValue = function(value) {
+        var $picker = $('input[bh-form-role="dateTimeInput"]', this.$element);
+        if ($.isPlainObject(value)) {
+            if (value.hasOwnProperty('startDate')) {
+                $picker.first().data('DateTimePicker').date(value.startDate);
+            }
+            if (value.hasOwnProperty('endDate')) {
+                $picker.last().data('DateTimePicker').date(value.endDate);
+            }
+        } else {
+            var value_arr = value.split(',')
+            if (value_arr.length === 2) {
+                $picker.each(function (i) {
+                    $(this).data('DateTimePicker').date(value_arr[i])
+                })
+            } else {
+                $picker.data('DateTimePicker').date(value);
+            }
+        }
+        return this.$element;
+    };
+
+    /**
+     * @method clear
+     * @description 清空
+     */
+    Plugin.prototype.clear = function () {
+        var $picker = $('input[bh-form-role="dateTimeInput"]', this.$element);
+        $picker.each(function () {
+            $(this).data('DateTimePicker').date(null)
+        })
+        return this.$element;
+    }
+
+    /**
+     * @method getValue
+     * @description
+     * 单个按jQuery返回，
+     * 日期范围则按如下形式返回
+     * @return {object} 日期范围
+     * {
+     *  startDate：[String]
+     *  endDate：[String]
+     * }
+     */
+    Plugin.prototype.getValue = function() {
+        return {
+            startDate: $('[role="startDatePicker"]', this.$element).bhDateTimePicker('getValue'),
+            endDate: $('[role="endDatePicker"]', this.$element).bhDateTimePicker('getValue')
+        };
+    };
+
+    /**
+     * @method disabled
+     * @description 传Object或者Boolean
+     * @param {Object | Boolean} disabled
+     * Object结构为
+     * {
+     *  start：Boolean
+     *  end：Boolean
+     * }
+     */
+    Plugin.prototype.disabled = function(params) {
+        if ($.isPlainObject(params)) {
+            if (params.hasOwnProperty('start')) {
+                this.$element.find('[role="startDatePicker"]').bhDateTimePicker('disabled', params.start);
+            }
+            if (params.hasOwnProperty('end')) {
+                this.$element.find('[role="endDatePicker"]').bhDateTimePicker('disabled', params.end);
+            }
+        } else {
+            this.$element.find('[type="datePicker"]').each(function() {
+                $(this).bhDateTimePicker('disabled', params);
+            });
+        }
+        return this.$element;
+    };
+
+    /**
+     * @method getStartPicker
+     * @description 获取开始日期组件对象
+     * @return {object}
+     */
+    Plugin.prototype.getStartPicker = function() {
+        return this.$element.find('[role="startDatePicker"]').bhDateTimePicker('getDatePicker');
+    };
+
+    /**
+     * @method startMaxDate
+     * @description 设置或者返回开始日期组件的最大日期
+     * @param  [{string | Date | moment}] date [description]
+     * @return maxDate or dom
+     */
+    Plugin.prototype.startMaxDate = function(date) {
+        if (date === undefined) {
+            return this.$element.find('[role="startDatePicker"]').bhDateTimePicker('getDatePicker').maxDate();
+        }
+        return this.$element.find('[role="startDatePicker"]').bhDateTimePicker('maxDate', date);
+    };
+
+    /**
+     * @method startMinDate
+     * @description 设置或者返回开始日期组件的最小日期
+     * @param  [{string | Date | moment}] date [description]
+     * @return maxDate or dom
+     */
+    Plugin.prototype.startMinDate = function(date) {
+        if (date === undefined) {
+            return this.$element.find('[role="startDatePicker"]').bhDateTimePicker('getDatePicker').maxDate();
+        }
+        return this.$element.find('[role="startDatePicker"]').bhDateTimePicker('minDate', date);
+    };
+
+    /**
+     * @method getEndPicker
+     * @description 获取结束日期组件对象
+     * @return {object}
+     */
+    Plugin.prototype.getEndPicker = function() {
+        return this.$element.find('[role="endDatePicker"]').bhDateTimePicker('getDatePicker');
+    };
+
+
+    /**
+     * @method endMaxDate
+     * @description 设置或者返回结束日期组件的最大日期
+     * @param  [{string | Date | moment}] date [description]
+     * @return maxDate or dom
+     */
+    Plugin.prototype.endMaxDate = function(date) {
+        if (date === undefined) {
+            return this.$element.find('[role="endDatePicker"]').bhDateTimePicker('getDatePicker').maxDate();
+        }
+        return this.$element.find('[role="endDatePicker"]').bhDateTimePicker('maxDate', date);
+    };
+
+    /**
+     * @method endMinDate
+     * @description 设置或者返回结束日期组件的最小日期
+     * @param  [{string | Date | moment}] date [description]
+     * @return maxDate or dom
+     */
+    Plugin.prototype.endMinDate = function(date) {
+        if (date === undefined) {
+            return this.$element.find('[role="endDatePicker"]').bhDateTimePicker('getDatePicker').minDate();
+        }
+        return this.$element.find('[role="endDatePicker"]').bhDateTimePicker('minDate', date);
+    };
+
+    /**
+     * _convertOptions
+     * @param  {} custOptions 
+     * @return {}
+     */
+    _convertOptions = function(custOptions) {
+        var options = $.extend(true, {}, $.fn.bhDateAreaPicker.defaults, custOptions);
+        var end = options.end;
+        var start = options.start;
+        delete options.start;
+        delete options.end;
+        var opts = {
+            start: $.extend(true, {}, options, start),
+            end: $.extend(true, {}, options, end)
+        };
+        return opts;
+    };
+
+    _init = function(element, options) {
+        var endTpl = '&lt;div class="bh-col-md-6">&lt;div role="endDatePicker" type="datePicker">&lt;/div>&lt;/div>';
+        var startTpl = '&lt;div class="bh-col-md-6">&lt;div role="startDatePicker" type="datePicker">&lt;/div>&lt;/div>';
+        var spliteTpl = '&lt;span class="bh-data-area-picker-split">-&lt;/span>';
+        var tpl = startTpl + spliteTpl + endTpl;
+        element.html('&lt;div class="bh-data-area-picker-clear">' + tpl + '&lt;/div>');
+
+        element.find('div[role="startDatePicker"]').bhDateTimePicker(options.start);
+        element.find('div[role="endDatePicker"]').bhDateTimePicker(options.end);
+
+        _areaProtection(element, options);
+    };
+
+    //保证日期范围正确
+    _areaProtection = function(element, options) {
+        $('[type="datePicker"]', element).on('dp.change', function(e) {
+            var picker = $(this).find('[bh-form-role="dateTimeInput"]').data('DateTimePicker');
+            //向右比较
+            $(this).parent().nextAll('div').each(function() {
+                var currentPicker = $(this).find('input[bh-form-role=dateTimeInput]').data('DateTimePicker');
+                var current = currentPicker.date();
+                var emit = moment(e.date, picker.format()).toDate(); //触发事件的选择器的值
+                //右侧的值不能小于当前选择器的值
+                if (current &amp;&amp; (moment(current.format(currentPicker.format()), currentPicker.format()).toDate() &lt; emit)) {
+                    $.bhTip({
+                        content: $.i18n('bha-dateArea-greater'),
+                        state: 'warning'
+                    });
+                    return false;
+                }
+                currentPicker.minDate(e.date ? e.date.format(currentPicker.format()) : null);
+            });
+
+            //向左比较
+            $(this).parent().prevAll('div').each(function() {
+                var currentPicker = $(this).find('input[bh-form-role=dateTimeInput]').data('DateTimePicker');
+                var current = currentPicker.date();
+                var emit = moment(e.date, picker.format()).toDate(); //触发事件的选择器的值
+                //左侧的值不能小于当前选择器的值
+                if (current &amp;&amp; (moment(current.format(currentPicker.format()), currentPicker.format()).toDate() > emit)) {
+                    $.bhTip({
+                        content: $.i18n('bha-dateArea-less'),
+                        state: 'warning'
+                    });
+                    return false;
+                }
+                currentPicker.maxDate(e.date ? e.date.format(currentPicker.format()) : null);
+            });
+        });
+    };
+
+    $.fn.bhDateAreaPicker = function(options, params) {
+        var instance;
+        instance = this.data('bhDateAreaPicker');
+        if (!instance) {
+            return this.each(function() {
+                return $(this).data('bhDateAreaPicker', new Plugin(this, options));
+            });
+        }
+        if (options === true) {
+            return instance;
+        }
+        if ($.type(options) === 'string') {
+            return instance[options](params);
+        }
+        return this;
+    };
+
+    /**
+     * [Object]
+     * start 对应开始日期选择器的私有初始化参数
+     * end   对应结束日期选择器的私有初始化参数
+     * 其他公共参数
+     */
+    $.fn.bhDateAreaPicker.defaults = {
+        format: 'YYYY-MM-DD',
+        start: {},
+        end: {}
+    };
+}).call(this);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhCalculator.html">bhCalculator</a></li><li><a href="module-bhCustomizeColumn.html">bhCustomizeColumn</a></li><li><a href="module-bhDateAreaPicker.html">bhDateAreaPicker</a></li><li><a href="module-bhDateTimePicker.html">bhDateTimePicker</a></li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhSlider.html">bhSlider</a></li><li><a href="module-bhTree.html">bhTree</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 10:54:40 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

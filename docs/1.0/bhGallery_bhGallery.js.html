@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhGallery/bhGallery.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhGallery/bhGallery.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module bhGallery
+ * @description 图片查看器的插件
+ * 图片查看器的插件
+ * 使用此插件前请添加资源服务器上的相关的依赖
+ * 依赖:
+ * 1. galleria 基本库
+ * 2. 相应的 theme (可以使用多个 theme)
+ */
+
+;(function($) {
+    var Galleria;
+    
+    var BhGallery = function(options) {
+        var DEFAULT = {
+            width: 900,
+            height: document.documentElement.clientHeight  // 轮播图片高度的自适应
+        };
+        this.options = $.extend(true, {}, DEFAULT, options);
+    };
+    $.extend(BhGallery.prototype, {
+        show: function() {
+            var _this = this;
+            var $template = $('&lt;div class="bh-gallery">&lt;div class="bh-gallery__backdrop">&lt;/div>&lt;div class="bh-gallery__main">&lt;div class="bh-gallery__gallery">&lt;/div>&lt;/div>&lt;div class="bh-gallery__close iconfont icon-close">&lt;/div>&lt;/div>');
+
+            $('body').append($template);
+            var $main = $('.bh-gallery__gallery', $template).css({
+                width: _this.options.width,
+                height: _this.options.height
+            });
+            Galleria.run($main, this.options);
+
+            this.resizeGallery($main);
+
+            /**
+             * niceScroll 会有一定的延迟,没有具体研究,感觉上是等页面重新渲染完成后 niceScroll 会重新进行一次绑定
+             * 所以立即执行会不起效,延迟执行
+             */
+            setTimeout(function () {
+                $('body').getNiceScroll().hide();
+                // $('.bh-gallery__main', $template).niceScroll()
+            }, 1000);
+
+            $('.bh-gallery__close', $template).click(function() {
+                $template.remove();
+                $('body').getNiceScroll().show();
+            });
+        },
+        /**
+         * 因为如果图片查看器的尺寸超出了尺寸的话需要出滚动条, 吐过采用 css 居中的话无法根据情况显示位置
+         * 并且因为是绝对定位居中,无法出滚动条,因此采用 css 计算来居中
+         */
+        resizeGallery: function($gallery) {
+            var windowWidth = $(window).width();
+            var windowHeight = $(window).height();
+            var galleryWidth = this.options.width;
+            var galleryHeight = this.options.height;
+
+            if (galleryWidth &lt; windowWidth) {
+                $gallery.css({
+                    marginLeft: (windowWidth - galleryWidth) / 2
+                });
+            }
+
+            if (galleryHeight &lt; windowHeight) {
+                $gallery.css({
+                    marginTop: (windowHeight - galleryHeight) / 2
+                });
+            }
+        }
+    });
+
+    $.bhGallery = function(options) {
+        Galleria = window.Galleria;
+        if (Galleria === undefined) {
+            $.getScript('http://res.wisedu.com/bower_components/galleria/src/galleria.js').done(function() {
+                Galleria = window.Galleria;
+                $.getScript('http://res.wisedu.com/fe_components/galleria/standard/galleria.wisedu.js').done(function() {
+                    if (Galleria === undefined) {
+                        console.error('please include Galleria lib');
+                        return;
+                    }
+                    if (options.showType === 'page') {
+                        Galleria.run(options.selector, options);
+                    } else {
+                        (new BhGallery(options)).show();
+                    }
+                });
+            });
+        } else {
+            if (options.showType === 'page') {
+                Galleria.run(options.selector, options);
+            } else {
+                (new BhGallery(options)).show();
+            }
+        }
+    };
+
+}(jQuery));
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 10:54:30 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

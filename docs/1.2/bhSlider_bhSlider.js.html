@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhSlider/bhSlider.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhSlider/bhSlider.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @fileOverview 滑动输入条
+ * @example
+ $control.bhSlider({
+    type: 'default', //default,range,node
+    width: '100%',
+    min: 0, //起始值
+    max: 100, //结束值
+    step: 1, //间隔
+    value: 50, //当前取值
+    disabled: false,//当前的输入条的状态
+    nodeNum:7 //node的参数
+ });
+ */
+(function($) {
+
+	$.fn.bhSlider = function(options, params) {
+		var instance;
+		instance = this.data('bhSlider');
+		/**
+		 * 判断插件是否已经实例化过，如果已经实例化了则直接返回该实例化对象
+		 */
+		if (!instance) {
+			return this.each(function() {
+				//将实例化后的插件缓存在dom结构里（内存里）
+				return $(this).data('bhSlider', new Plugin(this, options));
+			});
+		}
+		if (options === true) {
+			return instance;
+		}
+		/**
+		 * 优雅处： 如果插件的参数是一个字符串，则 调用 插件的 字符串方法。
+		 * 如 $('#id').plugin('doSomething') 则实际调用的是 $('#id).plugin.doSomething();
+		 * doSomething是刚才定义的接口。这种方法 在 juqery ui 的插件里 很常见。
+		 */
+		if ($.type(options) === 'string') {
+			var result = instance[options](params);
+			return result;
+		}
+		//return this;
+	};
+
+	/**
+	 * @memberof module:bhSlider
+	 * @description 内置默认值
+	 * @prop {object}  defaults
+	 * @prop {string}  defaults.type - 滑动输入条的类型,default,range,node
+	 * @prop {string}  defaults.width - 滑动输入条的宽度
+	 * @prop {Nan}     default.min-滑动输入条的最小值
+	 * @prop {Nan}     default.max-滑动输入条的最大值
+	 * @prop {Nan}     default.step-滑动输入条的间隔值
+	 * @prop {Nan}     default.value-滑动输入条的当前的value值,可以是数字(default类型)或者两个数字的数组(range类型)
+	 * @prop {boolean} default.disabled-滑动输入条是否是disable,
+	 * @prop { Nan}    default.nodeNum-node模式的节点数
+	 */
+	$.fn.bhSlider.defaults = {
+		type: 'node', //default,range,node
+		width: '100%',
+		min: 0, //起始值
+		max: 100, //结束值
+		step: 1, //间隔
+		value: 50, //当前取值
+		disabled: false,
+		nodeNum: 7
+	};
+
+	var Plugin;
+
+	// var _slider = {};
+
+	var _is_move = false;
+
+	var LEFTDIF = 16; //为tip的宽度的三分之一
+	var TOPDIF = 35; //为tip的高度加上tip和滑块之前的间距7
+
+	/**
+	 * 这里是一个自运行的单例模式。
+	 * @module bhSlider
+	 */
+	Plugin = (function() {
+		/**
+		 * 插件实例化部分，初始化时调用的代码可以放这里
+		 */
+		function Plugin(element, options) {
+			//将插件的默认参数及用户定义的参数合并到一个新的obj里
+			this.settings = $.extend({}, $.fn.bhSlider.defaults, options);
+			//将dom jquery对象赋值给插件，方便后续调用
+			this.$element = $(element);
+			init(this.settings, this.$element);
+		}
+		/**
+		 * 获取dot所在的位置所代表的
+		 * @method getDotValue
+		 * @example
+		 * 如果是simple和node模式：
+		 * var value=$('#bhSlider').bhSlider("getDotValue");
+		 * 如果是range模式
+		 *	var value=$('#bhSlider').bhSlider("getDotValue",dotIndex);
+		 */
+		Plugin.prototype.getDotValue = function(dotIndex) {
+			var active_dot = '';
+			if (dotIndex) {
+				active_dot = $(_slider.ele.find('.bh-slider-dot')[dotIndex]);
+			} else {
+				active_dot = _slider.ele.find('.bh-slider-dot');
+			}
+			return getDotValue(_slider, active_dot);
+		};
+
+		// Plugin.prototype.resetActiveItem = function(stepId) {
+		//     resetActiveItem(stepId);
+		// };
+
+		return Plugin;
+
+	})();
+
+	function init(options, $element) {
+		var _slider = {};
+		_slider.ele = $element;
+		_slider.width = options.width;
+		_slider.type = options.type;
+		_slider.max = options.max;
+		_slider.min = options.min;
+		_slider.value = options.value;
+		_slider.step = options.step;
+		_slider.disabled = options.disabled;
+		_slider.rangeNum = _slider.max - _slider.min; //当前模式的value值为多大
+		_slider.fraction = _slider.rangeNum / _slider.step; //该模块里面有多少份
+		_slider.isRange = options.type === 'range';
+		_slider.isNode = options.type === 'node';
+		_slider.nodeNum = options.nodeNum;
+
+		appendNomalDom(_slider);
+		setDomStyle(_slider);
+		appendDotTip(_slider);
+		dragEvent(_slider);
+	}
+
+	// 加载模板
+	function appendNomalDom(_slider) {
+		_slider.guid = BH_UTILS.NewGuid();
+		var $nomalEle = '&lt;div class="bh-slider-base">&lt;/div>' +
+			'&lt;div class="bh-slider-value">&lt;/div>' +
+			'&lt;div class="bh-slider-dot" flag="unactive" draggable="true">&lt;/div>';
+		_slider.ele.html($nomalEle);
+		_slider.ele.attr('bh-slider-guid', _slider.guid);
+		_slider.baseEle = _slider.ele.find('.bh-slider-base');
+		_slider.valueEle = _slider.ele.find('.bh-slider-value');
+		if (_slider.isRange) {
+			appendDot(_slider);
+		}
+		if (_slider.isNode) {
+			appendNotes(_slider);
+		}
+		_slider.dot = _slider.ele.find('.bh-slider-dot');
+	}
+
+	function appendDot(_slider) {
+		var $leftDot = '&lt;div class="bh-slider-dot" flag="unactive" draggable="true">&lt;/div>';
+		_slider.valueEle.before($leftDot);
+	}
+
+	function appendNotes(_slider) {
+		var node_element = '';
+		for (var i = 0; i &lt; _slider.nodeNum; i++) {
+			node_element += '&lt;div class="bh-slider-nodeCon">' +
+				'&lt;div class="bh-slider-node bh-mb-16">&lt;/div>' +
+				'&lt;div class="bh-slider-nodeIndex">' + i + '&lt;/div>' +
+				'&lt;/div>';
+		}
+		_slider.baseEle.append(node_element);
+	}
+
+	function setDomStyle(_slider) {
+		_slider.baseEle.parent().addClass('bh-slider-container');
+		_slider.baseEle.css('width', _slider.width);
+		_slider.baseWidth = _slider.baseEle.width();
+		_slider.stepEDis = _slider.baseWidth / _slider.fraction; //每一份表示的宽度
+		_slider.tipTop = _slider.valueEle.offset().top;
+		_slider.nomalLeft = _slider.ele.offset().left;
+		initEleStyle(_slider);
+		switchColor(_slider);
+	}
+	// 初始化高亮条以及圆点的样式
+	function initEleStyle(_slider) {
+		if (_slider.isRange) {
+			initRangeEleStyle(_slider);
+		} else {
+			initSimpleEleStyle(_slider);
+		}
+		if (_slider.isNode) {
+			setNodeEleStyle(_slider);
+		} else {
+			initSimpleEleStyle(_slider);
+		}
+
+	}
+	// 初始化node点的样式
+	function setNodeEleStyle(_slider, isChange) {
+		var dot_value = 0;
+		if (isChange) {
+			var $activeDot = _slider.ele.find('.bh-slider-dot[flag="active"]');
+			dot_value = getDotValue(_slider, $activeDot);
+		} else {
+			dot_value = _slider.value;
+		}
+		var dot_left = getCopiesSpace(_slider, dot_value);
+		var node_left = _slider.baseWidth / (_slider.nodeNum - 1);
+		var choosed_nodeNum = parseInt(dot_left / node_left);
+		var unChoosed_nodeNum = _slider.nodeNum - choosed_nodeNum;
+		setChoosedNodeStyle(_slider, choosed_nodeNum, node_left);
+		setUnchoosedNodeStyle(_slider, choosed_nodeNum, node_left);
+	}
+
+	function setChoosedNodeStyle(_slider, len, node_left) {
+		var node_con = _slider.ele.find('.bh-slider-nodeCon');
+		for (var i = 0; i &lt;= len; i++) {
+			var node_conItem = $(node_con[i]);
+			var node_item = node_conItem.find('.bh-slider-node');
+			var index_item = node_conItem.find('.bh-slider-nodeIndex');
+			var item_left = node_left * i;
+			node_conItem.css('left', item_left);
+			index_item.removeClass('bh-slider-node-unChoosedIndex').addClass('bh-slider-node-choosedIndex');
+			if (_slider.disabled) {
+				node_item.addClass('bh-node-choosed-disabled');
+			} else {
+				node_item.removeClass('bh-node-unChoosed').addClass('bh-node-choosed');
+			}
+		}
+	}
+
+	function setUnchoosedNodeStyle(_slider, j, node_left) {
+		var node_con = _slider.ele.find('.bh-slider-nodeCon');
+		for (var i = j + 1; i &lt; _slider.nodeNum; i++) {
+			var node_conItem = $(node_con[i]);
+			var node_item = node_conItem.find('.bh-slider-node');
+			var index_item = node_conItem.find('.bh-slider-nodeIndex');
+			var item_left = node_left * i;
+			node_conItem.css('left', item_left);
+			index_item.removeClass('bh-slider-node-choosedIndex').addClass('bh-slider-node-unChoosedIndex');
+			if (_slider.disabled) {
+				node_item.addClass('bh-node-unChoosed-disabled');
+			} else {
+				node_item.removeClass('bh-node-choosed').addClass('bh-node-unChoosed');
+			}
+		}
+	}
+
+	function initSimpleEleStyle(_slider) {
+		var initialize_simple_dis = getCopiesSpace(_slider, _slider.value);
+		_slider.dot.css('left', initialize_simple_dis + 'px');
+		_slider.valueEle.css('width', initialize_simple_dis + 'px');
+	}
+
+	function initRangeEleStyle(_slider) {
+		var range_value = _slider.value[1] - _slider.value[0];
+		var leftDot_dis = getCopiesSpace(_slider, _slider.value[0]);
+		var rightDot_dis = getCopiesSpace(_slider, _slider.value[1]);
+		var initialize_range_dis = getCopiesSpace(_slider, range_value);
+		$(_slider.dot[0]).css('left', leftDot_dis + 'px');
+		$(_slider.dot[1]).css('left', rightDot_dis + 'px');
+		_slider.valueEle.css('width', initialize_range_dis);
+		//8px是圆点的宽度的一般，让高亮条的起始点在最左侧的圆点的中间位置
+		_slider.valueEle.css('left', leftDot_dis + 8 + 'px');
+	}
+
+	function switchColor(_slider) {
+		if (_slider.disabled) {
+			switchToDisabled(_slider);
+		} else {
+			switchToActive(_slider);
+		}
+	}
+
+	function switchToDisabled(_slider) {
+		_slider.baseEle.addClass('bh-slider-disable-base');
+		_slider.valueEle.addClass('bh-slider-disable-variety');
+		_slider.dot.each(function(index) {
+			var $dotEle = $(_slider.dot[index]);
+			$dotEle.addClass('bh-slider-disable-dot');
+		});
+	}
+
+	function switchToActive(_slider) {
+		_slider.baseEle.addClass('bh-slider-active-base');
+		_slider.valueEle.addClass('bh-slider-active-variety');
+		_slider.dot.each(function(index) {
+			var $dotEle = $(_slider.dot[index]);
+			$dotEle.addClass('bh-slider-active-dot');
+		});
+	}
+
+	// 创建圆点的tip并展示value
+	function appendDotTip(_slider) {
+		var tip = '&lt;div class="bh-slider-tip bh-animate-opacity" bh-slider-guid="' + _slider.guid + '">&lt;/div>';
+		$('body').append(tip);
+		var $guidEle = $('[bh-slider-guid="' + _slider.guid + '"]');
+		_slider.tip = $guidEle.filter(function(index) {
+			return $($guidEle[index]).hasClass('bh-slider-tip') ? $($guidEle[index]) : '';
+		});
+	}
+
+	// 刷新右侧toolTip的值，
+	function refreshDotValue(_slider) {
+		var $activeDot = _slider.ele.find('.bh-slider-dot[flag="active"]');
+		var value = getDotValue(_slider, $activeDot);
+		var tip_position = getTipPosition(_slider, $activeDot);
+		_slider.tip.text(value)
+			.css({
+				left: tip_position.left + 'px',
+				top: tip_position.top + 'px'
+			});
+	}
+
+	// 获取滑块当前位置所表示的值，用当前value的宽度除以每份所占的宽度，商乘以当前的四舍五入的值
+	function getDotValue(_slider, $activeDot) {
+		var now_value = 0;
+		var dot_left = $activeDot.offset().left - _slider.nomalLeft;
+		var quotient = Math.round(dot_left / _slider.stepEDis);
+		now_value = quotient * _slider.step;
+		return now_value;
+	}
+
+	function getTipPosition(_slider, $activeDot) {
+		var dot_half_width = parseInt($activeDot.width() / 2, 10);
+		var dot_offset = $activeDot.offset();
+		var dot_center_left = dot_offset.left + dot_half_width;
+
+		var tip_half_width = parseInt(_slider.tip.width() / 2, 10);
+		var tip_height = _slider.tip.height();
+		var tip_left = dot_center_left - tip_half_width;
+		// 8是倒三角的高度，2是tip和点的间距
+		var tip_top = dot_offset.top - tip_height - 8 - 2;
+		return {
+			top: tip_top,
+			left: tip_left
+		};
+	}
+
+	function dragDownEvent(_slider) {
+		if (_slider.disabled) {
+			return;
+		}
+		$('body').data('bhSliderData', _slider);
+		_is_move = true;
+		var $body = $('body');
+		$body.on('mousemove', function(e) {
+				if (_is_move) {
+					var bh_slider_data = $('body').data('bhSliderData');
+					refreshDomStyle(bh_slider_data, e.pageX - bh_slider_data.nomalLeft);
+					refreshDotValue(bh_slider_data);
+					if (bh_slider_data.isNode) {
+						setNodeEleStyle(bh_slider_data, true);
+						BH_UTILS.clearTextSelect();
+					}
+				}
+			});
+	}
+
+
+	function refreshDomStyle(_slider, dis) {
+		var old_width = _slider.valueEle.width();
+		var $activeDot = _slider.ele.find('.bh-slider-dot[flag="active"]');
+		var activeDot_left = $activeDot.offset().left - _slider.nomalLeft;
+		var new_dis = getCopiesSpace(_slider, dis, true);
+		if (new_dis &lt; 0 || new_dis > _slider.baseWidth) {
+			return;
+		}
+		var active_left = new_dis;
+		var notActive_dotLeft = 0;
+		if (_slider.isRange) {
+			var $unactiveDot = _slider.ele.find('.bh-slider-dot[flag="unactive"]');
+			var unactiveDot_left = $unactiveDot.offset().left - _slider.nomalLeft;
+			new_dis = new_dis - unactiveDot_left;
+			if (new_dis &lt; 0) {
+				new_dis = (-new_dis);
+			}
+			if (activeDot_left &lt; unactiveDot_left) {
+				//8px是圆点的宽度的一般，让高亮条的起始点在最左侧的圆点的中间位置
+				_slider.valueEle.css('left', activeDot_left + 8 + 'px');
+			} else if (activeDot_left > unactiveDot_left) {
+				//8px是圆点的宽度的一般，让高亮条的起始点在最左侧的圆点的中间位置
+				_slider.valueEle.css('left', unactiveDot_left + 8 + 'px');
+			}
+		}
+
+		$activeDot.css('left', active_left);
+		_slider.valueEle.css('width', new_dis);
+
+		// divideAddWidth(new_dis, old_width, active_left, activeDot_left, $activeDot);
+	}
+
+	function divideAddWidth(new_width, old_width, new_left, old_left, $activeDoc) {
+		var move_flag = 'big';
+		var diff_width = 0;
+		if (new_width - old_width > 0) {
+			diff_width = new_width - old_width;
+		} else {
+			diff_width = old_width - new_width;
+			move_flag = 'small';
+		}
+		if (diff_width > 8) {
+			var part_count = diff_width / 8;
+			var end_width = diff_width % 8;
+			var current_width = old_width;
+			var current_left = old_left;
+			for (var i = 0; i &lt; part_count; i++) {
+				if (move_flag === 'big') {
+					current_width += 8;
+					current_left += 8;
+				} else {
+					current_width -= 8;
+					current_left -= 8;
+				}
+				$activeDoc.css('left', current_width + 'px');
+				_slider.valueEle.css('width', current_width + 'px');
+			}
+			if (move_flag === 'big') {
+				current_width += end_width;
+				current_left += end_width;
+			} else {
+				current_width -= end_width;
+				current_left -= end_width;
+			}
+
+			$activeDoc.css('left', current_left + 'px');
+			_slider.valueEle.css('width', current_width + 'px');
+		} else {
+			$activeDoc.css('left', new_left + 'px');
+			_slider.valueEle.css('width', new_width + 'px');
+
+		}
+	}
+
+	//获取份数所代表的距离，
+	//num可以是距离，也可以是value
+	function getCopiesSpace(_slider, num, isWidth) {
+		var copies = num / _slider.step;
+		if (isWidth) {
+			copies = num / _slider.stepEDis;
+		}
+		return Math.round(copies * _slider.stepEDis);
+	}
+
+	function dragEvent(_slider) {
+		var old_left = 0;
+		var old_valueWidth = _slider.valueEle.width();
+		var $body = $('body');
+
+		_slider.dot.on('mouseover', function(e) {
+			if (!_is_move) {
+				_slider.tip.css('opacity', '1');
+				$(e.target).attr('flag', 'active');
+			}
+			refreshDotValue(_slider);
+		});
+
+		_slider.dot.on('mouseout', function(e) {
+			if (!_is_move) {
+				$(e.target).attr('flag', 'unactive');
+				_slider.tip.css('opacity', '0');
+			}
+		});
+		_slider.baseEle.parent().on('mouseout', function(e) {
+		});
+		_slider.dot.on('mousedown', function(e) {
+			$(e.target).attr('flag', 'active');
+			dragDownEvent(_slider);
+			return false;
+		});
+		$body.on('mouseup', function() {
+			_is_move = false;
+			_slider.dot.each(function(index) {
+				var $dotEle = $(_slider.dot[index]);
+				$dotEle.attr('flag', 'unactive');
+			});
+			
+			_slider.tip.css('opacity', '0');
+			return false;
+		});
+
+		// 如若不能拖动时，鼠标移动，滑块也会移动，故用ondragstart规避
+		_slider.dot[0].ondragstart = function(e) {
+			_is_move = false;
+		};
+		_slider.dot[0].ondrag = function(e) {
+			_is_move = false;
+		};
+		_slider.valueEle[0].ondragstart = function(e) {
+			_is_move = false;
+		};
+		_slider.valueEle[0].ondrag = function(e) {
+			_is_move = false;
+		};
+		_slider.baseEle[0].ondragstart = function(e) {
+			_is_move = false;
+		};
+		_slider.baseEle[0].ondrag = function(e) {
+			_is_move = false;
+		};
+	}
+
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhCalculator.html">bhCalculator</a></li><li><a href="module-bhCustomizeColumn.html">bhCustomizeColumn</a></li><li><a href="module-bhDateAreaPicker.html">bhDateAreaPicker</a></li><li><a href="module-bhDateTimePicker.html">bhDateTimePicker</a></li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhSlider.html">bhSlider</a></li><li><a href="module-bhTree.html">bhTree</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 10:54:40 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

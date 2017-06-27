@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhTimeLine/bhTimeLine.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhTimeLine/bhTimeLine.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * 时间轴组件
+ */
+(function ($) {
+    /**
+     * @module bhTimeLine
+     * @alias 时间轴组件
+     * @description 时间轴组件
+     * @example
+      $el.bhTimeLine({
+          data:[{
+              index:0,
+              content:'内容',
+              attr:'data-id="0"'
+          },{
+              index:1,
+              content:'内容2',
+              attr:'data-id="1"'
+          }]
+      })
+     */
+    $.fn.bhTimeLine = function (options, params) {
+        var instance;
+        instance = this.data('bhTimeLine');
+        /**
+         * 判断插件是否已经实例化过，如果已经实例化了则直接返回该实例化对象
+         */
+        if (!instance) {
+            return this.each(function () {
+                //将实例化后的插件缓存在dom结构里（内存里）
+                return $(this).data('bhTimeLine', new Plugin(this, options));
+            });
+        }
+        if (options === true) {
+            return instance;
+        }
+        /**
+         * 优雅处： 如果插件的参数是一个字符串，则 调用 插件的 字符串方法。
+         * 如 $('#id').plugin('doSomething') 则实际调用的是 $('#id).plugin.doSomething();
+         * doSomething是刚才定义的接口。
+         * 这种方法 在 juqery ui 的插件里 很常见。
+         */
+        if ($.type(options) === 'string'){
+            return instance[options](params);
+        }
+        return this;
+    };
+
+    /**
+     * @memberof module:bhTimeLine
+     * @description 配置参数说明
+     * @property {Array} data
+     * @property data.selector {string} 选择器
+     * @property data.data {Array} 数据列表
+     * @property data.data.index {string} 序号
+     * @property data.data.content {string/html} 内容
+     * @property data.data.attr {object} 自定义属性
+     */
+    $.fn.bhTimeLine.defaults = {
+        data: []
+    };
+
+    /**
+     * 定义一个插件
+     */
+    var Plugin;
+
+    /**
+     * 这里是一个自运行的单例模式。
+     */
+    Plugin = (function () {
+
+        /**
+         * 插件实例化部分，初始化时调用的代码可以放这里
+         */
+        function Plugin(element, setting) {
+            //将插件的默认参数及用户定义的参数合并到一个新的obj里
+            this.settings = $.extend({}, $.fn.bhStar.defaults, setting);
+            //将dom jquery对象赋值给插件，方便后续调用
+            this.$element = $(element);
+            init(this.settings, this.$element);
+        }
+        return Plugin;
+
+    })();
+
+    function init(options, $dom){
+        var wrapTemplate = '&lt;div class="bh-timeLine">@content&lt;/div>';
+
+        var rowTemplate =
+            '&lt;div class="bh-timeLine-row @rowClass" @rowAttrs>' +
+            '&lt;div class="bh-timeLine-index">' +
+            '&lt;div>@index&lt;/div>' +
+            '&lt;/div>' +
+            '&lt;div class="bh-timeLine-content">' +
+            '@content' +
+            '&lt;/div>' +
+            '&lt;/div>';
+
+        var rowHtml = '';
+        var data = options.data;
+        var dataLen = data.length;
+        for(var i=0; i&lt;dataLen; i++){
+            var item = data[i];
+            var index = item.index;
+            var content = item.content;
+            var attr = item.attr;
+            var rowClass = '';
+            var rowAttrStr = '';
+            if(attr){
+                var rowAttrs = getAttributesStr(item.attr);
+                rowClass = rowAttrs.class;
+                rowAttrStr = rowAttrs.attr;
+            }
+
+            rowHtml += rowTemplate.replace('@index', index)
+                .replace('@content', content)
+                .replace('@rowClass', rowClass)
+                .replace('@rowAttrs', rowAttrStr);
+        }
+
+        var html = wrapTemplate.replace('@content', rowHtml);
+        $dom.html(html);
+    }
+
+    function getAttributesStr(_attrs) {
+        var class_str = '';
+        var attrs_str = '';
+        if(typeof(_attrs) == "object" &amp;&amp; _attrs !== null){
+            for(var key in _attrs){
+                var value = _attrs[key];
+                if(key !== 'class'){
+                    if(value){
+                        attrs_str += ' '+ key +'='+ value;
+                    }
+                }else{
+                    class_str = value;
+                }
+            }
+        }else{
+            attrs_str = _attrs;
+        }
+
+        return {
+            attr: attrs_str,
+            class: class_str
+        };
+    }
+
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 10:54:30 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -3,6 +3,6 @@
 <iframe width="100%" height="600" src="//jsrun.net/R4pKp/embedded/all/light/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
 
 *****
-#### API
+#### API说明
 
-<iframe width="100%" height="600" src="http://172.16.26.103:3200/docs/1.0/module-bhAffix.html" frameborder="0"></iframe>
+<iframe width="100%" height="600" src="http://172.16.26.103:4000/docs/1.0/module-bhStar.html" frameborder="0" id="innerFrame"></iframe>

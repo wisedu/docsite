@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhPopOver/bhPopOver.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhPopOver/bhPopOver.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function () {
+	/**
+	 * @module bhPopOver 
+	 * @alias 气泡弹窗
+	 */
+	$.bhPopOver = function(options){
+		if ($('#bhPopover').length){
+            $('#bhPopover').remove();
+        }
+		options = $.extend({}, $.bhPopOver.prototype.dafaults, options);
+		if (typeof options.selector == 'string') {
+			options.selector = $(options.selector);
+		}
+
+		var pop = $('&lt;div style="display: none" id="bhPopover" style="z-index: ' + options.zIndex + '">' +
+		'&lt;style>#bhPopover {z-index: ' + options.zIndex + '!important;}&lt;/style>' +
+		'&lt;div>' + options.content + '&lt;/div>&lt;/div>');
+		$('body').append(pop);
+
+		// 计算popover 水平位置
+		var docWidth = document.documentElement.clientWidth;
+		var selectLeft = $(options.selector).offset().left;
+		var popWidth = options.width || 300;
+		var offsetLeft = 0;
+		if (selectLeft - popWidth / 2 &lt; 24) {
+			offsetLeft = Math.abs(selectLeft - popWidth / 2 - 24);
+		}
+		if (selectLeft + popWidth / 2 > docWidth - 24) {
+			offsetLeft = docWidth - 100 - selectLeft - popWidth / 2;
+		}
+
+		// 计算垂直位置
+		var eleTop = $(options.selector).offset().top;
+		var eleHeight = $(options.selector).height()
+		var offsetTop = 0;
+		var position = 'bottom';
+		if (window.scrollY + document.documentElement.clientHeight - eleTop - eleHeight &lt; (options.height || 200)) {
+			position = 'top';
+			// offsetTop = -30;
+		}
+
+		// 支持自定义 偏移量
+		if (options.offset &amp;&amp; options.offset.left) {
+			offsetLeft += options.offset.left;
+		}
+
+		if (options.offset &amp;&amp; options.offset.top) {
+			offsetTop += options.offset.top; 
+		}
+
+		pop.jqxPopover({
+			offset: {left: offsetLeft, top: offsetTop},
+			arrowOffsetValue: -offsetLeft,
+			showArrow: options.showArrow,
+			autoClose: options.autoClose,
+			isModal: options.isModal,
+			title: options.title,
+			selector: options.selector,
+			width: options.width,
+			height: options.height,
+			showCloseButton: options.showCloseButton,
+			position: position
+		});
+
+		setTimeout(function () {  // 自动打开
+			pop.jqxPopover('open');
+			var popWindow = $('#bhPopover');
+			if (options.title == null || options.title == "") { // 标题为空时自动隐藏
+				$('.jqx-popover-title h4', popWindow).hide();
+				$('.jqx-popover-title', popWindow).css('padding-top', '6px');
+			}
+			popWindow.on('close', function () {  // 气泡弹窗关闭时 自动销毁
+				options.beforeClose &amp;&amp; options.beforeClose(popWindow);
+				// 销毁popover
+				$(this).jqxPopover('destroy');
+				options.close &amp;&amp; options.close(popWindow);
+			});
+			options.ready &amp;&amp; options.ready.call(popWindow, popWindow);
+		}, 0);
+
+	};
+
+	$.bhPopOver.close = function () {
+		var popWindow = $('#bhPopover');
+		if (popWindow.length) {
+			popWindow.jqxPopover('close');
+		}
+	};
+
+	/**
+	 * @memberof module:bhPopOver
+	 * @prop {String} [title] - 弹窗标题
+	 * @prop {String} content - 弹窗内容
+	 * @prop {Object} selector - 弹窗定位元素
+	 * @prop {Int} [width=300] - 弹窗宽度
+	 * @prop {Int} [height=null] - 弹窗高度
+	 * @prop {Boolean} [autoClose=true] - 点击页面其他区域popover是否自动关闭
+	 * @prop {Boolean} [showCloseButton= true] - 是否显示关闭按钮
+	 * @prop {Boolean} [isModal=false] - 是否有模态遮罩层
+	 * @prop {Function} [ready] - 弹出成功回调
+	 * @prop {Function} [beforeClose] - 关闭之前的回调
+	 * @prop {Function} [close] - 关闭的回调
+	 */
+	$.bhPopOver.prototype.dafaults = {
+		title: undefined,
+		content: undefined,
+		selector: undefined,
+		width: 300,
+		height: null,
+		autoClose: true,
+		showCloseButton: true,
+		isModal: false,
+		ready: null,
+		beforeClose: null,
+		close: null,
+		zIndex: 18100
+	};
+})();</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 10:54:30 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhStar/bhStar.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhStar/bhStar.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
+(function ($) {
+    /**
+     * 定义一个插件
+     */
+    var Plugin;
+    /**
+     * @module bhStar
+     * @description bhStar,这里是一个自运行的单例模式。
+     * @example
+     * $el.bhStar({
+     *     score:3
+     * })
+     */
+    Plugin = (function () {
+
+        /**
+         * 插件实例化部分，初始化时调用的代码可以放这里
+         */
+        function Plugin(element, setting) {
+            //将插件的默认参数及用户定义的参数合并到一个新的obj里
+            this.settings = $.extend({}, $.fn.bhStar.defaults, setting);
+            //将dom jquery对象赋值给插件，方便后续调用
+            this.$element = $(element);
+            init(this.settings, this.$element);
+        }
+        /**
+         * @method getScore
+         * @description 获取评分方法
+         * @return {String} 评分
+         */
+        Plugin.prototype.getScore = function() {
+            return this.$element.find('[bh-star-role="bhStar"]').attr('bh-star-score');
+        };
+        return Plugin;
+
+    })();
+
+    function init(options, $dom){
+        var html = getStarHtml(options);
+        var $html = $(html);
+        $dom.append($html);
+
+        if(!options.readonly){
+            eventListen($html, options);
+        }
+    }
+
+    function getStarHtml(options){
+        var score = parseInt(options.score, 10);
+        var starItemStyle = '';
+        if(options.size){
+            starItemStyle = 'font-size: '+options.size+'px';
+        }
+        var starHtml = '&lt;i class="iconfont icon-star" style="'+starItemStyle+'">&lt;/i>&lt;i class="iconfont icon-staroutline" style="'+starItemStyle+'">&lt;/i>';
+        var html = '';
+        for(var i=0; i&lt;5; i++){
+            if(i + 1 &lt;= score){
+                html += '&lt;div class="bh-star-item bh-active">'+starHtml+'&lt;/div>';
+            }else{
+                html += '&lt;div class="bh-star-item">'+starHtml+'&lt;/div>';
+            }
+        }
+
+        html = '&lt;div class="bh-star-list '+options.starClass+'">'+html+'&lt;/div>';
+
+        var scoreNumHtml = '';
+        if(options.isShowNum){
+            scoreNumHtml = '&lt;div class="bh-star-num '+options.textClass+'">&lt;span bh-star-role="number">'+score+'&lt;/span>&lt;span>'+options.text+'&lt;/span>&lt;/div>';
+        }
+        return '&lt;div class="bh-star" bh-star-role="bhStar" bh-star-score="'+score+'">'+ html + scoreNumHtml +'&lt;/div>';
+    }
+
+    function eventListen($starDom, options){
+        //点击星星的处理
+        $starDom.on('click', '.bh-star-item', function(){
+            var index = $(this).index() + 1;
+            options.score = index;
+            setStar4Hover($starDom, index, options);
+        });
+        //鼠标hover到星星的处理
+        $starDom.on('mouseover', '.bh-star-item', function(){
+            var index = $(this).index() + 1;
+            setStar4Hover($starDom, index, options);
+        });
+        //鼠标离开星星的处理
+        $starDom.on('mouseout','.bh-star-list' ,function(){
+            var index = parseInt(options.score, 10);
+            setStar4Hover($starDom, index, options);
+        });
+    }
+
+    /**
+     * 设置我的评分
+     * @param $dom
+     * @param index 选中星级的序号
+     */
+    function setStar4Hover($dom, index, options){
+        $dom.find('div.bh-star-item').each(function(i){
+            if(i &lt; index){
+                $(this).addClass('bh-active');
+            }else{
+                $(this).removeClass('bh-active');
+            }
+        });
+        $dom.attr('bh-star-score', index);
+        if(options.isShowNum){
+            $dom.find('span[bh-star-role="number"]').html(index);
+        }
+    }
+
+    /**
+     * 这里是关键
+     * 定义一个插件 plugin
+     */
+    $.fn.bhStar = function (options, params) {
+        var instance;
+        instance = this.data('bhStar');
+        /**
+         * 判断插件是否已经实例化过，如果已经实例化了则直接返回该实例化对象
+         */
+        if (!instance) {
+            return this.each(function () {
+                //将实例化后的插件缓存在dom结构里（内存里）
+                return $(this).data('bhStar', new Plugin(this, options));
+            });
+        }
+        if (options === true) {
+            return instance;
+        }
+        /**
+         * 优雅处： 如果插件的参数是一个字符串，则 调用 插件的 字符串方法。
+         * 如 $('#id').plugin('doSomething') 则实际调用的是 $('#id).plugin.doSomething();
+         * doSomething是刚才定义的接口。
+         * 这种方法 在 juqery ui 的插件里 很常见。
+         */
+        if ($.type(options) === 'string'){
+            return instance[options](params);
+        }
+        return this;
+    };
+
+    /**
+     * @memberof module:bhStar
+     * @description 默认参数
+     * @property {Number} [score=0] 设置初始化分数
+     * @property {Number} [size=0] 设置星的大小
+     * @property {Boolean} [isShowNum=true] 是否显示数字
+     * @property {String} [text=分] 在分数后面显示的文字
+     * @property {String} [textClass] 给分数的父层添加样式类
+     * @property {String} [starClass] 给星星的父层添加样式类
+     * @property {Boolean} [readonly=false] 是否只读
+     */
+    $.fn.bhStar.defaults = {
+        score: 0, //可选，设置初始化分数，默认是0
+        size: 0, //可选，设置星的大小，单位按像素计算
+        isShowNum: true,//可选，是否显示数字，默认显示
+        text: '分',//可选，在分数后面显示的文字，默认是“分”
+        textClass: '',//可选，给分数的父层添加样式类
+        starClass: '', //可选，给星星的父层添加样式类
+        readonly: false //可选,只读样式
+    };
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 10:54:30 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

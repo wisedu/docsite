@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhCalculator/bhCalculator.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhCalculator/bhCalculator.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>;
+(function($) {
+	/**
+	 * 计算器
+	 * @module bhCalculator
+	 * @example
+	 * $el.bhCalculator({
+	 * 	 operations:[],
+	 * 	 items:[]
+	 * 	})
+	 */
+	var Plugin;
+
+	$.fn.bhCalculator = function(options, params) {
+		var instance;
+		instance = this.data('bhCalculator');
+		if (options === true) return instance;
+		
+		if (!instance) {
+			return this.each(function() {
+				//将实例化后的插件缓存在dom结构里（内存里）
+				return $(this).data('bhCalculator', new Plugin(this, options));
+			});
+		}
+
+		if ($.type(options) === 'string') return instance[options](params);
+		return this;
+	};
+
+	/**
+	 * @property {Array} operations
+	 * @property {Array} items [description]
+	 */
+	$.fn.bhCalculator.defaults = {
+		operations: undefined,
+		items: undefined
+	};
+
+
+	Plugin = (function() {
+
+		function Plugin(element, options) {
+			//将插件的默认参数及用户定义的参数合并到一个新的obj里
+			this.settings = $.extend({}, $.fn.bhCalculator.defaults, options);
+			//将dom jquery对象赋值给插件，方便后续调用
+			this.$element = $(element);
+			init(this.$element, this.settings);
+		}
+
+		/**
+		 * @method getValue
+		 * @description 获取文本计算器的值
+		 * @return {String}
+		 */
+		Plugin.prototype.getValue = function() {
+			return $('.bh-calculator-result', this.$element).val();
+		};
+
+		/**
+		 * @method setValue
+		 * @description 设置文本计算器的值
+		 * @param {String} string 
+		 */
+		Plugin.prototype.setValue = function(string) {
+			$('.bh-calculator-result', this.$element).val(string);
+			return this.$element;
+		};
+		/**
+		 * @method disabled
+		 * @description 禁用文本计算器
+		 * @return {DOM} 组件元素
+		 */
+		Plugin.prototype.disabled = function() {
+			$('.bh-calculator-result', this.$element).attr('disabled', 'disabled');
+			return this.$element;
+		};
+		/**
+		 * @method disabled
+		 * @description 启用文本计算器
+		 * @return {DOM} 组件元素
+		 */
+		Plugin.prototype.enabled = function() {
+			$('.bh-calculator-result', this.$element).removeAttr('disabled');
+			return this.$element;
+		};
+		/**
+		 * @method disabled
+		 * @description 摧毁文本计算器实例
+		 * @return {DOM} 组件元素
+		 */
+		Plugin.prototype.destroy = function() {
+			this.options = null;
+			$(this.$element).data('bhCalculator', false).empty();
+		};
+
+		return Plugin;
+
+	})();
+
+	function init($dom, options) {
+		var bhCalculatorOperation = "";
+		var bhCalculatorItem = " ";
+		if (!(Array.isArray(options.operations) &amp;&amp; Array.isArray(options.items))) {
+			console.error('参数类型错误，请传入数组！');
+			return false;
+		}
+		if ($(options.operations).length === 0 || $(options.items).length === 0) {
+			console.error('请传入必填参数！');
+			return false;
+		}
+		$(options.operations).each(function(i, v) {
+			bhCalculatorOperation += '&lt;span class="bh-calculator-operation">' + v + '&lt;/span>';
+		});
+		$(options.items).each(function(i, v) {
+			bhCalculatorItem += '&lt;span class="bh-calculator-item">' + v + '&lt;/span>';
+		});
+		$dom.append('&lt;div class="bh-calculator-container">\
+    					&lt;div class="bh-calculator-operations">' + bhCalculatorOperation +
+			'&lt;/div>\
+    					&lt;div class="bh-calculator-itemView">\
+    						&lt;div class="bh-calculator-items">' + bhCalculatorItem +
+			'&lt;/div>\
+    						&lt;div class="bh-calculator-itemsController">&lt;span class="bh-calculator-viewController">&lt;i class="iconfont icon-keyboardarrowup">&lt;/i>&lt;/span>&lt;/div>\
+    					&lt;/div>&lt;textarea wrap="virtual" class="bh-calculator-result">&lt;/textarea>');
+		$dom.on('click', '.bh-calculator-item', function() {
+			var curText = $(this).text();
+			var temp = $dom.find(".bh-calculator-result").val();
+			$dom.find(".bh-calculator-result").val(temp + ' [' + curText + '] ');
+		});
+		$dom.on('click', ".bh-calculator-operation", function() {
+			var curText = $(this).text();
+			var $bhCalculatorResult = $dom.find(".bh-calculator-result");
+			var temp = $bhCalculatorResult.val();
+			$bhCalculatorResult.val(temp + curText);
+		});
+		$dom.on('click', '.bh-calculator-itemsController', function() {
+			if ($dom.find('.bh-calculator-viewController i.iconfont').hasClass('icon-keyboardarrowup')) {
+				$dom.find('.bh-calculator-items').height('28px');
+				$dom.find('.bh-calculator-itemView').height('48px');
+				$dom.find('.bh-calculator-viewController i.iconfont').removeClass('icon-keyboardarrowup').addClass('icon-keyboardarrowdown');
+			} else {
+				$dom.find('.bh-calculator-items').height('141px');
+				$dom.find('.bh-calculator-itemView').height('160px');
+				$dom.find('.bh-calculator-viewController i.iconfont').removeClass('icon-keyboardarrowdown').addClass('icon-keyboardarrowup');
+			}
+		});
+		itemWidthAuto($dom, '.bh-calculator-operations', '.bh-calculator-operation');
+
+		viewWidthAuto($dom, '.bh-calculator-itemView', '.bh-calculator-item');
+
+
+	}
+
+	/**
+	 * 插件的私有方法
+	 */
+	function itemWidthAuto($dom, container, item) {
+		var operations = $dom.find(item);
+		var rowWidth = $dom.find(container).innerWidth();
+		var totalWidth = 0;
+		operations.each(function(i, e) {
+			totalWidth += $(e).outerWidth(true);
+			if (totalWidth == rowWidth) {
+				totalWidth = 0;
+			}
+			if (totalWidth > rowWidth) {
+				var lastWidth = rowWidth - (totalWidth - $(e).outerWidth(true)) + $(operations[i - 1]).outerWidth();
+				$(operations[i - 1]).outerWidth(lastWidth);
+				$(operations[i - 1]).css('border-right', 'none');
+				totalWidth = $(e).outerWidth(true);
+
+			}
+		});
+	}
+
+	function viewWidthAuto($dom, container, item) {
+		var operations = $dom.find(item);
+		var rowWidth = $dom.find(container)[0].scrollWidth - 17;
+		var totalWidth = 0;
+		operations.each(function(i, e) {
+			totalWidth += $(e).outerWidth(true);
+			if (totalWidth == rowWidth) {
+				totalWidth = 0;
+			}
+			if (totalWidth > rowWidth) {
+				var lastWidth = rowWidth - (totalWidth - $(e).outerWidth(true)) + $(operations[i - 1]).outerWidth();
+				$(operations[i - 1]).outerWidth(lastWidth);
+				$(operations[i - 1]).css('border-right', 'none');
+				totalWidth = $(e).outerWidth(true);
+
+			}
+		});
+	}
+
+	/**
+	 * 优雅处： 通过data-xxx 的方式 实例化插件。
+	 * 这样的话 在页面上就不需要显示调用了。
+	 */
+	// $(function () {
+	//     return new Plugin($('[data-plugin]'));
+	// });   
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhCalculator.html">bhCalculator</a></li><li><a href="module-bhCustomizeColumn.html">bhCustomizeColumn</a></li><li><a href="module-bhDateAreaPicker.html">bhDateAreaPicker</a></li><li><a href="module-bhDateTimePicker.html">bhDateTimePicker</a></li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhSlider.html">bhSlider</a></li><li><a href="module-bhTree.html">bhTree</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 10:54:40 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
