@@ -20,6 +20,9 @@ model参数含义
 
 <iframe width="100%" height="450" src="//jsrun.net/KHpKp/embedded/all/light/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
 
+## API说明
+<iframe width="100%" height="600" src="../emap_apis/v1.1/module-emapForm.html" frameborder="0" id="innerFrame"></iframe>
+
 
 
 

@@ -23,5 +23,8 @@ JSON参数里面进行显示字段与值字段的配置 {"displayMember":"name",
 
 ![](/assets/ddtable5.png)
 
+## API说明
+<iframe width="100%" height="600" src="../emap_apis/v1.1/module-emapDropdownTable.html" frameborder="0" id="innerFrame"></iframe>
+
 
 

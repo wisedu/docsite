@@ -15,7 +15,10 @@ cols: 3 //表单布局列数，只在只读表单和表格表单中生效，可�
 
 ## 示例
 
-<iframe width="100%" height="250" src="//jsrun.net/pHpKp/embedded/all/light/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+<iframe width="100%" height="500" src="//jsrun.net/pHpKp/embedded/all/light/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+
+## API说明
+<iframe width="100%" height="600" src="../emap_apis/v1.1/module-emapForm.html" frameborder="0" id="innerFrame"></iframe>
 
 
 
