@@ -43,7 +43,7 @@
     <div class="container-overview">
     
         
-            <div class="description">树</div>
+            <div class="description">树，内部依赖ztree，api文档<a href="http://www.treejs.cn/v3/api.php">http://www.treejs.cn/v3/api.php</a>，可以直接调用ztree的api，如：$('#ztreeAfterIcon').bhTree('getNodeByParam','id','0')</div>
         
 
         
@@ -80,29 +80,6 @@
     </thead>
 
     <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>$element</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">jQuery</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
     
 
         <tr>
@@ -287,52 +264,51 @@
     <h5>示例</h5>
     
     <pre class="prettyprint"><code>var setting = {
-                async: {
-                    enable: true,
-                    url: this.getUrl,
-                    type: 'get',
-                    dataFilter: function(treeId, treeNode) {}
-                },
-                check: {
-                    enable: true
-                },
-                edit: {
-                    enable: true
-                },
-                callback: {
-                    beforeEditName: function(treeId, treeNode) {
-                        var content = '&lt;input id="editNodeName" type="text" value="' + treeNode.name + '"/>'
-                        BH_UTILS.bhWindow(content, '修改名称', null, {
-                            height: 300
-                        }, function() {
-                            treeNode.name = $('#editNodeName').val();
-                            $('#ztreeAfterIcon').bhTree('updateNode',treeNode);
-                            $('#ztreeAfterIcon').bhTree('cancelEditName');
-                        });
-                        return false;
-                    }
-                },
-                view: {
-                    isHoverLine:true, //新增方法，用于判断鼠标hover上节点时是否整行改变背景色
-                    nodeRendering: function(htmlArray, node, setting) {
+            async: {
+                enable: true,
+                url: this.getUrl,
+                type: 'get',
+                dataFilter: function(treeId, treeNode) {}
+            },
+            check: {
+                enable: true
+            },
+            edit: {
+                enable: true
+            },
+            callback: {
+                beforeEditName: function(treeId, treeNode) {
+                    var content = '&lt;input id="editNodeName" type="text" value="' + treeNode.name + '"/>'
+                    BH_UTILS.bhWindow(content, '修改名称', null, {
+                        height: 300
+                    }, function() {
+                        treeNode.name = $('#editNodeName').val();
+                        $('#ztreeAfterIcon').bhTree('updateNode', treeNode);
+                        $('#ztreeAfterIcon').bhTree('cancelEditName');
+                    });
+                    return false;
+                }
+            },
+            view: {
+                isHoverLine: true, //新增方法，用于判断鼠标hover上节点时是否整行改变背景色
+                nodeRendering: function(htmlArray, node, setting) {
                         if (node.parentTId) {
                             htmlArray.push('&lt;i class="iconfont icon-yingyong">&lt;/i>');
                         }
                     } //新增方法，ztree原生不存在，在节点右侧添加自定义内容
                     //addDOMNodeAfterName: function(html, setting, node){ //新增方法，ztree原生不存在，在节点名称右侧添加自定义内容
                     //}
-                }
-            };
-            var zNodes = [{
-                name: '根节点',
-                id: '1',
-                isParent: true
-            }];
-            $('#ztreeAfterIcon').bhTree({
-                setting:setting,
-                zNodes:zNodes
-            });
-        },</code></pre>
+            }
+        };
+        var zNodes = [{
+            name: '根节点',
+            id: '1',
+            isParent: true
+        }];
+        $('#ztreeAfterIcon').bhTree({
+            setting: setting,
+            zNodes: zNodes
+        });</code></pre>
 
 
 
@@ -412,7 +388,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="bhTree_bhTree.js.html">bhTree/bhTree.js</a>, <a href="bhTree_bhTree.js.html#line83">line 83</a>
+        <a href="bhTree_bhTree.js.html">bhTree/bhTree.js</a>, <a href="bhTree_bhTree.js.html#line81">line 81</a>
     </li></ul></dd>
     
 
@@ -496,7 +472,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="bhTree_bhTree.js.html">bhTree/bhTree.js</a>, <a href="bhTree_bhTree.js.html#line75">line 75</a>
+        <a href="bhTree_bhTree.js.html">bhTree/bhTree.js</a>, <a href="bhTree_bhTree.js.html#line73">line 73</a>
     </li></ul></dd>
     
 
@@ -555,7 +531,7 @@
 <br class="clear">
 
 <!-- <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 10:54:40 GMT+0800 (CST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
 </footer> -->
 
 <script> prettyPrint(); </script>

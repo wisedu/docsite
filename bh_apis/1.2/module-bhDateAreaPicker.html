@@ -144,6 +144,240 @@ $('#bhDateTimePicker').bhDateAreaPicker({
     
 
     
+        <h3 class="subsection-title">配置</h3>
+
+        
+            
+<h4 class="name" id=".$.fn.bhDateAreaPicker.defaults"><span class="type-signature">(static) </span>$.fn.bhDateAreaPicker.defaults<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    参数说明
+</div>
+
+
+
+
+
+
+
+    <h5 class="subsection-title">属性:</h5>
+
+    
+
+<table class="props ">
+    <thead>
+    <tr>
+        
+        <th>名称</th>
+        
+
+        <th>类型</th>
+
+        
+        <th>属性</th>
+        
+
+        
+        <th>默认值</th>
+        
+
+        <th class="last">描述</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>format</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'YYYY-MM-DD'
+                
+                </td>
+            
+
+            <td class="description last">日期格式</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>start</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">开始日期配置，同bhDateTimePicker</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>end</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">结束日期配置，同bhDateTimePicker</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>]</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">其他公共参数</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="bhDateAreaPicker_bhDateAreaPicker.js.html">bhDateAreaPicker/bhDateAreaPicker.js</a>, <a href="bhDateAreaPicker_bhDateAreaPicker.js.html#line288">line 288</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
 
     
         <h3 class="subsection-title">方法API</h3>
@@ -436,7 +670,7 @@ $('#bhDateTimePicker').bhDateAreaPicker({
 
             <td class="description last">Object结构为
 {
- start：Boolean
+ start：Boolean,
  end：Boolean
 }</td>
         </tr>
@@ -512,7 +746,7 @@ $('#bhDateTimePicker').bhDateAreaPicker({
 
     
 
-    <h4 class="name jd-api-title" id="~endMaxDate">endMaxDate<span class="signature">(])</span><span class="type-signature"></span></h4>
+    <h4 class="name jd-api-title" id="~endMaxDate">endMaxDate<span class="signature">(date<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
@@ -543,6 +777,8 @@ $('#bhDateTimePicker').bhDateAreaPicker({
         <th>类型</th>
 
         
+        <th>属性</th>
+        
 
         
 
@@ -555,7 +791,7 @@ $('#bhDateTimePicker').bhDateAreaPicker({
 
         <tr>
             
-                <td class="name"><code>]</code></td>
+                <td class="name"><code>date</code></td>
             
 
             <td class="type">
@@ -574,10 +810,20 @@ $('#bhDateTimePicker').bhDateAreaPicker({
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last">date [description]</td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -661,7 +907,7 @@ $('#bhDateTimePicker').bhDateAreaPicker({
 
     
 
-    <h4 class="name jd-api-title" id="~endMinDate">endMinDate<span class="signature">(])</span><span class="type-signature"></span></h4>
+    <h4 class="name jd-api-title" id="~endMinDate">endMinDate<span class="signature">(date<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
@@ -692,6 +938,8 @@ $('#bhDateTimePicker').bhDateAreaPicker({
         <th>类型</th>
 
         
+        <th>属性</th>
+        
 
         
 
@@ -704,7 +952,7 @@ $('#bhDateTimePicker').bhDateAreaPicker({
 
         <tr>
             
-                <td class="name"><code>]</code></td>
+                <td class="name"><code>date</code></td>
             
 
             <td class="type">
@@ -723,10 +971,20 @@ $('#bhDateTimePicker').bhDateAreaPicker({
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last">date [description]</td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -1333,7 +1591,7 @@ $('#bhDateTimePicker').bhDateAreaPicker({
 
     
 
-    <h4 class="name jd-api-title" id="~startMaxDate">startMaxDate<span class="signature">(])</span><span class="type-signature"></span></h4>
+    <h4 class="name jd-api-title" id="~startMaxDate">startMaxDate<span class="signature">(date<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
@@ -1364,6 +1622,8 @@ $('#bhDateTimePicker').bhDateAreaPicker({
         <th>类型</th>
 
         
+        <th>属性</th>
+        
 
         
 
@@ -1376,7 +1636,7 @@ $('#bhDateTimePicker').bhDateAreaPicker({
 
         <tr>
             
-                <td class="name"><code>]</code></td>
+                <td class="name"><code>date</code></td>
             
 
             <td class="type">
@@ -1395,10 +1655,20 @@ $('#bhDateTimePicker').bhDateAreaPicker({
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last">date [description]</td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -1482,7 +1752,7 @@ $('#bhDateTimePicker').bhDateAreaPicker({
 
     
 
-    <h4 class="name jd-api-title" id="~startMinDate">startMinDate<span class="signature">(])</span><span class="type-signature"></span></h4>
+    <h4 class="name jd-api-title" id="~startMinDate">startMinDate<span class="signature">(date<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
@@ -1513,6 +1783,8 @@ $('#bhDateTimePicker').bhDateAreaPicker({
         <th>类型</th>
 
         
+        <th>属性</th>
+        
 
         
 
@@ -1525,7 +1797,7 @@ $('#bhDateTimePicker').bhDateAreaPicker({
 
         <tr>
             
-                <td class="name"><code>]</code></td>
+                <td class="name"><code>date</code></td>
             
 
             <td class="type">
@@ -1544,10 +1816,20 @@ $('#bhDateTimePicker').bhDateAreaPicker({
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last">date [description]</td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -1631,7 +1913,7 @@ $('#bhDateTimePicker').bhDateAreaPicker({
 
     
 
-    <h4 class="name jd-api-title" id="~val">val<span class="signature">(])</span><span class="type-signature"></span></h4>
+    <h4 class="name jd-api-title" id="~val">val<span class="signature">(opt<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
@@ -1662,6 +1944,8 @@ $('#bhDateTimePicker').bhDateAreaPicker({
         <th>类型</th>
 
         
+        <th>属性</th>
+        
 
         
 
@@ -1674,7 +1958,7 @@ $('#bhDateTimePicker').bhDateAreaPicker({
 
         <tr>
             
-                <td class="name"><code>]</code></td>
+                <td class="name"><code>opt</code></td>
             
 
             <td class="type">
@@ -1690,10 +1974,20 @@ $('#bhDateTimePicker').bhDateAreaPicker({
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last">opt 可传可不传，不传为取值，传为赋值</td>
+            <td class="description last">可传可不传，不传为取值，传为赋值</td>
         </tr>
 
     
@@ -1783,7 +2077,7 @@ $('#bhDateTimePicker').bhDateAreaPicker({
 <br class="clear">
 
 <!-- <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Jun 27 2017 10:54:40 GMT+0800 (CST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
 </footer> -->
 
 <script> prettyPrint(); </script>
