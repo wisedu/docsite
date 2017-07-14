@@ -55,6 +55,8 @@
   * [组件发布日志](changeLog.md)
   * [公有云Q&A](wecloud/qa.md)
     * [EmapForm扩展类型](wecloud/emapform-extend.md)
+    * [EmapForm复杂类型](wecloud/emapform.md)
+    * [上传组件](wecloud/upload.md)
 * [ubase框架](ubase.md)
 * [移动框架与组件](mobile.md)
   * [移动模板页](template-mobile.md)
