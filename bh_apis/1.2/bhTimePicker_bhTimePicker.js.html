@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhTimePicker/bhTimePicker.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhTimePicker/bhTimePicker.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function ($) {
+    'use strict';
+
+    /**
+     * 定义一个插件
+     */
+    var Plugin;
+
+    /**
+     * 这里是一个自运行的单例模式。
+     */
+    Plugin = (function () {
+
+        /***
+         * 插件实例化部分，初始化时调用的代码可以放这里
+         */
+        function Plugin(element, options) {
+            var defaults = {
+                defaultType: 'custom',
+                width: '',
+                format: 'YYYY-MM-DD',//可选，时间格式，默认yyyy-MM-dd（年-月-日）
+                range: { //可选，设置时间的可选范围
+                    max: '', //可选，设置最大时间，‘today’最大时间就是今天，或传入时间字符串‘2016/4/22’
+                    min: '' //可选，设置最小时间，‘today’最小时间就是今天，或传入时间字符串‘2016/4/22’
+                },
+                time: { //可选，设置初始化时间
+                    start: '', //可选，开始时间
+                    end: '' //可选，结束时间
+                },
+                isDisable: false, //可选，该组件是否禁用，默认false，不禁用
+                selectedTime: null, //选取时间后的回调，返回开始时间和结束时间字符串
+                ready: null //初始化完成回调
+            };
+
+            //将插件的默认参数及用户定义的参数合并到一个新的obj里
+            this.settings = $.extend({}, defaults, options);
+            if (this.settings.format) {
+                //兼容人事bhTimePicker传入的format
+                this.settings.format = this.settings.format.replace('yyyy', 'YYYY');
+                this.settings.format = this.settings.format.replace('-dd', '-DD');
+            }
+            // this.settings.format = this.settings.format.replace(/mm/g, 'MM');
+            //将dom jquery对象赋值给插件，方便后续调用
+            this.$rootElement = $(element);
+            init(this);
+        }
+
+        //外部获取时间数据
+        Plugin.prototype.getValue = function() {
+            var startTime = null;
+            var endTime = null;
+            var $startTimeDom = this.startTimeDom.children('input');
+            var $endTimeDom = this.endTimeDom.children('input');
+            if(!$startTimeDom.attr('disabled')){
+                startTime = $startTimeDom.data("DateTimePicker").date()._d;
+            }
+            if(!$endTimeDom.attr('disabled')){
+                endTime = $endTimeDom.data("DateTimePicker").date()._d;
+            }
+
+            var selected = this.popupBoxDom.find('div[bh-time-picker-role="selectType"]').jqxDropDownList('getSelectedItem');
+            var type = selected.value;
+
+            if(type === 'custom' &amp;&amp; this.settings.format.length === 10){
+                return {
+                    startTime: startTime ? moment(startTime).format(this.settings.format) + ' 00:00:00' : '',
+                    endTime: endTime ? moment(endTime).format(this.settings.format) + ' 23:59:59' : '',
+                    type: type
+                };
+            }else{
+                return {
+                    startTime: startTime ? moment(startTime).format(this.settings.format) : '',
+                    endTime: endTime ? moment(endTime).format(this.settings.format) : '',
+                    type: type
+                };
+            }
+        };
+
+        //外部设置时间数据
+        Plugin.prototype.setValue = function(data) {
+            var startTime = data.startTime ? timeStrToDate(data.startTime) : this.startTimeDom.children('input').data("DateTimePicker").date()._d;
+            var endTime = data.endTime ? timeStrToDate(data.endTime) : this.endTimeDom.children('input').data("DateTimePicker").date()._d;
+            setInputDateTime(this, startTime, endTime);
+            var $selectCustom = this.popupBoxDom.find('div[bh-time-picker-role="selectCustom"]');
+            changeFixedSelectType(this, $selectCustom);
+        };
+
+        //外部设置组件禁用
+        Plugin.prototype.setDisable = function() {
+            this.$rootElement.children('div[bh-time-picker-role="rangeBox"]').append('&lt;div class="bh-timePick-disable" bh-time-picker-role="disableBlock">&lt;/div>');
+        };
+        //外部设置组件启用
+        Plugin.prototype.setEnable = function() {
+            this.$rootElement.find('div[bh-time-picker-role="disableBlock"]').remove();
+        };
+
+        //外部设置类型
+        Plugin.prototype.setType = function(value) {
+            this.popupBoxDom.find('div[bh-time-picker-role="selectType"]').jqxDropDownList('selectItem',value);
+        };
+
+        Plugin.prototype.remove = function() {
+            this.$selectType.jqxDropDownList('destroy');
+            this.popupBoxDom.remove();
+            this.$rootElement.remove();
+        };
+
+        return Plugin;
+
+    })();
+
+    function init(options){
+        var nowDate = new Date();
+        //时间选择框html
+        var rangeBoxHtml = drawRangeBox(options, nowDate);
+        var $rangeBox = $(rangeBoxHtml);
+        options.rangeBoxDom = $rangeBox;
+        options.$rootElement.html($rangeBox);
+
+        //时间选择框添加事件监听
+        rangeBoxEventListen($rangeBox, options);
+
+        //画弹框
+        var selectBoxHtml = drawSelectBox(options, nowDate);
+        var $selectBox = $(selectBoxHtml); 
+        options.popupBoxDom = $selectBox;
+        var $body = $('body');
+        $body.append($selectBox);
+        //$selectBox.children('div[bh-time-picker-role="selectBoxTab"]').jqxTabs({ position: 'top'});
+        //弹框的jqx组件初始化
+        selectBoxJqxInit(options, nowDate);
+        //弹框事件监听
+        selectBoxEventListen(options);
+
+        //点击body时，将弹出框隐藏
+        $body.on('click', function(e){
+            var $targetObj = $(e.target || e.srcElement);
+            if($targetObj.closest('div[bh-time-picker-role="rangeBox"]').length > 0
+                || $targetObj.closest('div[bh-time-picker-role="selectBoxCont"]').length > 0
+                || $targetObj.closest('div.jqx-calendar').length > 0
+                || $targetObj.closest('div.jqx-listbox').length > 0){
+                //清除自己选择时间的标志
+                $body.removeData('bhTimePick');
+                return;
+            }
+            //var $rangeBox = $('div[bh-time-picker-role="rangeBox"]');
+            var $rangeBox = options.rangeBoxDom;
+            if($rangeBox.hasClass('bh-active')){
+                //用于处理body被重复点击造成弹框被隐藏的问题
+                if($body.data('bhTimePick')){
+                    $body.removeData('bhTimePick');
+                    return;
+                }
+                $rangeBox.find('div[bh-time-picker-role="rangeBoxSelectTime"]').click();
+            }
+        });
+    }
+
+    /**
+     * 时间选择框
+     * @param options
+     * @param nowDate 当前时间对象
+     * @returns {string}
+     */
+    function drawRangeBox(options, nowDate){
+        var startTime, endTime;
+        if(!options.settings.time.start || options.settings.time.start === 'today'){
+            startTime = nowDate;
+        }else{
+            startTime = timeStrToDate(options.settings.time.start);
+        }
+        if(!options.settings.time.end || options.settings.time.end === 'today'){
+            endTime = nowDate;
+        }else{
+            endTime = timeStrToDate(options.settings.time.end);
+        }
+        //拼接时间
+        var startTimeStr = getLocalDateStr(startTime, options);
+        var endTimeStr = getLocalDateStr(endTime, options);
+        var timeStr = startTimeStr +'-'+ endTimeStr;
+
+        var _style = '';
+        if(options.settings.width){
+            _style = 'width: '+parseInt(options.settings.width,10)+'px;';
+        }
+
+        var disableHtml = '';
+        if(options.settings.isDisable){
+            disableHtml = '&lt;div class="bh-timePick-disable" bh-time-picker-role="disableBlock">&lt;/div>';
+        }
+
+        var html =
+            '&lt;div class="bh-timePicker-rangeBox bh-clearfix" bh-time-picker-role="rangeBox" style="'+_style+'">' +
+                '&lt;div class="bh-timePicker-rangeBox-selectIcon bh-left" bh-time-picker-role="rangeBoxPre">&amp;lt;&lt;/div>'+
+                '&lt;div class="bh-timePicker-rangeBox-time" bh-time-picker-role="rangeBoxSelectTime">'+timeStr+'&lt;/div>'+
+                '&lt;div class="bh-timePicker-rangeBox-selectIcon bh-right" bh-time-picker-role="rangeBoxNext">&amp;gt;&lt;/div>'+
+                disableHtml +
+            '&lt;/div>' +
+            '&lt;div class="bh-clearfix">&lt;/div>';
+
+        return html;
+    }
+
+    /**
+     * 画弹出框
+     * @param options
+     * @param nowDate 当前时间对象
+     * @returns {string}
+     */
+    function drawSelectBox(options, nowDate){
+        //按月选择的月份html
+        var monthHtml = getSelectMonthHtml(options, nowDate);
+        /**
+         * 设置按月选择的年份，
+         * 当设置了最大选择范围，若最大的选择范围大于今年，则选用今年
+         * 若小于今年，则使用最大范围的这一年
+         * @type {number}
+         */
+        var year = 0;
+        var nowYear = nowDate.getFullYear();
+        var max =  (!options.settings.range.max || options.settings.range.max === 'today') ? nowYear : timeStrToDate(options.settings.range.max).getFullYear();
+        var min =  (!options.settings.range.min || options.settings.range.min === 'today') ? nowYear : timeStrToDate(options.settings.range.min).getFullYear();
+        var disableNext = options.settings.range.max &amp;&amp; nowYear >= max;
+        var disablePrev = options.settings.range.min &amp;&amp; nowYear &lt;= min;
+        year = max;
+        if(year > nowYear){
+            year = nowYear;
+        }
+        var html =
+                '&lt;div class="bh-timePick-selectBoxCont" bh-time-picker-role="selectBoxCont">' +
+                    '&lt;div class="bh-timePick-selectBox bh-card bh-card-lv2" bh-time-picker-role="selectBox">' +
+                        '&lt;ul class="bh-timePick-tab" bh-time-picker-role="selectTab">' +
+                            '&lt;li class="bh-timePick-tabItem bh-active">' + $.i18n('bha-ticker2-customSelection') + '&lt;/li>' +
+                            '&lt;li class="bh-timePick-tabItem">' + $.i18n('bha-ticker2-chooseMonthly') + '&lt;/li>' +
+                        '&lt;/ul>' +
+                        '&lt;div class="bh-timePick-tabContent" bh-time-picker-role="selectTabContent">' +
+                            '&lt;div class="bh-timePick-custom bh-active">' +
+                                '&lt;div class="bh-timePick-customTime bh-clearfix" bh-time-picker-role="selectCustom">' +
+                                    '&lt;div class="bh-timePick-selectType" bh-time-picker-role="selectType">&lt;/div>' +
+                                    '&lt;div class="bhtc-input-group" bh-time-picker-role="selectStart">' +
+                                        getTimeGroupHtml() +
+                                    '&lt;/div>' +
+                                    '&lt;div class="bh-timePick-selectConnect">&lt;/div>' +
+                                    '&lt;div class="bhtc-input-group" bh-time-picker-role="selectEnd">' +
+                                        getTimeGroupHtml() +
+                                    '&lt;/div>' +
+                                '&lt;/div>' +
+                                '&lt;a class="bh-btn bh-btn-primary bh-btn-block" bh-time-picker-role="selectOk" href="javascript:void(0);">' + $.i18n('bha-ticker2-confirm') + '&lt;/a>' +
+                            '&lt;/div>' +
+                            '&lt;div class="bh-timePick-selectMonthCont" bh-time-picker-role="selectMonthBlock">' +
+                                '&lt;div class="bh-timePick-selectMonth bh-timePicker-rangeBox bh-clearfix">' +
+                                    '&lt;div class="bh-timePicker-rangeBox-selectIcon bh-left ' + (disablePrev ? 'bh-disabled' : '') + '" bh-time-picker-role="selectMonthPre">&amp;lt;&lt;/div>'+
+                                    '&lt;div class="bh-timePicker-rangeBox-time" bh-time-picker-role="selectMonthYear">'+year+$.i18n('bha-ticker2-year')+'&lt;/div>'+
+                                    '&lt;div class="bh-timePicker-rangeBox-selectIcon bh-right '+ (disableNext ? 'bh-disabled' : '') + '" bh-time-picker-role="selectMonthNext">&amp;gt;&lt;/div>'+
+                                '&lt;/div>' +
+                                '&lt;div class="bh-timePicker-selectMonthList bh-clearfix" bh-time-picker-role="selectMonthList">' +
+                                    monthHtml +
+                                '&lt;/div>' +
+                            '&lt;/div>' +
+                        '&lt;/div>' +
+                    '&lt;/div>' +
+                '&lt;/div>';
+
+        return html;
+    }
+
+    function getTimeGroupHtml() {
+        var html = '&lt;input type="text" class="bh-form-control"/>' +
+                    '&lt;span class="bhtc-input-group-addon">' +
+                        '&lt;i class="iconfont icon-daterange">&lt;/i>' +
+                    '&lt;/span>';
+        return html;
+    }
+
+    /**
+     * 按月选择的月份html
+     * @param options
+     * @param nowDate 当前时间对象
+     * @param type 选择上一年或下一年
+     * @returns {string}
+     */
+    function getSelectMonthHtml(options, nowDate, type){
+        var html = '';
+        var nowYear = nowDate.getFullYear();
+        var maxYear = 0;
+        var maxMonth = 0;
+        var minYear = 0;
+        var minMonth = 0;
+        if(options.settings.range.max){
+            if(options.settings.range.max !== 'today'){
+                var maxObj = timeStrToDate(options.settings.range.max);
+                maxYear = maxObj.getFullYear();
+                maxMonth = maxObj.getMonth();
+            }else{
+                var now = new Date();
+                maxYear = now.getFullYear();
+                maxMonth = now.getMonth();
+            }
+        }
+
+        if(options.settings.range.min){
+            if(options.settings.range.min !== 'today'){
+                var minObj = timeStrToDate(options.settings.range.min);
+                minYear = minObj.getFullYear();
+                minMonth = minObj.getMonth();
+            }else{
+                var now = new Date();
+                minYear = now.getFullYear();
+                minMonth = now.getMonth();
+            }
+        }
+
+        for(var i=0; i&lt;12; i++){
+            var month = i + 1;
+            var typeClass = '';
+            //当没有设置最大范围，则设置所有月份可点击
+            if(maxYear &amp;&amp; minYear){
+                if(minYear !== maxYear){
+                    if(minYear &lt; nowYear &amp;&amp; nowYear &lt; maxYear){
+                        typeClass = 'bh-pre';
+                    }else if(minYear === nowYear){
+                        if(i >= minMonth){
+                            typeClass = 'bh-pre';
+                        }
+                    }else if(nowYear === maxYear){
+                        if(i &lt;= maxMonth){
+                            typeClass = 'bh-pre';
+                        }
+                    }
+                }else{
+                    if(minMonth &lt;= i &amp;&amp; i &lt;= maxMonth){
+                        typeClass = 'bh-pre';
+                    }
+                }
+            }else if(maxYear){
+                /**
+                 * 当设置了最大范围
+                 * 若最大范围大于今年，则所有月份可点
+                 * 若最大范围小于或等于今年，则大于最大范围的月份不可点
+                 */
+                if(maxYear > nowYear){
+                    typeClass = 'bh-pre';
+                }else{
+                    if(i &lt;= maxMonth){
+                        typeClass = 'bh-pre';
+                    }
+                }
+            }else if(minYear){
+                if(minYear &lt; nowYear){
+                    typeClass = 'bh-pre';
+                }else{
+                    if(i >= minMonth){
+                        typeClass = 'bh-pre';
+                    }
+                }
+            }else{
+                typeClass = 'bh-pre';
+            }
+
+            html += '&lt;div class="bh-timePick-monthItem '+typeClass+'" data-month="'+month+'" bh-time-picker-role="selectMonthItem">'+month+$.i18n('bha-ticker2-month')+'&lt;/div>';
+        }
+        return html;
+    }
+
+    /***
+     * 范围显示框的事件监听
+     * @param $rangeBox
+     */
+    function rangeBoxEventListen($rangeBox, options){
+        $rangeBox.on('click', function(e){
+            options.$rootElement.removeData('selectType');
+            var $targetObj = $(e.target || e.srcElement);
+            var role = $targetObj.attr('bh-time-picker-role');
+            switch (role){
+                //上一个区域
+                case 'rangeBoxPre':
+                    selectRangeBox('pre', options);
+                    break;
+                //下一个区域
+                case 'rangeBoxNext':
+                    selectRangeBox('next', options);
+                    break;
+                //选择时间
+                case 'rangeBoxSelectTime':
+                    showTimePickerBox(options, $rangeBox);
+                    break;
+            }
+        });
+    }
+
+    /***
+     * 显示弹框
+     * @param $rangeBox
+     */
+    function showTimePickerBox(options, $rangeBox){
+        var $selectBoxCont = options.popupBoxDom;
+        var $selectBox = $selectBoxCont.children('div[bh-time-picker-role="selectBox"]');
+        if($rangeBox.hasClass('bh-active')){
+            timePickerBoxToHide(options);
+        }else{
+            //获取当前显示框的位置
+            var rangeBoxPosition = BH_UTILS.getElementPosition($rangeBox);
+            //设置弹框的位置
+            var defaultZindex = 9999;
+            var boxCss = {"top": rangeBoxPosition.bottom, "left": rangeBoxPosition.left + 20, "display": "block"};
+            var jqxWindowZindex = 0;
+            $('body').find('.jqx-window').each(function(){
+                var itemZindex = parseInt($(this).css('z-index'), 10);
+                if(itemZindex > jqxWindowZindex){
+                    jqxWindowZindex = itemZindex;
+                }
+            });
+            if(jqxWindowZindex > defaultZindex){
+                boxCss['z-index'] = jqxWindowZindex;
+            }
+            $selectBoxCont.css(boxCss);
+            $rangeBox.addClass('bh-active');
+            setTimeout(function(){
+                $selectBox.addClass('bh-active');
+            },10);
+        }
+    }
+
+    function timePickerBoxToHide(options){
+        var $selectBoxCont = options.popupBoxDom;
+        var $selectBox = $selectBoxCont.children('div[bh-time-picker-role="selectBox"]');
+        $selectBox.find('div[bh-time-picker-role="rangeBoxSelectTime"]').click();
+        $selectBox.removeClass('bh-active');
+        setTimeout(function(){
+            $selectBoxCont.hide();
+        }, 450);
+        options.rangeBoxDom.removeClass('bh-active');
+    }
+
+    /***
+     * 弹框的事件监听
+     * @param $selectBox
+     * @param options
+     */
+    function selectBoxEventListen(options){
+        //tab切换
+        options.popupBoxDom.on('click', '.bh-timePick-tabItem', function(){
+            var $li = $(this);
+            if(!$li.hasClass('bh-active')){
+                var liIndex = $li.index();
+                var $ul = $li.closest('ul');
+                $ul.find('li').removeClass('bh-active');
+                $li.addClass('bh-active');
+
+                var $tabContents = options.popupBoxDom.children('div[bh-time-picker-role="selectBox"]').children('div[bh-time-picker-role="selectTabContent"]').children();
+                $tabContents.removeClass('bh-active');
+                $tabContents.eq(liIndex).addClass('bh-active');
+            }
+        });
+
+        var $selectCustom = options.popupBoxDom.find('div[bh-time-picker-role="selectCustom"]');
+        var $selectStart = $selectCustom.children('div[bh-time-picker-role="selectStart"]').children('input');
+        var $selectEnd = $selectCustom.children('div[bh-time-picker-role="selectEnd"]').children('input');
+        var $selectType = $selectCustom.find('div[bh-time-picker-role="selectType"]');
+        //开始时间变化事件
+        $selectStart.on('dp.change', function (event){
+            //判断是否要切换选择类型为自定义
+            changeFixedSelectType(options, $selectCustom);
+            //验证开始时间是否大于结束时间
+            checkTimeOrder($selectCustom, 'start', options);
+        });
+        //结束时间变化事件
+        $selectEnd.on('dp.change', function (event){
+            changeFixedSelectType(options, $selectCustom);
+            checkTimeOrder($selectCustom, 'end', options);
+        });
+
+        //鼠标滑过时间组件时，清除选择类型的状态
+        $selectStart.on('mouseover', function (event){
+            options.$rootElement.removeData('selectType');
+        });
+        //鼠标滑过时间组件时，清除选择类型的状态
+        $selectEnd.on('mouseover', function (event){
+            options.$rootElement.removeData('selectType');
+        });
+
+        $selectType.on('change', function (event){
+            var args = event.args;
+            if (args) {
+                var value = args.item.value;
+                //添加选择类型状态，用于自己选择时间或按月选择时，将状态类型换成自定义
+                options.$rootElement.data('selectType', 'fixed');
+                setSelectTime({
+                    value: value
+                },options);
+            }
+        });
+
+        //点击确定按钮
+        options.popupBoxDom.on('click', '[bh-time-picker-role="selectOk"]', function(){
+            //获取时间
+            var startTime = $selectStart.data("DateTimePicker").date()._d;
+            var endTime = $selectEnd.data("DateTimePicker").date()._d;
+            var timeObj = options.getValue();
+            var startTimeStr = timeObj.startTime;
+            var endTimeStr = timeObj.endTime;
+            //设置选择好的时间范围
+            resetRangeBoxTime(options, startTime, endTime);
+            //隐藏弹框
+            timePickerBoxToHide(options);
+
+            var type = $selectCustom.find('div[bh-time-picker-role="selectType"]').jqxDropDownList('getSelectedItem').value;
+
+            if(type === 'custom' &amp;&amp; options.settings.format.length === 10){
+                startTimeStr = timeObj.startTime + ' 00:00:00';
+                endTimeStr = timeObj.endTime + ' 23:59:59';
+            }
+
+            //事件回调
+            options.$rootElement.trigger("selectedTime", [startTimeStr, endTimeStr, type]);
+            if(typeof options.settings.selectedTime !='undefined' &amp;&amp; options.settings.selectedTime instanceof Function){
+                options.settings.selectedTime(startTimeStr, endTimeStr, type);
+            }
+        });
+
+        //按月选择上一年
+        options.popupBoxDom.on('click', '[bh-time-picker-role="selectMonthPre"]', function(){
+            if(!$(this).hasClass('bh-disabled')){
+                changeSelectMonthOfYear($(this).closest('div[bh-time-picker-role="selectMonthBlock"]'), 'pre', options);
+            }
+        });
+        //按月选择下一年
+        options.popupBoxDom.on('click', '[bh-time-picker-role="selectMonthNext"]', function(){
+            if(!$(this).hasClass('bh-disabled')){
+                changeSelectMonthOfYear($(this).closest('div[bh-time-picker-role="selectMonthBlock"]'), 'next', options);
+            }
+        });
+        //按月选择选取了某一个月份
+        options.popupBoxDom.on('click', '[bh-time-picker-role="selectMonthItem"]', function(){
+            changeSelectMonth($(this), options);
+        });
+    }
+
+    //初始化时间和下拉框组件
+    function selectBoxJqxInit(options, nowDate){
+        var $selectCustom = options.popupBoxDom.find('div[bh-time-picker-role="selectCustom"]');
+        var $selectType = $selectCustom.find('div[bh-time-picker-role="selectType"]');
+        var $selectStart = $selectCustom.find('div[bh-time-picker-role="selectStart"]');
+        var $selectEnd = $selectCustom.find('div[bh-time-picker-role="selectEnd"]');
+        options.startTimeDom = $selectStart;
+        options.endTimeDom = $selectEnd;
+        options.$selectType = $selectType;
+        initSelectType($selectType, options);
+        initSelectTime($selectStart, nowDate, 'start', options);
+        initSelectTime($selectEnd, nowDate, 'end', options);
+        setSelectTime({value: options.settings.defaultType}, options);
+    }
+
+    //初始化下拉框组件
+    function initSelectType($selectType, options){
+        var source = [
+            {name: $.i18n('bha-ticker2-custom'),value: 'custom'},
+            {name: $.i18n('bha-ticker2-all'),value: 'all'},
+            {name: $.i18n('bha-ticker2-today'),value: 'today'},
+            {name: $.i18n('bha-ticker2-currentWeek'),value: 'currentWeek'},
+            {name: $.i18n('bha-ticker2-lastWeek'),value: 'lastWeek'},
+            {name: $.i18n('bha-ticker2-currentMonth'),value: 'currentMonth'},
+            {name: $.i18n('bha-ticker2-lastMonth'),value: 'lastMonth'},
+            {name: $.i18n('bha-ticker2-currentQuarter'),value: 'currentQuarter'},
+            {name: $.i18n('bha-ticker2-lastQuarter'),value: 'lastQuarter'},
+            {name: $.i18n('bha-ticker2-currentYear'),value: 'currentYear'},
+            {name: $.i18n('bha-ticker2-lastYear'),value: 'lastYear'},
+            {name: $.i18n('bha-ticker2-last7Day'),value: 'last7Day'},
+            {name: $.i18n('bha-ticker2-last30Day'),value: 'last30Day'}
+        ];
+        var selectedIndex = 0;
+        $.grep(source,function(item,i){
+            if(options.settings.defaultType === item.value){
+                selectedIndex = i;
+                return true;
+            }
+        });
+        $selectType.jqxDropDownList({width: '80px', source: source, selectedIndex: selectedIndex, autoDropDownHeight: true,valueMember: 'value', displayMember: 'name'});
+    }
+
+    //初始化时间组件
+    function initSelectTime($timeDom, nowDate, type, options){
+        var setValue;
+        if(type === 'start'){
+            //设置开始时间, 若未设置开始时间或时间是今天，则使用当前时间，否则用传入的时间
+            if(!options.settings.time.start || options.settings.time.start === 'today'){
+                setValue = nowDate;
+            }else{
+                setValue = timeStrToDate(options.settings.time.start);
+            }
+        }else{
+            //设置结束时间
+            if(!options.settings.time.end || options.settings.time.end === 'today'){
+                setValue = nowDate;
+            }else{
+                setValue = timeStrToDate(options.settings.time.end);
+            }
+        }
+
+        $timeDom.children('input').datetimepicker({
+            format: options.settings.format,
+            defaultDate: setValue
+        });
+    }
+
+    /***
+     * 按类型选择时间的处理
+     * @param data {type    index}
+     */
+    function setSelectTime(data, options){
+        //24小时 * 60分 * 60秒 * 1000毫秒
+        var oneDayTime = 24 * 60 * 60 * 1000;
+        var nowDate = new Date();
+        var nowDateObj = getDateObj(nowDate);
+        var startTime = 0;
+        var endTime = 0;
+        var value = data.value;
+        switch (value){
+            //自定义 用于激活时间输入框
+            case 'custom':
+                var _setStartTime = options.settings.time.start;
+                if(!_setStartTime || _setStartTime === 'today'){
+                    startTime = nowDate;
+                }else{
+                    startTime = timeStrToDate(_setStartTime);
+                }
+
+                var _setEndTime = options.settings.time.end;
+                if(!_setEndTime || _setEndTime === 'today'){
+                    endTime = nowDate;
+                }else{
+                    endTime = timeStrToDate(_setEndTime);
+                }
+                break;
+            //全部
+            case 'all':
+                startTime = null;
+                endTime = null;
+                break;
+            //今天
+            case 'today':
+                startTime = nowDate;
+                endTime = nowDate;
+                break;
+            //本周
+            case 'currentWeek':
+                //定位到星期一 = 当前时间戳 - （当前星期 - 1天）* 一天的毫秒数
+                startTime = new Date(nowDateObj.time - (nowDateObj.week - 1) * oneDayTime);
+                endTime = nowDate;
+                break;
+            //上周
+            case 'lastWeek':
+                //定位到这周的星期一
+                var currentMondayTime = nowDateObj.time - (nowDateObj.week - 1) * oneDayTime;
+                //再定位到上周一 = 本周一 减 7天的时间
+                startTime = new Date(currentMondayTime - 7 * oneDayTime);
+                //定位到上周末 = 本周一 减 1天的时间
+                endTime = new Date(currentMondayTime - 1 * oneDayTime);
+                break;
+            //本月
+            case 'currentMonth':
+                //定位到本月1号 = 当前时间戳 - （当前日期 - 1天）* 一天的毫秒数
+                startTime = new Date(nowDateObj.time - (nowDateObj.day - 1) * oneDayTime);
+                endTime = nowDate;
+                break;
+            //上月
+            case 'lastMonth':
+                var preMonthData = getPreMonthData(nowDateObj);
+                startTime = preMonthData.startTime;
+                endTime = preMonthData.endTime;
+                break;
+            //本季度
+            case 'currentQuarter':
+                var currentQuarterData = getCurrentQuarterData(nowDateObj);
+                startTime = currentQuarterData.startTime;
+                endTime = nowDate;
+                break;
+            //上季度
+            case 'lastQuarter':
+                var preQuarterData = getPreQuarterData(nowDateObj);
+                startTime = preQuarterData.startTime;
+                endTime = preQuarterData.endTime;
+                break;
+            //今年
+            case 'currentYear':
+                startTime = timeStrToDate(nowDateObj.year+'/'+'1/1');
+                endTime = nowDate;
+                break;
+            //去年
+            case 'lastYear':
+                startTime = timeStrToDate(parseInt(nowDateObj.year - 1)+'/'+'1/1');
+                endTime = timeStrToDate(parseInt(nowDateObj.year - 1)+'/'+'12/31');
+                break;
+            //近7天
+            case 'last7Day':
+                startTime = new Date(nowDateObj.time - 7 * oneDayTime);
+                endTime = nowDate;
+                break;
+            //近30天
+            case 'last30Day':
+                startTime = new Date(nowDateObj.time - 30 * oneDayTime);
+                endTime = nowDate;
+                break;
+            default:
+                break;
+        }
+        //设置开始和结束时间
+        setInputDateTime(options, startTime, endTime);
+    }
+
+    /**
+     * 设置开始和结束时间
+     * 时间类型可能是对象，也可能是时间戳
+     * @param startTime
+     * @param endTime
+     * @param isCallback 是否要执行回调
+     */
+    function setInputDateTime(options, startTime, endTime, isCallback){
+        var $selectCustom = options.popupBoxDom.find('div[bh-time-picker-role="selectCustom"]');
+        var $startTime = $selectCustom.children('div[bh-time-picker-role="selectStart"]').children('input');
+        var $endTime = $selectCustom.children('div[bh-time-picker-role="selectEnd"]').children('input');
+        var currentEndTime = $endTime.data("DateTimePicker").date()._d;
+        if(!startTime || !endTime){
+            if(startTime === null){
+                $startTime.attr('disabled', true);
+                $startTime.data("DateTimePicker").disable();
+            }else{
+                $startTime.removeAttr('disabled');
+                $startTime.data("DateTimePicker").enable();
+            }
+            if(endTime === null){
+                $endTime.attr('disabled', true);
+                $endTime.data("DateTimePicker").disable();
+            }else{
+                $endTime.removeAttr('disabled');
+                $endTime.data("DateTimePicker").enable();
+            }
+            if(!startTime &amp;&amp; !endTime){
+                var $rangeBoxSelectTime = options.$rootElement.find('div[bh-time-picker-role="rangeBoxSelectTime"]');
+                var $selectType = options.popupBoxDom.find('div[bh-time-picker-role="selectCustom"] div[bh-time-picker-role="selectType"]');
+                var selected = $selectType.jqxDropDownList('getSelectedItem');
+                if('all' === selected.value){
+                    $rangeBoxSelectTime.html(selected.label);
+                    return;
+                }
+            }
+        }
+        if($startTime.attr('disabled')){
+            $startTime.removeAttr('disabled');
+            $startTime.data("DateTimePicker").enable();
+        }
+        if($endTime.attr('disabled')){
+            $endTime.removeAttr('disabled');
+            $endTime.data("DateTimePicker").enable();
+        }
+
+        //避免设置为all类型时,setValue使时间设置不对
+        endTime = endTime ? endTime : new Date();
+        startTime = startTime ? startTime : new Date();
+
+        options.settings.time.start = startTime;
+        options.settings.time.end = endTime;
+        //这个判断是为了避免校验开始时间大于结束时间导致的时间重置
+        if(startTime > currentEndTime){
+            $endTime.data("DateTimePicker").date(endTime);
+            $startTime.data("DateTimePicker").date(startTime);
+        }else{
+            $startTime.data("DateTimePicker").date(startTime);
+            $endTime.data("DateTimePicker").date(endTime);
+        }
+
+        var startTimeObj = $startTime.data("DateTimePicker").date()._d;
+        var endTimeObj = $endTime.data("DateTimePicker").date()._d;
+        var timeObj = options.getValue();
+        var startTimeStr = timeObj.startTime;
+        var endTimeStr = timeObj.endTime;
+        resetRangeBoxTime(options, startTimeObj, endTimeObj);
+        if(isCallback){
+            var type = $selectCustom.find('div[bh-time-picker-role="selectType"]').jqxDropDownList('getSelectedItem').value;
+            if(type === 'custom' &amp;&amp; options.settings.format.length === 10){
+                startTimeStr = timeObj.startTime + ' 00:00:00';
+                endTimeStr = timeObj.endTime + ' 23:59:59';
+            }
+            //事件回调
+            options.$rootElement.trigger("selectedTime", [startTimeStr, endTimeStr, type]);
+            if(typeof options.settings.selectedTime !='undefined' &amp;&amp; options.settings.selectedTime instanceof Function){
+                options.settings.selectedTime(startTimeStr, endTimeStr, type);
+            }
+        }
+    }
+
+    //把日期分割成对象
+    function getDateObj(time){
+        var myDate = new Date(time);
+        var dateObj = {};
+        dateObj.year = myDate.getFullYear();
+        dateObj.month = myDate.getMonth();
+        dateObj.day = myDate.getDate();
+        dateObj.hour = myDate.getHours();
+        dateObj.minute = myDate.getMinutes();
+        dateObj.second = myDate.getSeconds();
+        dateObj.week = myDate.getDay();
+        dateObj.time = myDate.getTime();
+        return dateObj;
+    }
+
+    //判断是否闰年
+    function isLeapYear(year){
+        return (0 == year % 4 &amp;&amp; ((year % 100 != 0) || (year % 400 == 0)));
+    }
+
+    //获取上个月的数据
+    function getPreMonthData(nowDateObj){
+        //月份是从0开始的
+        var currentMonth = nowDateObj.month;
+        var year = nowDateObj.year;
+        var month = currentMonth - 1;
+        if(currentMonth === 0){
+            year = year - 1;
+            month = 11;
+        }
+        var preMonthDays = getOneMonthDays(year, month + 1);
+        var startTime = new Date(changeTimeObjToStr({year: year, month: month+1, day: 1}));
+        var endTime = new Date(changeTimeObjToStr({year: year, month: month+1, day: preMonthDays}));
+        return {startTime: startTime, endTime: endTime};
+    }
+
+    //把时间对象转换成字符串
+    function changeTimeObjToStr(timeObj){
+        return timeObj.year+'/'+timeObj.month+'/'+timeObj.day;
+    }
+
+    //获取该月份的天数
+    function getOneMonthDays(year, month){
+        var days = 0;
+        if(month === 1 || month === 3 || month === 5 || month === 7 || month === 8 || month === 10 || month === 12){
+            days = 31;
+        }else if(month === 4 || month === 6 || month === 9 || month === 11){
+            days = 30;
+        }else{
+            if(isLeapYear(year)){
+                days = 29;
+            }else{
+                days = 28;
+            }
+        }
+        return days;
+    }
+
+    //获取该季度的时间对象
+    function getCurrentQuarterData(nowDateObj){
+        var monthData = getStartAndEndMonthOfQuarter(nowDateObj.month);
+        var startTime = new Date(changeTimeObjToStr({year: nowDateObj.year, month: monthData.startMonth+1, day: 1}));
+        return {startTime: startTime};
+    }
+
+    //获取上个季度的时间对象
+    function getPreQuarterData(nowDateObj){
+        var nowQuarterStartMonth = getStartAndEndMonthOfQuarter(nowDateObj.month).startMonth;
+        var preQuarterMonth = nowQuarterStartMonth - 1;
+        var year = nowDateObj.year;
+        if(nowQuarterStartMonth === 0){
+            preQuarterMonth = 11;
+            year = year - 1;
+        }
+        var preQuarterData = getStartAndEndMonthOfQuarter(preQuarterMonth);
+        var endTimeDay = getOneMonthDays(year, preQuarterData.endMonth + 1);
+        var startTime = new Date(changeTimeObjToStr({year: year, month: preQuarterData.startMonth+1, day: 1}));
+        var endTime = new Date(changeTimeObjToStr({year: year, month: preQuarterData.endMonth+1, day: endTimeDay}));;
+        return {startTime: startTime, endTime: endTime};
+    }
+
+    //根据月份得到该月所在季度的起始月份和结束月份，月份从0开始
+    function getStartAndEndMonthOfQuarter(month){
+        var startMonth = 0;
+        var endMonth = 2;
+        if(month >= 9){
+            startMonth = 9;
+            endMonth = 11;
+        }else if(month >= 6){
+            startMonth = 6;
+            endMonth = 8;
+        }else if(month >= 3){
+            startMonth = 3;
+            endMonth = 5;
+        }
+        return {startMonth: startMonth, endMonth: endMonth};
+    }
+
+    //按月选择里的切换时间
+    function changeSelectMonthOfYear($selectMonthBlock, type, options){
+        var $prev = $selectMonthBlock.find('[bh-time-picker-role="selectMonthPre"]').removeClass('bh-disabled');
+        var $next = $selectMonthBlock.find('[bh-time-picker-role="selectMonthNext"]').removeClass('bh-disabled');
+        var $selectMonthYear = $selectMonthBlock.find('div[bh-time-picker-role="selectMonthYear"]');
+        var year = parseInt($selectMonthYear.text(), 10);
+        var maxYear = 0;
+        if(options.settings.range.max){
+            maxYear = options.settings.range.max === 'today' ? new Date().getFullYear() : new Date(options.settings.range.max).getFullYear();
+        }
+        var minYear = 0;
+        if(options.settings.range.min){
+            minYear = options.settings.range.min === 'today' ? new Date().getFullYear() : new Date(options.settings.range.min).getFullYear();
+        }
+        //上一年
+        if(type === 'pre'){
+            year--;
+        }else{
+            year++;
+        }
+        $selectMonthYear.html(year + $.i18n('bha-ticker2-year'));
+        var monthHtml = getSelectMonthHtml(options, timeStrToDate(year+'/12/1'), type);
+        $selectMonthBlock.find('div[bh-time-picker-role="selectMonthList"]').html(monthHtml);
+
+        if(type === 'pre'){
+            if(year === minYear){
+                $prev.addClass('bh-disabled');
+            }
+        }else{
+            if(year === maxYear){
+                $next.addClass('bh-disabled');
+            }
+        }
+    }
+
+    /**
+     * 切换选择的月份
+     * @param $month
+     * @param options
+     */
+    function changeSelectMonth($month, options){
+        //若该月份比当前月份大，则点击无效
+        if(!$month.hasClass('bh-pre')){
+            return;
+        }
+        var $selectMonthBlock = $month.closest('div[bh-time-picker-role="selectMonthBlock"]');
+        var year = parseInt($selectMonthBlock.find('div[bh-time-picker-role="selectMonthYear"]').text(), 10);
+        var month = parseInt($month.attr('data-month'), 10);
+        var endDay = getOneMonthDays(year, month);
+        //移除状态标识
+        options.$rootElement.removeData('selectType');
+        //隐藏弹框
+        options.rangeBoxDom.find('div[bh-time-picker-role="rangeBoxSelectTime"]').click();
+        //设置开始和结束时间组件的时间
+        setInputDateTime(options, new Date(year+'/'+month+'/1'), new Date(year+'/'+month+'/'+endDay), true);
+    }
+
+    //设置显示的时间范围
+    function resetRangeBoxTime(options, startTime, endTime){
+        var $rangeBoxSelectTime = options.$rootElement.find('div[bh-time-picker-role="rangeBoxSelectTime"]');
+        var $selectType = options.popupBoxDom.find('div[bh-time-picker-role="selectCustom"] div[bh-time-picker-role="selectType"]');
+        var selected = $selectType.jqxDropDownList('getSelectedItem');
+        if('all' === selected.value){
+            $rangeBoxSelectTime.html(selected.label);
+            return;
+        }
+        var startTimeStr = getLocalDateStr(startTime, options);
+        var endTimeStr = getLocalDateStr(endTime, options);
+        $rangeBoxSelectTime.html(startTimeStr + '-' + endTimeStr);
+    }
+
+    function getLocalDateStr(time, options){
+        if(/dd/i.test(options.settings.format)){
+            return time.getFullYear() + $.i18n('bha-ticker2-Y') + numberLessThan10AddPre0(time.getMonth()+1) + $.i18n('bha-ticker2-M') + time.getDate() + $.i18n('bha-ticker2-D');
+        }else{
+            return time.getFullYear() + $.i18n('bha-ticker2-year') + numberLessThan10AddPre0(time.getMonth()+1) + $.i18n('bha-ticker2-month');
+        }
+    }
+
+    //将小于10的数字前面加上0，如01
+    function numberLessThan10AddPre0(num){
+        return num &lt; 10 ? '0' + num : num;
+    }
+
+    /**
+     * 判断选择状态是否要切换成自定义
+     * 当selectType属性不存在时，切换成自定义
+     * @param $selectCustom
+     */
+    function changeFixedSelectType(options, $selectCustom){
+        // var selectType = options.$rootElement.data('selectType');
+        // if(typeof selectType !== 'undefined' &amp;&amp; selectType === 'fixed'){
+        //     return;
+        // }
+        $selectCustom.find('div[bh-time-picker-role="selectType"]').jqxDropDownList('selectIndex', 0 );
+    }
+
+    /**
+     * 自己手动改变时间时，判断开始时间是否大于结束时间
+     * 若大于则将两个时间设为相同的时间
+     * 同时验证选取的时间是否在传入的范围内
+     * 若不在，则开始时间以传入范围的最小时间算，结束时间按传入的最大时间算
+     * @param $selectCustom
+     * @param type
+     */
+    function checkTimeOrder($selectCustom, type, options){
+        //设置自己选择时间的标志，用于处理body被重复点击造成弹框被隐藏的问题
+        $('body').data('bhTimePick', 'selectTime');
+        var $selectStart = $selectCustom.children('div[bh-time-picker-role="selectStart"]').children('input');
+        var $selectEnd = $selectCustom.children('div[bh-time-picker-role="selectEnd"]').children('input');
+        var startTime = $selectStart.data("DateTimePicker").date()._d;
+        var endTime = $selectEnd.data("DateTimePicker").date()._d;
+        if(startTime > endTime){
+            //当选取的是结束时间，将结束时间设成和开始时间一样
+            if(type === 'end'){
+                /**
+                 * 当自定义的时间是月份时,选择结束时间小于开始时间时,会出现死循环
+                 * --ghlong  2016-12-6
+                 */
+                // var startDate = getDateObj(startTime);
+                // $selectEnd.data("DateTimePicker").date(new Date(startDate.year, startDate.month, startDate.day));
+                $selectEnd.data("DateTimePicker").date(startTime);
+            }else{
+                //当选取的是开始时间，将开始时间设成和结束时间一样
+                var endDate = getDateObj(endTime);
+                $selectStart.data("DateTimePicker").date(new Date(endDate.year, endDate.month, endDate.day));
+            }
+            return;
+        }
+
+        //判断开始时间是否在传入的时间范围内
+        if(type === 'start'){
+            if(options.settings.range.min){
+                var minTime;
+                if(options.settings.range.min !== 'today'){
+                    minTime = new Date(options.settings.range.min);
+                }else{
+                    minTime = new Date();
+                }
+
+                if(startTime &lt; minTime){
+                    $selectStart.data("DateTimePicker").date(minTime);
+                }
+            }
+        }else{
+            if(options.settings.range.max){
+                var maxTime;
+                if(options.settings.range.max !== 'today'){
+                    maxTime = new Date(options.settings.range.max);
+                }else{
+                    maxTime = new Date();
+                }
+
+                if(endTime > maxTime){
+                    $selectEnd.data("DateTimePicker").date(maxTime);
+                }
+            }
+        }
+    }
+
+    /**
+     * 点击左右切换显示时间的处理
+     * @param type pre或next
+     */
+    function selectRangeBox(type, options){
+        var $selectBox = options.popupBoxDom.find('div[bh-time-picker-role="selectBox"]');
+        var $rangeBox = options.$rootElement.find('div[bh-time-picker-role="rangeBox"]');
+        if($rangeBox.hasClass('bh-active')){
+            $rangeBox.find('div[bh-time-picker-role="rangeBoxSelectTime"]').click();
+        }
+        var time;
+        //当点击的是上一个按钮，则以开始时间为基准
+        if(type === "pre"){
+            time = $selectBox.find('div[bh-time-picker-role="selectStart"]').children('input').data("DateTimePicker").date()._d;
+        }else{
+            //当点击的是下一个按钮，则以结束时间为基准
+            time = $selectBox.find('div[bh-time-picker-role="selectEnd"]').children('input').data("DateTimePicker").date()._d;
+        }
+        var dateObj = getDateObj(time);
+        var rangeDate;
+        var oneDayTime = 24 * 60 * 60 * 1000;
+        if(type === 'pre'){
+            //点击上一个按钮，若开始时间是1月份，则调整为上一年的12月份，否则调整为上一个月
+            if(dateObj.month === 0){
+                dateObj.month = 11;
+                dateObj.year = dateObj.year - 1;
+            }else{
+                dateObj.month = dateObj.month - 1;
+            }
+            //当有最小的时间范围时，判断选择的时间是否不在这个范围，不在则设置为这个最小时间
+            if(options.settings.range.min){
+                var minTime = options.settings.range.min === 'today' ? new Date() : timeStrToDate(options.settings.range.min);
+                rangeDate = getDateObj(minTime);
+                if(minTime > new Date(time.getTime() - (30 * oneDayTime))){
+                    dateObj = rangeDate;
+                }
+            }
+        }else{
+            //点击的是下一个按钮
+            //若不是今年的话，若选择的月是12月，则调整为下一年的1月份，否则调整为下个月
+            if(dateObj.month === 11){
+                dateObj.month = 0;
+                dateObj.year = dateObj.year + 1;
+            }else{
+                dateObj.month = dateObj.month + 1;
+            }
+
+            //当有最大的时间范围时，判断选择的时间是否不在这个范围，不在则设置为这个最大时间
+            if(options.settings.range.max){
+                var maxTime = options.settings.range.max === 'today' ? new Date() : timeStrToDate(options.settings.range.max);
+                rangeDate = getDateObj(maxTime);
+                if(maxTime &lt; new Date(time.getTime() + (30 * oneDayTime))){
+                    dateObj = rangeDate;
+                }
+            }
+        }
+
+        var startTime = {};
+        var endTime = {};
+        //若年份不一致，则直接使用选取的时间
+        if(!rangeDate || dateObj.year !== rangeDate.year){
+            startTime = {year: dateObj.year, month: dateObj.month, day: 1};
+            endTime = {year: dateObj.year, month: dateObj.month, day: getOneMonthDays(dateObj.year, dateObj.month + 1)};
+        }else{
+            //若选择的年份一致，若选取的月份不是当前月，则直接使用选取的时间，若是当前月则最后的日期使用今天的
+            if(dateObj.month !== rangeDate.month){
+                startTime = {year: dateObj.year, month: dateObj.month, day: 1};
+                endTime = {year: dateObj.year, month: dateObj.month, day: getOneMonthDays(dateObj.year, dateObj.month + 1)};
+            }else{
+                if(type === 'pre'){
+                    startTime = {year: dateObj.year, month: dateObj.month, day: rangeDate.day};
+                    endTime = {year: dateObj.year, month: dateObj.month, day: getOneMonthDays(dateObj.year, dateObj.month + 1)};
+                }else{
+                    startTime = {year: dateObj.year, month: dateObj.month, day: 1};
+                    endTime = {year: dateObj.year, month: dateObj.month, day: rangeDate.day};
+                }
+            }
+        }
+
+        var monthStr = dateObj.month + 1 &lt; 10 ? '0' + parseInt(dateObj.month + 1, 10) : dateObj.month + 1;
+        var startTimeStr = startTime.year + '/' + monthStr + '/' + numberLessThan10AddPre0(startTime.day);
+        var endTimeStr = endTime.year + '/' + monthStr + '/' + endTime.day;
+        setInputDateTime(options, timeStrToDate(startTimeStr), timeStrToDate(endTimeStr), true);
+    }
+
+    //时间字符串转成时间对象
+    function timeStrToDate(DateStr){
+        if(typeof DateStr === 'string'){
+            var converted = Date.parse(DateStr);
+            var myDate = new Date(converted);
+            if (isNaN(myDate)){
+                //var delimCahar = DateStr.indexOf('/')!=-1?'/':'-';
+                var arys= DateStr.split('-');
+                myDate = new Date(arys[0],--arys[1],arys[2]);
+            }
+            return myDate;
+        }else{
+            return DateStr;
+        }
+    }
+
+    /**
+     * 这里是关键
+     * 定义一个插件 plugin
+     */
+    $.fn.bhTimePicker = function (options, params) {
+        var instance;
+        instance = this.data('bhTimePicker');
+        /**
+         * 判断插件是否已经实例化过，如果已经实例化了则直接返回该实例化对象
+         */
+        if (!instance) {
+            return this.each(function () {
+                //将实例化后的插件缓存在dom结构里（内存里）
+                return $(this).data('bhTimePicker', new Plugin(this, options));
+            });
+        }
+        if (options === true){
+            return instance;
+        }
+        /**
+         * 优雅处： 如果插件的参数是一个字符串，则 调用 插件的 字符串方法。
+         * 如 $('#id').plugin('doSomething') 则实际调用的是 $('#id).plugin.doSomething();
+         * doSomething是刚才定义的接口。
+         * 这种方法 在 juqery ui 的插件里 很常见。
+         */
+        if ($.type(options) === 'string'){
+            return instance[options](params);
+        }
+        return this;
+    };
+
+    /**
+     * 插件的默认值
+     */
+    // $.fn.bhTimePicker.defaults = {
+    //     defaultType: 'custom',
+    //     width: '',
+    //     format: 'YYYY-MM-DD',//可选，时间格式，默认yyyy-MM-dd（年-月-日）
+    //     range: { //可选，设置时间的可选范围
+    //         max: '', //可选，设置最大时间，‘today’最大时间就是今天，或传入时间字符串‘2016/4/22’
+    //         min: '' //可选，设置最小时间，‘today’最小时间就是今天，或传入时间字符串‘2016/4/22’
+    //     },
+    //     time: { //可选，设置初始化时间
+    //         start: '', //可选，开始时间
+    //         end: '' //可选，结束时间
+    //     },
+    //     isDisable: false, //可选，该组件是否禁用，默认false，不禁用
+    //     selectedTime: null, //选取时间后的回调，返回开始时间和结束时间字符串
+    //     ready: null //初始化完成回调
+    // };
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhCalculator.html">bhCalculator</a></li><li><a href="module-bhCustomizeColumn.html">bhCustomizeColumn</a></li><li><a href="module-bhDateAreaPicker.html">bhDateAreaPicker</a></li><li><a href="module-bhDateTimePicker.html">bhDateTimePicker</a></li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhSlider.html">bhSlider</a></li><li><a href="module-bhTree.html">bhTree</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

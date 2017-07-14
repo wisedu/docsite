@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapImport2/import2.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapImport2/import2.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>;
+(function($) {
+    /**
+     * 导入2.0
+     * @method $.import2
+     * @param {Object} options 初始化参数
+     * @param {String} options.app - 应用名
+     * @param {String} options.module - 模型名称
+     * @param {String} options.page - 页面名称
+     * @param {String} options.action - 动作名称
+     * @param {String} options.tplUrl - 模板下载地址
+     * @param {String} options.downloadTplName - 重命名下载导入模板的名称
+     * @param {Function} options.preCallback - 弹窗弹出后的回调
+     * @param {Function} options.importCallback - 导入请求成功后的回调
+     * @param {Function} options.closeCallback - 导入弹窗关闭的回调
+     * @param {Function} options.closeConfirmCallback - 点击【关闭弹窗】按钮的回调
+     * @return {} [description]
+     */
+    $.emapImport2 = function(options) {
+        var option = {
+            title: $.i18n('bh-ip2-importDatas'),
+            btns: [],
+            params: {
+                height: 450,
+                close: function($dom, e) {
+                    if ($.isFunction(options.closeCallback)) {
+                        options.closeCallback($dom, e);
+                    }
+                }
+            }
+        };
+        var view = new WIS_IMPORT2_VIEW(option);
+        if (options.preCallback) {
+            options.preCallback();
+        }
+
+        emapImportData.call(view, options, view);
+        return view;
+    };
+
+    function getAdaptor(opt) {
+        // opt.adaptor = window[opt.adaptor || window['EMAP_IMPORT_CACHE'];
+        return window[opt.adaptor];
+    }
+
+    //导入处理函数
+    function emapImportData(opt, view) {
+        // 检查传入的后端 adaptor 是否存在
+        var adaptor = getAdaptor(opt);
+
+        // 下载导入模板参数
+        var downTplData = {
+            app: opt.app, // *
+            module: opt.module, // *
+            page: opt.page, // *
+            action: opt.action, // *
+            storeId: opt.storeId ? opt.storeId : 'imexport'
+        };
+
+        if (opt.params) {
+            $.extend(downTplData, opt.params);
+        }
+
+        // 用于 adaptor init
+        var options = $.extend({}, opt, {
+            config: {},
+            autoUpload: false,
+            multiple: false,
+            storeId: (opt.storeId ? opt.storeId : 'file'),
+            fileInput: view.getChooseFileBtn(),
+            onUploading: function(result, data) {
+                view.renderUploading(result);
+                data.submit();
+            },
+            onUploaded: function(resp) {
+                if (!resp.isSuccess) {
+                    view.renderUploadFail();
+                }
+            },
+            onChecking: function() {
+                view.renderCheckDefault();
+            },
+            onChecked: function(resp) {
+                if (resp.isSuccess &amp;&amp; resp.success === resp.total) {
+                    view.renderCheckSuccess(resp.success);
+                } else {
+                    view.renderCheckFail(resp.success, resp.total - resp.success);
+                }
+            },
+            onFileImporting: function() {
+                view.renderImportDefault();
+            },
+            onFileImported: function(json) {
+                view.renderImportSuccess(json.count);
+            }
+        });
+        if (adaptor) {
+            adaptor.init(view.$window, options, downTplData);
+            bindBtnAction(view, opt, downTplData);
+        }
+    }
+
+    function bindBtnAction(view, opt, downTplData) {
+        var adaptor = getAdaptor(opt);
+        /**********上传步骤**********/
+
+        //下载导入模板按钮
+        view.getDownloadTplBtn().click(function(e) {
+            adaptor.downImportTpl(e, opt, downTplData);
+        });
+
+        //上传步骤，重新选择文件
+        view.getUPloadReChooseBtn().click(function() {
+            view.getChooseFileBtn().click();
+        });
+        /***************************/
+
+        /**********校验步骤***********/
+        //下载错误数据文件
+        view.getDownloadErrorDataBtn().click(function(e) {
+            adaptor.downErrorData(e, opt, downTplData);
+        });
+
+        //只导入正确数据
+        view.getImportRightDataBtn().click(function(e) {
+            adaptor.importRightData(e, opt, downTplData);
+        });
+
+        //重新选择文件
+        view.getCheckReChooseBtn().click(function() {
+            view.getChooseFileBtn().click();
+        });
+        //导入数据
+        view.getImportDataBtn().click(function(e) {
+            adaptor.importData(e, opt, downTplData);
+        });
+        /****************************/
+
+        /***********导入步骤**********/
+        view.getCompleteCloseBtn(function() {
+            view.close();
+        });
+    }
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:10:02 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

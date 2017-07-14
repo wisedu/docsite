@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapFormInput/emapInput.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapFormInput/emapInput.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @fileOverview emapInput 功能模块
+ */
+(function(WIS_EMAP_INPUT, undefined) {
+    /**
+     * @module WIS_EMAP_INPUT
+     * @alias 表单控件公共方法
+     * @example
+     WIS_EMAP_INPUT.init($form, {root: '/emap'})
+     */
+    /**
+     * @memberof module:WIS_EMAP_INPUT
+     * @description 表单控件注册对象,基于1.1版本进行修改和扩展
+     * @prop {Object} date-ym - 年月选择框,基于bhDateTimePicker封装， 默认 yyyy-MM
+     * @prop {Object} date-local - 日期选择框,基于bhDateTimePicker封装， 默认 yyyy-MM-dd
+     * @prop {Object} date-full - 日期时间选择框,基于bhDateTimePicker封装， 默认 yyyy-MM-dd HH:mm
+     * @prop {Object} date-range - 日期范围选择, 只能在高级搜索中使用，基于bhDateTimePicker封装， 默认 yyyy-MM-dd
+     * @prop {Object} date-area - 日期范围选择, 在表单中使用，基于bhDateTimePicker封装， 默认 yyyy-MM-dd
+     * @prop {Object} cache-upload - 缓存上传， 基于cacheUpload封装
+     * @prop {Object} direct-upload - 直接上传， 基于directUpload封装
+     */
+    WIS_EMAP_INPUT.core = $.extend(WIS_EMAP_INPUT.core, {
+        "date-ym": {
+            "init": _initDateInput,
+            "setValue": _dateSetValue,
+            "getValue": _dateGetValue,
+            "enable": _enableDateInput,
+            "disable": _disableDateInput
+        },
+
+        "date-local": {
+            "init": _initDateInput,
+            "setValue": _dateSetValue,
+            "getValue": _dateGetValue,
+            "enable": _enableDateInput,
+            "disable": _disableDateInput
+        },
+
+        "date-full": {
+            "init": _initDateInput,
+            "setValue": _dateSetValue,
+            "getValue": _dateGetValue,
+            "enable": _enableDateInput,
+            "disable": _disableDateInput
+        },
+        "date-range": {
+            "init": function(ele, params) {
+                // range: {//可选，设置时间可选的范围
+                //     max: 'today',  //可选，设置时间的最大可选范围，可传入'today'表示今天，或传入时间字符串，格式如'2015/02/05'
+                //     min: '2015/02/05' //可选，设置时间的最小可选范围，可传入'today'表示今天，或传入时间字符串，格式如'2015/02/05'
+                // },
+                // time:{//可选，初始化时显示的时间范围
+                //     start: '2015/01/05', //必填，时间字符串，格式如'2015/02/05'
+                //     end: '2015/06/01'//必填，时间字符串，格式如'2015/02/05'
+                // },
+                // selected: function(startTime, endTime){ //可选，选择时间后的回调，返回的参数startTime是选择的开始时间，endTime是选择的结束时间，返回的是时间字符串格式如'2015/02/05'
+                // }
+                var inputOptions = $.extend({}, {
+                    format: ele.data('format') ? ele.data('format').replace(/yyyy/, 'YYYY').replace(/-dd/, '-DD') : 'YYYY-MM-DD'
+                }, params);
+                ele.bhTimePicker(inputOptions);
+            },
+            "setValue": function(ele, name, val, root) {
+                if (val === '' || val === undefined || val[name] === "") {
+                    // 清空
+                    ele.bhTimePicker('setType', 'all');
+                } else {
+                    var val_arr = val[name].split(',');
+                    if (val_arr.length == 2) {
+                        ele.bhTimePicker('setType', 'custom');
+                        ele.bhTimePicker('setValue', {
+                            startTime: val_arr[0],
+                            endTime: val_arr[1]
+                        });
+                    }
+                }
+            },
+            "getValue": function(ele, formData) {
+                var rangeValue = ele.bhTimePicker('getValue');
+                var sValue = (rangeValue.startTime || '') + ',' + (rangeValue.endTime || '');
+                return sValue === ',' ? '' : sValue;
+            },
+            "disable": function(ele) {
+                ele.attr('disabled', true);
+            },
+            "enable": function(ele) {
+                ele.attr('disabled', false);
+            }
+        },
+        "date-area": {
+            "init": function(ele, params) {
+                /**
+                 * start: {},
+                 * end: {}
+                 * 其他公共参数
+                 */
+                params.format = ele.attr('data-format') || ''
+                params.format = params.format.replace(/yyyy/, 'YYYY').replace(/-dd/, '-DD')
+                ele.bhDateAreaPicker(params);
+            },
+            "setValue": function(ele, name, val, root) {
+                if (val === '' || val === undefined || val[name] === '') {
+                    // 清空
+                    ele.bhDateAreaPicker('clear');
+                }
+                var value = val[name];
+                if ($.type(value) === 'string') {
+                    value = value.split(',');
+                }
+
+                if ($.isArray(value)) {
+                    var date = {
+                        startDate: value[0],
+                        endDate: value[1] === undefined ? '' : value[1]
+                    };
+                    ele.bhDateAreaPicker('val', date);
+                }
+
+                if ($.isPlainObject(value)) {
+                    ele.bhDateAreaPicker('val', value);
+                }
+            },
+            "getValue": function(ele, formData) {
+                var rangeValue = ele.bhDateAreaPicker('getValue');
+                var value = [rangeValue.startDate, rangeValue.endDate].join(',');
+                return value === ',' ? '' : value;
+            },
+            "disable": function(ele) {
+                ele.bhDateAreaPicker('disabled', true);
+            },
+            "enable": function(ele) {
+                ele.bhDateAreaPicker('disabled', false);
+            }
+        },
+        "cache-upload": {
+            "init": function(ele, params, options) {
+                var readonly = (ele.data('disabled') == 'true' || ele.data('disabled') == true || options.readonly);
+                var inputOptions = $.extend({}, {
+                    readonly: readonly,
+                    tooltipText: ele.attr('data-placeholder')
+                }, params);
+                ele.data('defaultoptions', inputOptions);
+                ele.cacheUpload(inputOptions);
+                ele.on('bh.file.upload.delete bh.file.upload.done', function() {
+                    ele.trigger('_formChange');
+                });
+            },
+            "setValue": function(ele, name, val, root) {
+                ele.cacheUpload('destroy');
+                ele.cacheUpload($.extend({}, ele.data('defaultoptions'), {
+                    contextPath: root,
+                    token: val[name]
+                }));
+            },
+            "getValue": function(ele, formData) {
+                return ele.cacheUpload('getFileToken');
+            },
+            "disable": function(ele) {
+                return ele.cacheUpload('disable');
+            },
+            "enable": function(ele) {
+                return ele.cacheUpload('enable');
+            },
+            "readonly": function(ele, params, options) {
+                var readonly = (ele.data('disabled') == 'true' || ele.data('disabled') == true || options.readonly);
+                var inputOptions = $.extend({}, {
+                    readonly: readonly,
+                    tooltipText: ele.attr('data-placeholder')
+                }, params);
+                ele.data('defaultoptions', inputOptions);
+                ele.cacheUpload(inputOptions);
+                ele.on('bh.file.upload.delete bh.file.upload.done', function() {
+                    ele.trigger('_formChange');
+                });
+            }
+        },
+        "direct-upload": {
+            "init": function(ele, params) {
+                var inputOptions = $.extend({}, params);
+                ele.data('defaultoptions', inputOptions);
+                ele.directUpload(inputOptions);
+            },
+            "setValue": function(ele, name, val, root) {
+                ele.directUpload('destroy');
+                ele.directUpload($.extend({}, ele.data('defaultoptions'), {
+                    contextPath: root,
+                    token: val[name]
+                }));
+            },
+            "getValue": function(ele, formData) {
+
+            },
+            "disable": function(ele) {
+
+            },
+            "enable": function(ele) {
+
+            }
+        }
+    });
+
+    WIS_EMAP_INPUT.component = (function() {
+        return $.extend({}, WIS_EMAP_INPUT.core, {});
+    })();
+
+
+    WIS_EMAP_INPUT.allValidateRules = (function() {
+        return $.extend({}, WIS_EMAP_INPUT.validateRules, {});
+    })();
+
+    /**
+     * @method extendValidateRule
+     * @description 扩展校验规则
+     * @param {Object} rule - 添加的校验规则
+     * @param {String} rule.name - 校验规则名称，使用时将其配置在字段模型的checkType属性上
+     * @param {RegExp} rule.regex - 校验规则的正则表达式，与func 二选一必填
+     * @param {Function} rule.func - 校验规则的处理函数，与func 二选一必填，带参数 value - 字段的值，函数返回Boolean，表示检验通过或者不通过；&lt;br> 
+     * 若是联动校验， 则带参数为 value - 字段的值， filed - 联动字段name， element - 表单DOM
+     * @param {String} rule.alertText - 校验提示文字，其中使用 '* '字符串来代替字段的caption，&lt;br>
+     * 若是联动校验， 使用'*1'代表当前字段caption，使用'*2'代表联动字段的caption
+     * @example 
+     * WIS_EMAP_INPUT.extendValidateRule({
+     *  name: 'test',
+     *  alertText: '* 不正确',
+     *  regex: /\d+/
+     * })
+     */
+    WIS_EMAP_INPUT.extendValidateRule = function(rule) {
+        if (WIS_EMAP_INPUT.allValidateRules[rule.name]) {
+            return console &amp;&amp; console.error(rule.name + $.i18n('bh-fi-checkRuleExist'));
+        }
+        WIS_EMAP_INPUT.allValidateRules[rule.name] = rule;
+    };
+
+
+    function _initDateInput(ele, params) {
+        var xtype = ele.attr('xtype');
+
+        var inputOptions = $.extend({}, {
+            format: 'YYYY-MM',
+            showClear: true,
+            useCurrent: false
+                // useCurrent: 
+        }, params);
+        if (xtype == 'date-local') {
+            inputOptions.format = 'YYYY-MM-DD';
+        } else if (xtype == 'date-full') {
+            inputOptions.format = ele.data('format') ? ele.data('format') : 'YYYY-MM-DD HH:mm:ss';
+            // inputOptions.showTimeButton = true;
+        } else if (xtype == 'date-ym') {
+            inputOptions.format = 'YYYY-MM';
+            inputOptions.viewMode = 'months';
+        }
+        inputOptions.format = ele.data('format') || inputOptions.format;
+        inputOptions.format = inputOptions.format.replace(/yyyy/g, 'YYYY').replace(/\-dd/, '-DD');
+        if (inputOptions.width !== undefined) {
+            delete inputOptions.width;
+        }
+        ele.bhDateTimePicker(inputOptions);
+
+        if (ele.data('disabled')) {
+            ele.bhDateTimePicker('disabled', true);
+        }
+
+        ele.on('dp.change', function() {
+            ele.trigger('_formChange')
+        })
+    }
+
+    function _dateSetValue(ele, name, val, root) {
+        ele.bhDateTimePicker('setValue', val[name] !== undefined ? val[name] : "");
+    }
+
+    function _dateGetValue(ele, formData) {
+        return ele.bhDateTimePicker('getValue');
+    }
+
+    function _enableDateInput(ele) {
+        ele.bhDateTimePicker('disabled', false);
+    }
+
+    function _disableDateInput(ele) {
+        ele.bhDateTimePicker('disabled', true);
+    }
+
+
+})(window.WIS_EMAP_INPUT = window.WIS_EMAP_INPUT || {});</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:10:02 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

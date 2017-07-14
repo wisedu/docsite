@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapImport/emapImportComponent.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapImport/emapImportComponent.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function($) {
+    /***
+     * @param  {} opt
+     * {
+     *  app
+     *  module
+     *  page
+     *  action
+     *  preCallback
+     *  importCallback
+     *  closeCallback
+     *  closeConfirmCallback
+     *  autoClose
+     *  tplUrl
+     *  downloadTplName //重命名下载导入模板
+     *  params:{
+     *      read
+     *      readTemplate
+     *      readImport
+     *  },
+     *  adaptor // 指定合适的后端处理实例，支持'EMAP_IMPORT_CACHE'(默认)/'EMAP_IMPORT_DIRECT'或其他自定义类型
+     *  
+     * }
+     */
+
+    /**
+     * @module emapImport
+     * @alias 导入
+     */
+    /**
+     * 导入组件
+     * @method emapImport
+     * @param  {object} opt 初始化组件参数
+     * @param {String} app - 应用名
+     * @param {String} module - 模型名称
+     * @param {String} page - 页面名称
+     * @param {String} action - 动作名称
+     * @param {String} [tplUrl] - 模板下载地址
+     * @prop  {Number} [queryTimes] - 轮询导入进度间隔, 单位ms，默认1000
+     * @param {String} [downloadTplName] - 重命名下载导入模板的名称
+     * @param {Boolean} [autoClose=false] - 导入完成后是否自动关闭弹窗
+     * @param {Function} [preCallback] - 弹窗弹出后的回调
+     * @param {Function} [importCallback] - 导入请求成功后的回调
+     * @param {Function} [closeCallback] - 导入弹窗关闭的回调
+     * @param {Function} [closeConfirmCallback] - 点击【关闭弹窗】按钮的回调
+     * @param {Object} [params] - 额外参数
+     * @param {Object} [params.readTemplate] - 下载模板请求的read参数
+     * @param {Object} [params.readImport] - 导入请求的read参数
+     * @param {Object} [adaptor] - 指定合适的后端处理实例，支持'EMAP_IMPORT_CACHE'(默认)/'EMAP_IMPORT_DIRECT'或其他自定义类型
+     * @example
+    $.emapImport({
+        contextPath: contextPath,
+        app: "student_app",
+        downloadTplName:'下载的导入模板',
+        module: "modules",
+        page: "xsxxdbwh",
+        action: "T_PXXX_XSJBXX_ADD",
+        adaptor // 指定合适的后端处理实例，支持'EMAP_IMPORT_CACHE'(默认)/'EMAP_IMPORT_DIRECT'或其他自定义类型
+        preCallback: function() {
+            
+        },
+        closeCallback: function() {
+            $('#emapdatatable').emapdatatable('reload');
+        },
+    });
+     */
+
+    var defaultQueryTimes = 1000;
+
+    $.emapImport = function(opt) {
+        opt = convertOpt(opt);
+        var option = {
+            title: $.i18n('bh-ip-importDatas'),
+            btns: {},
+            params: {
+                height: 450,
+                close: function($dom, e) {
+                    if ($.isFunction(opt.closeCallback)) {
+                        opt.closeCallback($dom, e);
+                    }
+                }
+            }
+        };
+        var view = new WIS_IMPORT_VIEW(option, opt.queryTimes || defaultQueryTimes);
+        view.show();
+        if (opt.preCallback) {
+            opt.preCallback();
+        }
+
+        emapImportData.call(view.getUploadBtn(), opt, view);
+    };
+
+    function getAdaptor(opt) {
+        // opt.adaptor = window[opt.adaptor || window['EMAP_IMPORT_CACHE'];
+        return window[opt.adaptor || 'EMAP_IMPORT_CACHE'];
+    }
+
+    /***
+     * 导入组件行为控制方法
+     * @param  {object} opt    控制参数  
+     * @param  {object} view  导入窗口实例
+     */
+    function emapImportData(opt, view) {
+        // 检查传入的后端 adaptor 是否存在
+        var adaptor = getAdaptor(opt);
+        if (!adaptor) {
+            console.error('The import adaptor is invalid :' + opt.adaptor);
+            return;
+        }
+
+        // 下载导入模板参数
+        var downTplData = {
+            app: opt.app, // *
+            module: opt.module, // *
+            page: opt.page, // *
+            action: opt.action, // *
+            storeId: opt.storeId ? opt.storeId : 'imexport'
+        };
+
+        if (opt.params) {
+            $.extend(downTplData, opt.params);
+        }
+
+        // 用于 adaptor init
+        var options = $.extend({}, opt, {
+            config: {},
+            autoUpload: false,
+            multiple: false,
+            storeId: (opt.storeId ? opt.storeId : 'file'),
+            fileInput: view.getUploadBtn(),
+            onUploading: function(result, data) {
+                view.renderImportTempFileResult(result);
+
+                view.getImportConfirmBtn().off('click').on('click', function() {
+                    if ($(this).attr('disabled')) {
+                        return;
+                    }
+                    view.renderImportingFileProgress();
+                    data.submit();
+                });
+            },
+            onRownumImported: function(resp) {
+                view.renderImportRownumResult(resp);
+            },
+            onFileImported: function(json) {
+                if (json.status == 1) {
+                    if (json.key) {
+                        var queryTimes = opt.queryTimes || defaultQueryTimes;
+                        var load = function() {
+                            clearTimeout(view.importProgressTimer);
+                            adaptor.getImportProgress(opt, { key: json.key }).done(function(pro) {
+                                view.changeProgressBar(pro);
+                                if (pro.WCZT === '1') {
+                                    var result = {
+                                        status: 1,
+                                        success: pro.CGTS,
+                                        total: pro.ZS,
+                                        attachment: pro.ATTACHMENT
+                                    };
+                                    if (adaptor.getDownloadResultUrl) {
+                                        result.downLoadUrl = adaptor.getDownloadResultUrl(opt, result);
+                                    }
+                                    return view.renderImportCompleteResult(result, opt);
+                                }
+                                if (pro.WCZT === '0') {
+                                    view.importProgressTimer = setTimeout(load, queryTimes);
+                                }
+                            }).fail(function() {
+                                view.renderImportCompleteResult({ msg: '网络错误' });
+                            });
+                        };
+                        load();
+                    } else {
+                        if (adaptor.getDownloadResultUrl) {
+                            json.downLoadUrl = adaptor.getDownloadResultUrl(opt, json);
+                        }
+                        view.renderImportCompleteResult(json, opt);
+                    }
+                } else {
+                    view.renderImportCompleteResult(json);
+                }
+            },
+            onImportError: function() {
+                view.renderImportCompleteResult({
+                    attachment: true
+                });
+            }
+        });
+
+        adaptor.init(view.$window, options, downTplData);
+        bindBtnAction(view, opt, downTplData);
+    }
+
+    /***
+     * 绑定事件
+     */
+    function bindBtnAction(view, opt, downTplData) {
+        // 点击重新上传
+        view.getReImportBtn().on('click', function() {
+            if (document.documentMode == 9) {
+                view.renderReUploadBehaviour();
+            } else {
+                view.getUploadBtn().trigger('click');
+            }
+        });
+
+        //下载导入模板
+        view.getDownloadImportTplBtn().click(function() {
+            if (opt.tplUrl) {
+                location.href = opt.tplUrl;
+            } else {
+                downTplData = differentiateDownloadOrImport(downTplData);
+                var data = $.extend({}, downTplData);
+                data.filename = downTplData.filename || opt.downloadTplName || '';
+                var adaptor = getAdaptor(opt);
+                adaptor.downloadImportTpl &amp;&amp; adaptor.downloadImportTpl(opt, data);
+            }
+        });
+
+        //关闭弹窗
+        view.getCloseBtn().on('click', function() {
+            if ($.isFunction(opt.closeConfirmCallback)) {
+                opt.closeConfirmCallback();
+            }
+            view.hide();
+        });
+    }
+
+    // 区分 下载模板和导入数据的read
+    function convertOpt(opt) {
+        if (opt.params &amp;&amp; opt.params.read) {
+            opt.params.readTemplate = opt.params.readImport = opt.params.read;
+            delete opt.params.read;
+        } else if (opt.params &amp;&amp; opt.params.readTemplate &amp;&amp; opt.params.readImport) {
+            if (opt.params.readTemplate === opt.params.readImport) {
+                console &amp;&amp; console.error('readTemplate 与 readImport不能相同!');
+            }
+        }
+        return opt;
+    }
+
+    // 区分 下载模板和导入数据的read
+    function differentiateDownloadOrImport(downTplData) {
+        downTplData.read &amp;&amp; delete downTplData.read;
+        if (downTplData.readTemplate) {
+            downTplData.read = downTplData.readTemplate;
+        }
+        downTplData.actionTemplate &amp;&amp; (downTplData.action = downTplData.actionTemplate);
+        return downTplData;
+    }
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:10:02 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

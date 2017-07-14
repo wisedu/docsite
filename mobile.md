@@ -197,18 +197,39 @@ ios 可以利用 safari 进行调试
 4. 如果没有iOS设备，也可以在Xcode中模拟一台，点击顶部“Xcode”→“Open Developer Tool”→“iOS
 Simulator”即可打开一个iOS设备的模拟器，并且模拟器里面Safari打开的页面，也是能通过上个步骤中MAC上的Safari调试。
 
+
 ### 6.3、应用内真机调试
 
 * Android 下载开发版的移动门户可以实现和6.2一样的远程调试 webview [https://www.pgyer.com/lDDL](https://www.pgyer.com/lDDL)
 * 开发者可以让测试人员在应用管理平台建立一个测试 App，在应用管理平台上你将该应用的 ip 指向你本地, 这时候你就可以在 app
 内调试你开发的小应用了
+* [http://www.pgyer.com/cpdaily](http://www.pgyer.com/cpdaily)
+* 微信调试，各种WebView样式调试工具 (https://github.com/wuchangming/spy-debugger)
+
 
 ## 7、打包上线
+
+目的通过手机访问今日校园客户端 -> 服务 找到你发布的应用，进行功能自测
+
+需要准备如下工作：
+
+1. 注册开发者账号 [campusphere开发者中心](http://www.campusphere.cn/appcenter)
+2. 注册新应用的信息，具体内容见下图
+3. 下载开发文件 app_info.xml 放入项目根目录，通过源代码打包，上传安装包，并通知测试部署赋权
+4. 在今日校园客户端中打开。 amptest环境 = 晓庄学院；ehall.wisedu.com环境 = 金智大学
+
+![](/assets/Snip20170608_3.png)
+
+* 创建新版本，命名要求：swm + 应用名称的拼音缩写 + app，如：swmlxapp = 移动离校
+* 授权地址配置：/sys/funauthapp/qxgl.do?appName=swmsskqapp&appId=4956930460074051&min=1
+
 
 应用开发完成后，需要打包上线，框架层面提供命令打包
 
 ```
 npm run deploy
 ```
-这个命令会在项目目录下生成一个 zip 包，zip 包的名字就是在初始化项目脚手架的时候询问的名字，这个 zip 交给项目负责人，或者放在服务器端已以 H5的形式发布或者放入应用管理平台以 Hybrid 形式发布
 
+这个命令会在项目目录下生成一个 zip 包，zip 包的名字就是在初始化项目脚手架的时候询问的名字。
+
+需要在项目根目录下放置app_info.xml 和 permission.xml两个文件，否则将无法生成安装包

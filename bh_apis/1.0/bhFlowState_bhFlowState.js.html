@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhFlowState/bhFlowState.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhFlowState/bhFlowState.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module flowState
+ * @description 流程提示条
+ * @example
+$control.flowState({
+    width: '100%',
+    flowStateData: [{
+        content: "提交成功",
+        status: "success",
+        statusDescription: "成功",
+        popHtml: "&lt;div class='bh-flowState-time'>审核时间：&lt;span>&lt;/span>&lt;/div>&lt;div class='bh-flowState-suggestion'>审核意见：&lt;span>&lt;/span>&lt;/div>",
+        isShowPop: true
+    }, {
+        content: "审核中",
+        status: "operation",
+        statusDescription: "进行中"
+    }, {
+        content: "审核失败",
+        status: "fail",
+        statusDescription: "失败"
+    }, {
+        content: "审核未开始",
+        status: "not started",
+        statusDescription: "未开始"
+    }]
+});
+ */
+(function($) {
+	/**
+	 * 这里是一个自运行的单例模式。
+	 */
+	$.fn.flowState = flowState;
+
+	/**
+	 * @memberof module:flowState
+	 * @description 内置默认值
+	 * @prop {object}  defaults
+	 * @prop {string}  defaults.width - 流程提示条的宽度
+	 * @prop {object}  defaults.flowStateData - 流程提示的步骤的参数的集合
+	 * @prop {string}  defaults.id - 流程提示的步骤的id号
+	 * @prop {string}  defaults.content - 流程提示的步骤的主要内容
+	 * @prop {string}  defaults.status - 流程提示的步骤的状态，成功：success; 失败：fail; 操作中：operation ; 未开始： not started
+	 * @prop {string}  defaults.statusDescription - 流程提示的步骤的状态的描述，成功，失败，审核中，还没开始（为空）
+	 * @prop {boolean}  defaults.isShowPop -流程提示的步骤是否展示气泡弹窗
+	 * @prop {string}  defaults.popHtml - 流程提示的步骤展示的气泡弹窗的dom元素,dom元素的样式需要自己写
+	 */
+	//isShowPop的功能样式不正确,先隐藏掉 --- ghlong 2016、11、14
+	$.fn.flowState.defaultOptions = {
+		width: '100%',
+		flowStateData: [{
+			id: "1",
+			content: "个人提交",
+			status: "success",
+			statusDescription: "提交成功",
+			popHtml: "",
+			isShowPop: false
+		}]
+	};
+
+	/*初始化flowState**/
+
+	function ProgressBar(element, options) {
+		this.options = $.extend({}, $.fn.flowState.defaultOptions, options);
+		//将dom jquery对象赋值给插件，方便后续调用
+		this.$element = $(element);
+		appendHtml(this.options, this.$element);
+		settingWidth(this.options, this.$element);
+		openPopover(this.options);
+	}
+
+	ProgressBar.prototype = {
+		/**
+         * 重置流程提示步骤的状态
+         * @method resetFlowStatus
+         * @param {object} 需要重置的步骤的参数集合
+         * @prop {NaN}  options.index - 需要重置的步骤的id，从1开始
+         * @prop {string}  options.resetStatus - 需要重置的步骤的状态
+         * @prop {string}  options.resetStatusDecription - 需要重置的步骤的状态的描述，成功，失败，审核中，还没开始（为空）
+	 	 * @prop {boolean}  options.isShowPop -需要重置的步骤是否展示气泡弹窗
+	 	 * @prop {string}  options.popHtml - 需要重置的步骤展示的气泡弹窗的dom元素
+         * @example
+        $control.flowState("resetFlowStatus", {
+	        "index": 2,
+	        "resetStatus": "success",
+	        "resetStatusDecription": "审核成功",
+	        "isShowPop": true,
+	        "popHtml": "&lt;div class='bh-flowState-time'>审核时间：&lt;span>&lt;/span>&lt;/div>&lt;div class='bh-flowState-suggestion'>审核意见：&lt;span>&lt;/span>&lt;/div>"
+	    });
+         */
+		resetFlowStatus: function(options) {
+			//isShowPop的功能样式不正确,先隐藏掉 --- ghlong 2016、11、14
+			options = $.extend({}, {
+				index: NaN, //元素从1开始算起
+				resetStatus: 'success', //状态为成功：success; 失败：fail; 操作中：operation ; 未开始： not started
+				resetStatusDecription: '成功',
+				isShowPop: false,
+				popHtml: ""
+			}, options);
+			resetFlowStatus(options, this);
+		}
+
+	};
+
+	function openPopover(options) {
+		//鼠标悬浮
+		var length = options.flowStateData.length;
+		for (var i = 0; i &lt; length; i++) {
+			openToolTip(options.flowStateData[i], i, length);
+		}
+	}
+	// 如果当前的元素的index为0的话就加一个96的做编剧，如果是最后一个话就加一个-96的做编剧
+	function openToolTip(data, index, length) {
+
+		var left = 0;
+		var toolTipDiv = ($('.bh-flowState-box')[index]);
+
+		if (index === 0) {
+			left = 96;
+		} else if (index === (length - 1)) {
+			left = -96;
+		}
+
+		$(toolTipDiv).jqxTooltip('destroy');
+
+		if (data.isShowPop) {
+			$(toolTipDiv).jqxTooltip({
+				position: 'bottom',
+				autoHide: false,
+				top: 10,
+				left: left,
+				showArrow: false,
+				closeOnClick: false,
+				content: data.popHtml
+			});
+			$('.jqx-tooltip-main').css({
+				'background-color': '#ffffff',
+				'box-shadow': '0 4px 20px #bbb'
+
+			});
+			$(toolTipDiv).on('mouseout', function() {
+				$(toolTipDiv).jqxTooltip('close');
+			});
+		}
+	}
+
+	function appendHtml(options, $element) {
+		var stateData = getData(options);
+		var boxHtml = addBoxContainer(stateData);
+		var flowStateHtml = '&lt;div class="bh-flowState bh-clearfix">' + boxHtml + '&lt;/div>';
+		$element.html(flowStateHtml);
+	}
+
+	function addBoxContainer(stateData) {
+		if (stateData) {
+			var stateDataLen = stateData.length;
+			var containerHtml = "";
+			if (stateDataLen !== 0) {
+				for (var i = 0; i &lt; stateDataLen; i++) {
+					containerHtml += getContentFromData(stateData, i + 1, stateDataLen);
+				}
+			}
+			return containerHtml;
+		}
+	}
+	//根据数据加载模板以及样式
+	function getContentFromData(data, index, num) {
+		var currentData = data[index - 1];
+		var prevData = data[index - 2];
+		var lineNum = num - 1;
+		var circleStatus = getCircleStatusClass(currentData);
+		var lineStatus = getLineStatueClass(currentData);
+		var cls = [];
+		//去掉第一个的before和最后一个的after
+		if (index === 1) {
+			cls.push('bh-flowState-hideLeft');
+		} else if (index === num) {
+			cls.push('bh-flowState-hideRight');
+		}
+		if (prevData &amp;&amp; prevData.status === 'success') {
+			cls.push('bh-flowState-prev-success');
+		}
+		var html = '&lt;div class="bh-flowState-box ' + cls.join(' ') + '">' +
+			'&lt;div class="bh-flowState-num-circle ' + circleStatus + '">' + index + '&lt;/div>' +
+			'&lt;div class="bh-flowState-word">' +
+			'&lt;div class="bh-flowState-detail">' + currentData.content + '&lt;/div>' +
+			'&lt;a class="bh-flowState-status ' + circleStatus + '">' + currentData.statusDescription + '&lt;/a>' +
+			'&lt;/div>' +
+			'&lt;/div>' +
+			'&lt;div class="bh-flowState-line ' + lineStatus + ' " style="width:calc((100% - 96*' + num + 'px) / ' + lineNum + ')">' +
+			'&lt;/div>';
+		return html;
+
+	}
+
+	function getCircleStatusClass(data) {
+		var map = {
+			'success': 'bh-flowState-success',
+			'fail': 'bh-flowState-fail',
+			'operation': 'bh-flowState-operation'
+		};
+		return map[data.status || data.resetStatus];
+	}
+	// 除了成功的时候，横线有颜色，其他时候都没有颜色
+	function getLineStatueClass(data) {
+		var lineMap = {
+			'success': 'bh-flowState-line-succes'
+		};
+		return lineMap[data.status || data.resetStatus];
+	}
+	// 获取reset之前的circle和状态说明文字的样式
+	function getElePreClass($circle) {
+		var preClass = "";
+		if ($circle.hasClass("bh-flowState-success")) {
+			preClass = "bh-flowState-success";
+		} else if ($circle.hasClass("bh-flowState-fail")) {
+			preClass = "bh-flowState-fail";
+		} else if ($circle.hasClass("bh-flowState-operation")) {
+			preClass = "bh-flowState-operation";
+		}
+		return preClass;
+	}
+	// 获取reset之前的横线的样式
+	function getLinePreClass($circle) {
+		var preLineClass = "";
+		if ($circle.hasClass("bh-flowState-line-succes")) {
+			preLineClass = "bh-flowState-line-succes";
+		}
+		return preLineClass;
+	}
+
+	function getData(options) {
+		return options.flowStateData;
+	}
+
+	function settingWidth(options, $element) {
+		$element.css('width', options.width);
+		$element.find('.bh-flowState-line:last').css('width', '0');
+	}
+
+
+	function resetFlowStatus(options, progrossBar) {
+		var index = options.index - 1;
+		var boxEle = progrossBar.$element.find('.bh-flowState-box');
+		var circleEle = progrossBar.$element.find('.bh-flowState-num-circle');
+		var statusEle = progrossBar.$element.find('.bh-flowState-status');
+		var lineEle = progrossBar.$element.find('.bh-flowState-line');
+		var resetCircleColor = getCircleStatusClass(options);
+		var resetLineColor = getLineStatueClass(options);
+		var elePreColor = getElePreClass($(circleEle[index])); //因为circle和status用同一种颜色，所以如果获取到circle以前的颜色就能获取到staus以前的颜色
+		var linePreColor = getLinePreClass($(lineEle[index]));
+		$(statusEle[index]).text(options.resetStatusDecription);
+		if (options.resetStatus === 'success') {
+			$(boxEle[index + 1]).addClass('bh-flowState-prev-success');
+		} else {
+			$(boxEle[index + 1]).removeClass('bh-flowState-prev-success');
+		}
+		$(circleEle[index]).removeClass(elePreColor);
+		$(statusEle[index]).removeClass(elePreColor);
+		$(lineEle[index]).removeClass(linePreColor);
+		$(circleEle[index]).addClass(resetCircleColor);
+		$(statusEle[index]).addClass(resetCircleColor);
+		$(lineEle[index]).addClass(resetLineColor);
+		openToolTip(options, index, circleEle.length);
+	}
+
+	function flowState(options, params) {
+		var instance;
+		instance = this.data('flowState');
+		/**
+		 * 判断插件是否已经实例化过，如果已经实例化了则直接返回该实例化对象
+		 */
+		if (!instance) {
+			return this.each(function() {
+				//将实例化后的插件缓存在dom结构里（内存里）
+				return $(this).data('flowState', new ProgressBar(this, options));
+			});
+		}
+		if (options === true) {
+            return instance;
+        }
+		/**
+		 * 优雅处： 如果插件的参数是一个字符串，则 调用 插件的 字符串方法。
+		 * 如 $('#id').ProgressBar('doSomething') 则实际调用的是 $('#id).ProgressBar.doSomething();
+		 * doSomething是刚才定义的接口。
+		 * 这种方法 在 juqery ui 的插件里 很常见。
+		 */
+		if ($.type(options) === 'string') {
+            instance[options](params);
+        }
+		return this;
+	}
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

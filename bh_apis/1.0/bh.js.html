@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bh.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bh.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>+(function () {
+    if (typeof (Waves) !== "undefined") {
+        Waves.attach('.bh-btn:not(.bh-disabled):not([disabled])');
+        Waves.init();
+    }
+
+    var $body = $('body');
+    //选择按钮组点击事件监听
+    $body.on('click', '[bh-btn-role="bhSelectBtnGroup"]', function (e) {
+        var $targetObj = $(e.target || e.srcElement);
+        if ($targetObj.hasClass('bh-btn')) {
+            var $group = $(this);
+            $group.find('.bh-btn').removeClass('bh-active');
+            $targetObj.addClass('bh-active');
+        }
+    });
+})();
+
+
+/* ========================================================================
+ * Bootstrap: tab.js v3.3.4
+ * http://getbootstrap.com/javascript/#tabs
+ * ========================================================================
+ * Copyright 2011-2015 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
++
+
+function ($) {
+    'use strict';
+
+    // TAB CLASS DEFINITION
+    // ====================
+
+    var Tab = function (element) {
+        this.element = $(element);
+    };
+
+    Tab.VERSION = '3.3.4';
+
+    Tab.TRANSITION_DURATION = 150;
+
+    Tab.prototype.show = function () {
+        var $this = this.element;
+        var $ul = $this.closest('ul:not(.dropdown-menu)');
+        var selector = $this.data('target');
+
+        if (!selector) {
+            selector = $this.attr('href');
+            selector = selector &amp;&amp; selector.replace(/.*(?=#[^\s]*$)/, ''); // strip for ie7
+        }
+
+        if ($this.parent('li').hasClass('bh-active')) {
+            return;
+        }
+
+        var $previous = $ul.find('.bh-active:last a');
+        var hideEvent = $.Event('hide.bs.tab', {
+            relatedTarget: $this[0]
+        });
+        var showEvent = $.Event('show.bs.tab', {
+            relatedTarget: $previous[0]
+        });
+
+        $previous.trigger(hideEvent);
+        $this.trigger(showEvent);
+
+        if (showEvent.isDefaultPrevented() || hideEvent.isDefaultPrevented()) {
+            return;
+        }
+
+        var $target = $(selector);
+
+        this.activate($this.closest('li'), $ul);
+        this.activate($target, $target.parent(), function () {
+            $previous.trigger({
+                type: 'hidden.bs.tab',
+                relatedTarget: $this[0]
+            });
+            $this.trigger({
+                type: 'shown.bs.tab',
+                relatedTarget: $previous[0]
+            });
+        });
+    };
+
+    Tab.prototype.activate = function (element, container, callback) {
+        var $active = container.find('> .bh-active');
+        var transition = callback &amp;&amp; $.support.transition &amp;&amp; (($active.length &amp;&amp; $active.hasClass('bh-fade')) || !!container.find('> .bh-fade').length);
+
+        function next() {
+            $active
+                .removeClass('bh-active')
+                .find('> .dropdown-menu > .bh-active')
+                .removeClass('bh-active')
+                .end()
+                .find('[data-toggle="bhTab"]')
+                .attr('aria-expanded', false);
+
+            element
+                .addClass('bh-active')
+                .find('[data-toggle="bhTab"]')
+                .attr('aria-expanded', true);
+
+            if (transition) {
+                element[0].offsetWidth; // reflow for transition
+                element.addClass('bh-in');
+            } else {
+                element.removeClass('bh-fade');
+            }
+
+            if (element.parent('.dropdown-menu').length) {
+                element.closest('li.dropdown')
+                    .addClass('bh-active')
+                    .end()
+                    .find('[data-toggle="bhTab"]')
+                    .attr('aria-expanded', true);
+            }
+            callback &amp;&amp; callback();
+        }
+
+        $active.length &amp;&amp; transition ?
+            $active
+            .one('bsTransitionEnd', next)
+            .emulateTransitionEnd(Tab.TRANSITION_DURATION) :
+            next();
+
+        $active.removeClass('bh-in');
+    };
+
+
+    // TAB PLUGIN DEFINITION
+    // =====================
+
+    function Plugin(option) {
+        return this.each(function () {
+            var $this = $(this);
+            var data = $this.data('bs.tab');
+
+            if (!data) {
+                $this.data('bs.tab', (data = new Tab(this)));
+            }
+            if (typeof option == 'string') {
+                data[option]();
+            }
+        });
+    }
+
+    var old = $.fn.tab;
+
+    $.fn.tab = Plugin;
+    $.fn.tab.Constructor = Tab;
+
+
+    // TAB NO CONFLICT
+    // ===============
+
+    $.fn.tab.noConflict = function () {
+        $.fn.tab = old;
+        return this;
+    };
+
+
+    // TAB DATA-API
+    // ============
+
+    var clickHandler = function (e) {
+        e.preventDefault();
+        Plugin.call($(this), 'show');
+    };
+
+    $(document).on('click.bs.tab.data-api', '[data-toggle="bhTab"]', clickHandler);
+
+}(jQuery);
+
+
++
+
+function ($) {
+    'use strict';
+
+    $(document).on("click", ".bh-table tr", function (e) {
+        if (e.target.nodeName == "INPUT") {
+            return;
+        }
+        var _self = $(this);
+        var table = _self.closest("table.bh-table");
+        var tbody = table.children("tbody");
+
+        if (_self.hasClass("bh-ch-active")) {
+            _self.removeClass("bh-ch-active");
+            ampTableGetColTds(_self, 0, "bh-ch-active");
+        } else {
+            table.find("tr.bh-ch-active, td.bh-ch-active").removeClass("bh-ch-active");
+            _self.addClass("bh-ch-active");
+            ampTableGetColTds(_self, 1, "bh-ch-active");
+        }
+    }).on("mouseover", ".bh-table td", function () {
+        var _self = $(this);
+        _self.parent("tr").addClass("bh-ch-hover");
+        ampTableGetColTds(_self, 1, "bh-ch-hover");
+
+    }).on("mouseout", ".bh-table td", function () {
+        var _self = $(this);
+        _self.parent("tr").removeClass("bh-ch-hover");
+        ampTableGetColTds(_self, 0, "bh-ch-hover");
+    });
+
+    function ampTableGetColTds($ele, type, className) {
+        /*var table = $ele.closest("table.bh-table-cross-highlight");
+        var index = $ele.index();
+        table.find("tr").each(function(){
+            var td = $(this).children("td:eq(" + index + ")");
+            if (type) {
+                td.addClass(className);
+            }else {
+                td.removeClass(className);
+            }
+        });*/
+    }
+
+}(jQuery);
+
+
+(function () {
+    $.bhDefaults = $.bhDefaults || {};
+    /**
+     * @memberof module:bhDialog
+     * @description 参数说明
+     * @property {String} [type] 可以传三个值，success/warning/danger，与iconType二选一，必传一个
+     * @property {String} [iconType] 同type, type不存在时，取iconType，与type二选一，必传一个
+     * @property {String} title 标题
+     * @property {String} [content] 弹框内容
+     * @property {String} [className] 自定义的弹框样式
+     * @property {Array} buttons 按钮
+     * @property {String} [buttons.text] 按钮文字
+     * @property {className} [buttons.className] 自定义的按钮样式
+     * @property {Function} [buttons.callback] 按钮点击回调
+     * @property {Number} [width=370] 弹框宽度
+     * @property {Number/String} [height='auto'] 高度
+     */
+    $.bhDefaults.Dialog = {
+        type: '', //可以传三个值，success/warning/danger
+        title: '',
+        content: '',
+        className: '',
+        buttons: [{
+            text: '确定',
+            className: 'bh-btn-primary',
+            callback: null
+        }],
+        width: 370,
+        height: "auto"
+    };
+    /**
+     * @module bhDialog
+     * @description bhDialog插件
+     * @example
+     $.bhTip({
+        title:'标题',
+        content:'内容',
+        subContent:'折叠内容',
+        type:'success',
+        buttons:[{text:'确定',className:'bh-btn-primary'}]
+     })
+     */
+    $.bhDialog = function (options) {
+        var bodyHtml = $("body");
+        var params = $.extend({}, $.bhDefaults.Dialog, options || {});
+        var g = {};
+        var po = {
+            _init: function() {
+                var dialog = $("&lt;div class='bh-bhdialog-container'>&lt;/div>");
+                var dialogId = po.NewGuid();
+                dialog.attr("id", "dialog" + dialogId);
+
+                var dialogModal = $("&lt;div class='bh-modal'>&lt;/div>");
+
+                var dialogWin = $("&lt;div class='bh-pop bh-card bh-card-lv4 bh-dialog-con'>&lt;/div>");
+                if (params.width) {
+                    dialogWin.width(params.width);
+                }
+                if (params.className) {
+                    dialogWin.addClass(params.className);
+                }
+
+                //根据iconType添加icon相应的dom
+                po._createDialogIcon(dialogWin);
+
+                //根据内容和按钮，添加对话框正文相应的dom
+                po._createDialogBody(dialogWin, dialogId);
+
+                dialogModal.append(dialogWin);
+
+                dialog.append(dialogModal);
+
+                //灰色的蒙版层
+                dialog.append($('&lt;div class="bh-modal-backdrop">&lt;/div>'));
+                bodyHtml.append(dialog);
+                //灰色的蒙版层
+                //浏览器始终存在滚动条,故body上的右侧缩进可不设 ---龙光辉 2016-9-13
+                // po._checkScrollbar();
+                po._checkScrollbar();
+                if(bodyHtml.hasClass("bh-has-modal-body")){
+                    po.isRetainModal = true;
+                }else{
+                    po.isRetainModal = false;
+                    bodyHtml.addClass("bh-has-modal-body");
+                }
+                po._resetPos(dialogWin);
+            },
+            _resetPos: function (dialogWin) {
+                //重新计算dialogWin的位置，让其垂直方向居中
+                var _clientHeight = document.documentElement.clientHeight; //可视区域的高度
+                var _contentHeight = dialogWin.height();
+
+                dialogWin.css("margin-top", (_clientHeight - _contentHeight) / 2);
+            },
+            _checkScrollbar: function () {
+                var fullWindowWidth = window.innerWidth;
+                if (!fullWindowWidth) { // workaround for missing window.innerWidth in IE8
+                    var documentElementRect = document.documentElement.getBoundingClientRect();
+                    fullWindowWidth = documentElementRect.right - Math.abs(documentElementRect.left);
+                }
+                var bodyIsOverflowing = document.body.clientWidth &lt; fullWindowWidth;
+                var scrollbarWidth = po._measureScrollbar();
+                po._setScrollbar(bodyIsOverflowing, scrollbarWidth);
+            },
+            _setScrollbar: function (bodyIsOverflowing, scrollbarWidth) {
+                var bodyPad = parseInt((bodyHtml.css('padding-right') || 0), 10);
+                g.originalBodyPad = document.body.style.paddingRight || '';
+                if (bodyIsOverflowing) {
+                    bodyHtml.css('padding-right', bodyPad + scrollbarWidth);
+                }
+            },
+            _resetScrollbar: function () {
+                bodyHtml.css('padding-right', g.originalBodyPad);
+            },
+            _measureScrollbar: function () { // thx walsh
+                var scrollDiv = document.createElement('div');
+                scrollDiv.className = 'bh-modal-scrollbar-measure';
+                bodyHtml.append(scrollDiv);
+                var scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+                bodyHtml[0].removeChild(scrollDiv);
+                return scrollbarWidth;
+            },
+            _removeDialog: function (dialogId) {
+                $("#dialog" + dialogId).remove();
+                po._resetScrollbar();
+                if(po.isRetainModal){
+                    po.isRetainModal = false;
+                }else{
+                    bodyHtml.removeClass("bh-has-modal-body");
+                }
+            },
+            _createDialogBody: function (dialogWin, dialogId) {
+                //组装body
+                var dialogBody = $("&lt;div class='bh-dialog-content'>&lt;/div>");
+                //设置对话框的正文
+                var dialogContent = $('&lt;div class="content">&lt;/div>');
+                dialogContent.html(po._getContent(params));
+
+                dialogBody.append(dialogContent);
+
+                po._createDialogBtn(dialogBody, dialogId);
+
+                // body 元素事件绑定
+                if (params.subContent) {
+                    $('.bh-dialog-expand', dialogBody).on('click', function () {
+                        $(this).hide();
+                        $('.bh-dialog-subContent', dialogBody).show();
+                    });
+                    $('.bh-dialog-collapse', dialogBody).on('click', function(){
+                        $(this).parent().hide();
+                        $('.bh-dialog-expand', dialogBody).show();
+                    })
+                }
+
+                dialogWin.append(dialogBody);
+
+                if (params.content == '') {
+                    dialogWin.find('.content').css('height', '80px');
+                    dialogWin.addClass('bh-dialog-minHeight');
+                }
+            },
+            _getContent: function (params) {
+                if (params.subContent) {
+                    var content = params.content;
+                    content += '&lt;a href="javascript:void(0)" class="bh-dialog-expand bh-mh-8">详情&lt;/a>';
+                    content += '&lt;div class="bh-dialog-subContent" style="display: none;word-break: break-all;">' + params.subContent + '&lt;a href="javascript:void(0)" class="bh-dialog-collapse bh-mh-8">收起&lt;/a>&lt;/div>';
+                    return content;
+                } else {
+                    return params.content;
+                }
+            },
+            _createDialogBtn: function (dialogBody, dialogId) {
+                var dialogBtnContainer = $('&lt;div class="bh-dialog-center">&lt;/div>');
+                if (params.buttons &amp;&amp; params.buttons.length > 0) {
+                    var btnLen = params.buttons.length;
+                    for (var i = 0; i &lt; btnLen; i++) {
+                        var btn = po._createBtn(params.buttons[i], dialogId);
+                        dialogBtnContainer.append(btn);
+                    }
+                } else {
+                    //页面必须有一个按钮
+                    var btn = po._createBtn({
+                        text: "确定",
+                        className: "bh-btn-primary"
+                    }, dialogId);
+                    dialogBtnContainer.append(btn);
+                }
+
+                dialogBody.append(dialogBtnContainer);
+            },
+            /**
+             * 单个按钮的创建方法
+             * @param btnInfo
+             * @param dialogId
+             * @returns {*|jQuery|HTMLElement}
+             * @private
+             */
+            _createBtn: function (btnInfo, dialogId) {
+                var btn = $("&lt;a style='cursor: pointer;' class='bh-btn'>&lt;/a>");
+                if (btnInfo &amp;&amp; btnInfo.text) {
+                    btn.text(btnInfo.text);
+                }
+                if (btnInfo &amp;&amp; btnInfo.className) {
+                    btn.addClass(btnInfo.className);
+                }
+                btn.click(function () {
+                    po._removeDialog(dialogId);
+                    btnInfo.callback &amp;&amp; btnInfo.callback();
+                });
+                return btn;
+            },
+            /**
+             * 根据iconType，把icon相应的dom加到dialogWin中
+             * @param dialogWin
+             * @private
+             */
+            _createDialogIcon: function (dialogWin) {
+                if (params.type != '') {
+                    var dialogHtml = po._getDialogIconDom(params.type);
+                    dialogWin.append(dialogHtml);
+                }
+            },
+            /**
+             * 根据icon类型，返回构造成icon的dom字符串
+             * @param iconType
+             * @returns {string}
+             * @private
+             */
+            _getDialogIconDom: function (type) {
+                var iconClass = '';
+                if (type == 'success') {
+                    iconClass = 'checkcircle';
+                } else if (type == 'warning') {
+                    iconClass = 'error';
+                } else if (type == 'danger') {
+                    iconClass = 'cancel';
+                }
+                var iconDomString = '&lt;div class="bh-dialog-title-con">' +
+                    '&lt;i class="iconfont icon-setstyle icon-' + iconClass + ' bh-dialog-icon-color' + type + '">&lt;/i>' +
+                    '&lt;h2 class="bh-dialog-title-text">' + params.title + '&lt;/h2>' +
+                    '&lt;/div>';
+
+                return iconDomString;
+            },
+            /**
+             * 生成随机字符串
+             * @returns {string}
+             */
+            NewGuid: function () {
+                return (po.S4() + po.S4() + "-" + po.S4() + "-" + po.S4() + "-" + po.S4() + "-" + po.S4() + po.S4() + po.S4());
+            },
+            S4: function () {
+                return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+            }
+        };
+        if (params.type == "" &amp;&amp; params.iconType) {
+            params.type = params.iconType;
+        }
+
+        // 兼容 content为空的处理
+        if (params.content === '' || params.content === undefined) {
+            params.content = params.title;
+            params.title = "提示";
+            // if (params.type == 'success') {
+            //     params.title = "提示";
+            // } else if (params.type == 'warning') {
+            //     params.title = "警告";
+            // } else if (params.type == 'danger') {
+            //     params.title = "提示";
+            // }
+        }
+        po._init();
+    };
+}).call(this);
+
+/**
+ * radio型的label的点击样式切换
+ */
++
+
+function ($) {
+    'use strict';
+    $(document).on("click", ".bh-label-radio", function (e) {
+        var $item = $(this);
+        var container = $item.parent();
+        if (container.attr('multiple')) {
+            $item.toggleClass("bh-active");
+        } else {
+            if ($item.hasClass('bh-active')) {
+                return;
+            }
+            $item.closest(".bh-label-radio-group").find(".bh-label-radio").removeClass("bh-active");
+            $item.addClass("bh-active");
+        }
+        container.trigger('change');
+    });
+}(jQuery);
+
+/**
+ * 给单列的表单的行添加背景
+ */
++
+
+function ($) {
+    'use strict';
+    $(document).on("click", "input.bh-form-control", function (e) {
+        changeFormLineBgColor($(this));
+    });
+    $(document).on("click", "textarea.bh-form-control", function (e) {
+        changeFormLineBgColor($(this));
+    });
+    $(document).on("click", "input[type='radio']", function (e) {
+        changeFormLineBgColor($(this));
+    });
+    $(document).on("click", "input[type='checkbox']", function (e) {
+        changeFormLineBgColor($(this));
+    });
+    $(document).on("click", ".bh-row", function (e) {
+        $(this).closest(".bh-row").siblings('.bh-row').removeClass("bh-active");
+    });
+
+
+    function changeFormLineBgColor($item) {
+        var $form = $item.closest("[bh-form-role=bhForm]");
+        if ($form.length > 0 &amp;&amp; !$form.hasClass('bh-form-S')) { // 竖直表单不添加行高亮样式
+            $form.find(".bh-row").removeClass("bh-active");
+            $item.closest(".bh-row").addClass("bh-active");
+        }
+    }
+}(jQuery);
+
+
+/**
+ * 下拉按钮点击事件
+ */
++
+(function ($) {
+    'use strict';
+
+    $(document).on("click", function (e) {
+        var $dropdown = null;
+        var $target = $(e.target || e.srcElement);
+        if ($target.attr('bh-dropdown-role') === 'bhDropdown') {
+            $dropdown = $target;
+        } else if ($target.closest('[bh-dropdown-role=bhDropdown]').length > 0) {
+            $dropdown = $target.closest('[bh-dropdown-role=bhDropdown]');
+        }
+        if ($dropdown) {
+            $dropdown.find("[bh-dropdown-role=bhDropdownMenu]").toggleClass("bh-dropdown-open");
+        } else {
+            $('body').find("[bh-dropdown-role=bhDropdownMenu]").removeClass("bh-dropdown-open");
+        }
+    });
+})(jQuery);
+//纯html类型的折叠面板
+(function ($) {
+  'use strict';
+  $(document).on('click','[bh-flex-panel-role="panel-title"]',function(){
+    var $title=$(this);
+    var $panel=$title.closest('[bh-flex-panel-role="flex-panel"]');
+    if($panel.attr("flex")==="true"){
+      collapse($title,$panel);
+    }else{
+      extend($title,$panel);
+    }
+  });
+  function extend($title,$panel){
+    var $wrap=$title.siblings('[bh-flex-panel-role="panel-content-wrap"]');
+    var height=$wrap.find('[bh-flex-panel-role="panel-content"]').outerHeight();
+    $wrap.height(height);
+    $panel.attr("flex","true");
+  }
+  function collapse($title,$panel){
+    $panel.find('[bh-flex-panel-role="panel-content-wrap"]').height(0);
+    $panel.attr("flex","false");
+  }
+})(jQuery);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,2337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapDataTable.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapDataTable.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function() {
+    var Plugin;
+    var editedBg = 'cell-edited';
+    var toDeleteKey = 'isToDelete';
+    var toDeleteLine = 'to-delete-line';
+    var showToDeleteLine = 'show-to-delete';
+
+    /**
+     * @module emapdatatable
+     * @alias 表格
+     * @description 数据表格 
+     */
+    Plugin = (function() {
+        function Plugin(element, options) {
+            //将插件的默认参数及用户定义的参数合并到一个新的obj里
+            this.settings = $.extend({}, $.fn.emapdatatable.defaults, options);
+            //将dom jquery对象赋值给插件，方便后续调用
+            this.$element = $(element);
+            this.$element.attr("emap-role", "datatable").attr("emap-pagePath", this.settings.pagePath).attr("emap-action", this.settings.action);
+
+            //拼接请求地址
+            var url = this.settings.url || WIS_EMAP_SERV.getAbsPath(this.settings.pagePath).replace('.do', '/' + this.settings.action + '.do');
+
+            //前端模拟数据开发时type使用get方式
+            var ajaxMethod = this.settings.method || 'POST';
+            if (typeof window.MOCK_CONFIG != 'undefined') {
+                //qiyu 2016-7-21 将emapdatatable中的获取mock的url提取函数，在mock文件中重新定义
+                ajaxMethod = this.settings.method || getMethodMock();
+                if (typeof this.settings.url == 'undefined') {
+                    url = getURLMock(url, this.settings);
+                }
+            }
+            var params = null;
+            if (this.settings.params || this.settings.onceParams) {
+                params = $.extend({}, this.settings.params, this.settings.onceParams);
+            } else {
+                params = $.extend({}, this.settings.defaultParams);
+                params = _getQuerySetting(params);
+            }
+            //数据源
+            if (this.settings.source) {
+                this.source = this.settings.source;
+            } else {
+                this.source = {
+                    root: 'datas>' + this.settings.action + '>rows',
+                    id: this.settings.pk || 'WID', // id: "WID", 主键字段可配置  //qiyu 2016-1-16
+                    datatype: 'json',
+                    url: url,
+                    data: params || {},
+                    type: ajaxMethod,
+                    datafields: []
+                };
+            }
+
+            //qiyu 2016-7-21 将emapdatatable中的获取mock的url提取函数，在mock文件中重新定义
+            if (typeof window.MOCK_CONFIG != 'undefined') {
+                this.source = getSourceMock(this.source);
+            }
+
+            _create(this);
+        }
+
+        /**
+         * @method reload
+         * @description 刷新表格数据
+         * @param {Object} params - 附带参数
+         * @param {Object} params._gotoFirstPage - 
+         * callback 可以是function 或者是 true，true的话意味着强制跳回第一页
+         * _gotoFirstPage 如果callback为回调函数，此时需要调回第一页 则可以设置params._gotoFirstPage为true
+         * 
+         */
+        Plugin.prototype.reload = function(params, callback) {
+            /**
+             * 方法内容
+             */
+            if (!$.isEmptyObject(this.settings.defaultParams)) {
+                this.source.data = _getQuerySetting(this.settings.defaultParams);
+            }
+
+            var gotoFirstPage = params._gotoFirstPage;
+            gotoFirstPage &amp;&amp; delete params._gotoFirstPage;
+            if (!$.isEmptyObject(params)) {
+                if (!$.isEmptyObject(this.settings.defaultParams)) {
+                    try {
+                        var query = JSON.parse(params.querySetting);
+                        query.push.apply(query, JSON.parse(this.source.data.querySetting));
+                        this.source.data.querySetting = JSON.stringify(query);
+                    } catch (e) {
+                        this.source.data = params;
+                    }
+                } else {
+                    this.source.data = params;
+                }
+            }
+            if (callback === true || gotoFirstPage === true) {
+                if (!this.$element.jqxDataTable('goToPage', 0)) {
+                    this.$element.jqxDataTable('updateBoundData');
+                }
+            } else {
+                this.$element.jqxDataTable('updateBoundData');
+            }
+
+            var that = this;
+            if (typeof callback == 'function') {
+                var intervalId = setInterval(function() {
+                    if (that.$element.jqxDataTable('isBindingCompleted')) {
+                        clearInterval(intervalId);
+                        // 将callback放在 refresh后面， 避免callback中的dom操作被refresh刷新掉 zhuhui 2016-10-21
+                        that.$element.jqxDataTable('refresh');
+                        callback();
+                    }
+                }, 10);
+            }
+        };
+
+        /**
+         * @method getCurrentQueryParams
+         * @description 获取当钱表格传到后台的查询条件，包含排序
+         * @return {Object}
+         */
+        Plugin.prototype.getCurrentQueryParams = function() {
+            return this.$element.data('currentQueryParams');
+        };
+
+        /**
+         * @method reloadFirstPage
+         * @description 默认刷新表格回到首页
+         * @param {Object} params - 附带参数
+         * @param {Function} callback - 回调函数
+         */
+        Plugin.prototype.reloadFirstPage = function(params, callback) {
+            this.reload($.extend({}, params, {
+                _gotoFirstPage: true
+            }), callback);
+        };
+
+        /**
+         * @method checkedRecords
+         * @description 获取选中的数据
+         */
+        Plugin.prototype.checkedRecords = function() {
+            var selectedArr = [];
+            var rowsData = this.$element.jqxDataTable('getRows');
+            var $checkedSelector = this.$element.find('table:not([id^="pinnedtable"]) tr');
+            if (this.$element.find('table[id^="pinnedtable"]').length > 0) {
+                $checkedSelector = this.$element.find('table[id^="pinnedtable"] tr');
+            }
+            var self = this;
+            $checkedSelector.each(function(index) {
+                var row = rowsData[index];
+                if (self.settings.editMode &amp;&amp; $(this).find('.' + editedBg).length) {
+                    var value = WIS_EMAP_INPUT.formGetValue($(this), {});
+                    row = $.extend({}, row, value);
+                }
+                if ($(this).find('input[type="checkbox"]').length > 0) {
+                    var ischecked = $(this).find('input[type="checkbox"]').prop('checked');
+                    if (ischecked) {
+                        selectedArr.push(row);
+                    }
+                } else if ($(this).find('input[type="radio"]').length > 0) {
+                    var ischecked = $(this).find('input[type="radio"]').prop('checked');
+                    if (ischecked) {
+                        selectedArr.push(row);
+                    }
+                }
+
+            });
+            return selectedArr;
+        };
+
+        /**
+         * @method checkedRowsIndex
+         * @description 获取被勾选行的索引
+         * @return {Array} 行索引数组
+         */
+        Plugin.prototype.checkedRowsIndex = function() {
+            var selectedArr = [];
+            var $checkedSelector = this.$element.find('table:not([id^="pinnedtable"]) tr');
+            if (this.$element.find('table[id^="pinnedtable"]').length > 0) {
+                $checkedSelector = this.$element.find('table[id^="pinnedtable"] tr');
+            }
+            $checkedSelector.each(function(index) {
+                var ischecked = $(this).find('[data-sss] input').prop('checked');
+                if (ischecked) {
+                    selectedArr.push(index);
+                }
+            });
+            return selectedArr;
+        };
+
+        /**
+         * @method getTotalRecords
+         * @description 获取数据总条数
+         */
+        Plugin.prototype.getTotalRecords = function() {
+            return this.source.totalRecords;
+        };
+
+        /**
+         * @method getResult 
+         * @description 获取当前表格内数据
+         */
+        Plugin.prototype.getResult = function() {
+            return this.$element.data('tableResult');
+        };
+
+        /**
+         * @method getSort
+         * @description 获取表格排序
+         */
+        Plugin.prototype.getSort = function() {
+            var args = this.$element.data("sortfield");
+
+            if (args === undefined)
+                return;
+
+            var sortObj = {
+                direction: args.sortdirection,
+                field: args.sortcolumn,
+                exp: ""
+            };
+            var exp = "";
+            if (args.sortdirection.ascending == true) {
+                sortObj.exp = "+" + args.sortcolumn;
+            } else if (args.sortdirection.descending == true) {
+                sortObj.exp = "-" + args.sortcolumn;
+            }
+
+            return sortObj;
+        };
+
+        /**
+         * @method getModel
+         * @description 获取表格数据
+         */
+        Plugin.prototype.getModel = function() {
+            return this.$element.data('tableDataModel');
+        };
+
+        /**
+         * @method selectColumnsExport
+         * @description 导出 表格数据， 列为选择列  
+         *    
+         * @param  {object} params 
+         *
+         *  【url】：
+            /[root]/sys/emapcomponent/imexport/export.do
+
+           【参数 params】：
+            root: 
+            app：调用导出的应用名称，必填
+            module：调用导出的模块名，必填
+            page：调用导出的页面，必填
+            action：调用导出的动作，必填
+            colnames：导出时自定义的字段，多个用逗号分隔，选填  toUpperCase
+            analyse：自定义的导出过程分析服务，实现IImportAnalyse，选填
+            write：自定义的导出写文件服务，实现IExportWrite，选填
+            filename：自定义的导出文件名，选填
+         * 
+         */
+        Plugin.prototype.selectColumnsExport = function(params) {
+            this.selectToShowColumns({
+                type: 'export',
+                params: params
+            });
+        };
+
+        /**
+         * @method selectToShowColumns
+         * @description 展开选择列窗口
+         * @param  {object} action 动作
+         *    {
+         *        type: //action type, 内置动作有 toggle(默认),export
+         *        handler: //action handler
+         *        param:  //action hander 的参数
+         *        columnsReorder:   //是否开启表格列排序
+         *    }
+         *    'toggle'  显示选择的列，隐藏未选择的列,默认值
+         *    'export'  导出表单， 支持选择列                         
+         * @param {object} params  action 动作 所需的参数      
+         */
+        Plugin.prototype.selectToShowColumns = function(action) {
+            var self = this;
+            action.type = action.type || 'toggle';
+
+            // 表格传参时,为了方便高级搜索会将其他参数合并进来,  其中有可能含有type 所以 此处默认走 隐藏显示列
+            // zhuhui 6-8
+            if (action.type === 'export') {
+                action['columnsReorder'] = false;
+                action['name'] = $.i18n('bh-edt-exportField');
+                action['handler'] = function(columns) {
+                    var config, selectedCols;
+                    selectedCols = [];
+                    columns.forEach(function(col) {
+                        if (col.hidden === false &amp;&amp; col.hasOwnProperty('datafield')) {
+                            selectedCols.push(col.datafield);
+                        }
+                    });
+
+                    config = $.extend({}, action.params, {
+                        colnames: selectedCols.join(',').replace(/_DISPLAY/g, '').toUpperCase()
+                    });
+                    self.export(config);
+                };
+            } else {
+                action['name'] = $.i18n('bh-edt-hideShow');
+                action['handler'] = function(columns) {
+                    self.$element.data('columns', columns); // 将新的显示列的数据放回data-columns, 保证后续操作数据同步
+                    if (self.settings.fastRender) {
+                        columns = columns.filter(function(item) {
+                            return !item.hidden;
+                        })
+                    }
+                    self.$element.jqxDataTable({
+                        columns: columns
+                    });
+                    if (self.settings.schema &amp;&amp; self.settings.contextPath) { // if rememberCustomColumn , save columns
+                        _saveSchema(self, columns);
+                    }
+                };
+            }
+
+            // 导出时，会对列显示数据进行修改， 所以此出将列数据复制，避免导出功能影响自定义列显示 zhuhui 2017-02-09
+            var columns = WIS_EMAP_SERV.cloneObj(this.$element.data('columns'));
+            var newmodel = this.$element.data('newmodel');
+            _initSelectColumnsWindow(this, newmodel, columns, action);
+        };
+
+        /**
+         * @method export
+         * @description 导出表格数据
+         * @param {Object} config - 配置参数，导出请求参数
+         * @param {String} config.root - 根路径
+         */
+        Plugin.prototype.export = function(config) {
+            var root = config.root;
+            delete config.root;
+            $.ajax({
+                    url: root + '/sys/emapcomponent/imexport/export.do',
+                    data: config,
+                    dataType: 'json',
+                    type: 'POST'
+                })
+                .done(function(res) {
+                    if (res.status == 1) {
+                        window.location.href = location.protocol + '//' + location.host + root + '/sys/emapcomponent/file/getAttachmentFile/' + res.attachment + '.do';
+                    } else {
+                        $.bhTip({
+                            content: $.i18n('bh-edt-exportFail'),
+                            state: 'danger'
+                        });
+                    }
+                });
+        };
+
+        /**
+         * @method  getVisibleColumns
+         * @description 获取当前表格内所有显示的列
+         * @return {Array} 可视的列
+         */
+        Plugin.prototype.getVisibleColumns = function() {
+            var columns = this.$element.data('columns');
+            if (columns &amp;&amp; columns.length) {
+                return columns.filter(function(item) {
+                    return !item.hidden;
+                });
+            }
+            return [];
+        };
+
+        /**
+         * @method enterEditMode
+         * @description 进入表格编辑模式
+         */
+        Plugin.prototype.enterEditMode = function() {
+            if (this.settings.canEdit) {
+                var newmodel = this.$element.data('newmodel');
+                var columns = $.extend(true, [], this.$element.data('columns'));
+                this.settings.editMode = true;
+                _convertEditModeCols(columns, newmodel);
+                this.$element.data('changedRowsData', []);
+                this.$element.jqxDataTable({
+                    pageable: !!this.settings.editPageable,
+                    columns: columns
+                });
+            }
+        };
+
+        /**
+         * @method leaveEditMode
+         * @description 退出表格编辑模式
+         */
+        Plugin.prototype.leaveEditMode = function() {
+            if (this.settings.canEdit) {
+                var $load = this.$element.jqxDataTable('dataloadelement');
+                $load.css({
+                    visibility: 'visible',
+                    display: 'block',
+                    width: this.$element.jqxDataTable('host').width()
+                });
+
+                $('[xtype]', this.$element).each(function() {
+                    var _this = $(this);
+                    var xtype = _this.attr('xtype');
+                    switch (xtype) {
+                        case 'select':
+                            _this.jqxDropDownList('destroy');
+                            break;
+                        case 'multi-select':
+                            _this.jqxComboBox('destroy');
+                            break;
+                        case 'date-local':
+                        case 'date-ym':
+                        case 'date-full':
+                            _this.jqxDateTimeInput('destroy');
+                            break;
+                        case 'tree':
+                            _this.jqxDropDownButton('destroy');
+                            break;
+                    }
+                });
+                var columns = this.$element.data('columns');
+                var rows = this.$element.jqxDataTable('getRows');
+                rows.forEach(function(row) {
+                    delete row[toDeleteKey];
+                });
+                this.settings.editMode = false;
+                this.$element.data('changedRowsData', []);
+                this.$element.jqxDataTable({
+                    pageable: this.settings.pageable,
+                    height: this.settings.height,
+                    columns: columns
+                });
+                if (!this.settings.pageable) {
+                    bindingComplete(this);
+                }
+                $load.css({
+                    visibility: 'hidden',
+                    display: 'none',
+                    width: '100%'
+                });
+            }
+        };
+
+        /**
+         * @method getChangedRows
+         * @description 获取已改变的数据，不包含待删除的数据
+         * @return {Array} 所有已改变的行的数据
+         */
+        Plugin.prototype.getChangedRows = function() {
+            if (this.settings.editMode) {
+                var rows = this.$element.jqxDataTable('getRows');
+                var $content = this.$element.jqxDataTable('content').find('table:not([id^="pinnedtable"])');
+                var changedRow = [];
+                $content.find('tbody>tr').each(function(i) {
+                    if ($(this).find('.' + editedBg).length &amp;&amp; !rows[i][toDeleteKey]) {
+                        var value = WIS_EMAP_INPUT.formGetValue($(this), {});
+                        changedRow.push($.extend({}, rows[i], value));
+                    }
+                });
+                return changedRow;
+            }
+        };
+
+        /**
+         * @method getToDeleteRows
+         * @description 获取将要被删除的行索引
+         * @return {Array} 索引数组
+         */
+        Plugin.prototype.getToDeleteRows = function() {
+            if (this.settings.editMode) {
+                var rows = this.$element.jqxDataTable('getRows');
+                var $content = this.$element.jqxDataTable('content').find('table:not([id^="pinnedtable"])');
+                var $trs = $content.find('tbody>tr');
+                var toDeleteData = [];
+                rows.forEach(function(row, i) {
+                    if (row[toDeleteKey]) {
+                        toDeleteData.push(WIS_EMAP_INPUT.formGetValue($trs.eq(i), {}));
+                    }
+                });
+                return toDeleteData;
+            }
+        };
+
+        /**
+         * @method deleteRowInEditMode
+         * @param  {Object} opt 入参，因组件对字符做特殊处理，用于查询，所以此处规定入参为Object
+         * @param {Number} opt.rowIndex 行索引
+         */
+        Plugin.prototype.deleteRowInEditMode = function(opt) {
+            if ($.isNumeric(opt.rowIndex) &amp;&amp; this.settings.editMode) {
+                var rows = this.$element.jqxDataTable('getRows');
+                var index = opt.rowIndex;
+                if (rows[index]) {
+                    rows[index][toDeleteKey] = true;
+                    var $content = this.$element.jqxDataTable('content').find('table:not([id^="pinnedtable"])');
+                    var $tr = $content.find('tbody>tr').eq(index);
+                    WIS_EMAP_INPUT.formDisable($tr);
+                    $tr.find('>td').each(function(i) {
+                        $(this).find('[data-sss] input').prop('disabled', true);
+                        $(this).addClass(showToDeleteLine);
+                    });
+                }
+            }
+        };
+
+        /**
+         * @method cancelDeleteRowInEditMode
+         * @param  {Object} opt 入参，因组件对字符做特殊处理，用于查询，所以此处规定入参为Object
+         * @param [Number] opt.rowIndex 行索引
+         */
+        Plugin.prototype.cancelDeleteRowInEditMode = function(opt) {
+            if ($.isNumeric(opt.rowIndex) &amp;&amp; this.settings.editMode) {
+                var rows = this.$element.jqxDataTable('getRows');
+                var index = opt.rowIndex;
+                if (rows[index]) {
+                    delete rows[index][toDeleteKey];
+                    var $content = this.$element.jqxDataTable('content').find('table:not([id^="pinnedtable"])');
+                    var $tr = $content.find('tbody>tr').eq(index);
+                    WIS_EMAP_INPUT.formEnable($tr);
+                    $tr.find('>td').each(function(i) {
+                        $(this).find('[data-sss] input').prop('disabled', false);
+                        $(this).removeClass(showToDeleteLine);
+                    });
+                }
+            }
+        };
+
+        /**
+         * @method isInEditMode
+         * @description 判断表格是否处于编辑模式
+         * @return {Boolean}
+         */
+        Plugin.prototype.isInEditMode = function() {
+            return this.settings.editMode;
+        };
+
+        /**
+         * @method validateTable
+         * @description 校验表格输入是否合法
+         * @return {Bollean}
+         */
+        Plugin.prototype.validateTable = function() {
+            var $content = this.$element.jqxDataTable('content').find('table:not([id^="pinnedtable"])');
+            var isValidate = true;
+            $content.find('tbody>tr').filter(function() {
+                return $(this).find('.' + showToDeleteLine).length === 0;
+            }).each(function() {
+                if (!$(this).emapValidate('validate')) {
+                    isValidate = false;
+                }
+            });
+            return isValidate;
+        };
+
+        /**
+         * @method addRow
+         * @description 编辑模式下添加行
+         * @param {Object} [obj] 
+         * @param {Number | String} [obj.rowIndex] 在添加到第几行
+         * @param {Object} [obj.rowData] 添加的数据
+         * @param {String} [obj.rowPosition = 'first'] 添加到第一行或者最后一行
+         */
+        Plugin.prototype.addRow = function(obj) {
+            var index = obj.rowIndex;
+            var rowIndex = obj.rowIndex;
+            var rowData = obj.rowData;
+            var rowPosition = '';
+            if (obj.hasOwnProperty('rowPosition')) {
+                rowPosition = obj.rowPosition;
+                if (rowPosition === 'first') {
+                    index = 0;
+                }
+            }
+            if (rowPosition !== 'last' &amp;&amp; this.settings.editMode) {
+                var changedData = this.$element.data('changedRowsData');
+                changedData.splice(index, 0, rowData || {});
+            }
+            return this.$element.jqxDataTable('addRow', rowIndex, rowData || {}, rowPosition);
+        };
+
+        /**
+         * @method deleteRow
+         * @description 编辑模式下删除行
+         * @param  {Object} [obj] 
+         * @param {Number | String}  obj.rowIndex 删除第几行
+         */
+        Plugin.prototype.deleteRow = function(obj) {
+            var index = obj.rowIndex || 0;
+            if (this.settings.editMode) {
+                var changedData = this.$element.data('changedRowsData');
+                changedData.splice(index, 1);
+            }
+            return this.$element.jqxDataTable('deleteRow', index);
+        };
+
+        return Plugin;
+
+    })();
+
+    //根据JSON拼装query条件
+    function _getQuerySetting(params) {
+        if (!$.isEmptyObject(params) &amp;&amp; !params.querySetting) {
+            var query = [];
+            for (var key in params) {
+                query.push({
+                    name: key,
+                    value: params[key],
+                    linkOpt: 'AND',
+                    builder: 'equal'
+                });
+            }
+            return {
+                querySetting: JSON.stringify(query)
+            };
+        } else {
+            return params;
+        }
+    }
+
+    function indexOf(arr, cb) {
+        var alength = arr.length;
+        for (var i = 0; i &lt; alength; i++) {
+            var o = cb(arr[i], i);
+            if (o === true) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    function compact(arr) {
+        for (var i = 0; i &lt; arr.length; i++) {
+            if (!arr[i]) {
+                arr.splice(i, 1);
+                i--;
+            }
+        }
+        return arr;
+    }
+
+    /**
+     * 插件的私有方法
+     */
+    //生成表格
+    function _create(instance) {
+        if (!instance.settings.contextPath) {
+            instance.settings.contextPath = WIS_EMAP_SERV.getContextPath();
+        }
+
+        var jqxOptions = $.extend({}, instance.settings);
+        try {
+            delete jqxOptions.pk; //qiyu 2016-1-16 
+            delete jqxOptions.url;
+            delete jqxOptions.pagePath;
+            delete jqxOptions.params;
+            delete jqxOptions.datamodel;
+            delete jqxOptions.method;
+            delete jqxOptions.action;
+            delete jqxOptions.customColumns;
+            delete jqxOptions.colHasMinWidth;
+            delete jqxOptions.beforeSend;
+            delete jqxOptions.downloadComplete;
+            delete jqxOptions.schema;
+            delete jqxOptions.contextPath;
+            delete jqxOptions.searchElement;
+            delete jqxOptions.minLineNum;
+            delete jqxOptions.onceParams;
+            delete jqxOptions.alwaysHide;
+            delete jqxOptions.customModelName;
+            delete jqxOptions.formatData;
+            delete jqxOptions.fastRender;
+            delete jqxOptions.canEdit;
+            delete jqxOptions.schemaList;
+            delete jqxOptions.isCellEditable;
+            delete jqxOptions.isOnceEmpty;
+            delete jqxOptions.isEditMode;
+            delete jqxOptions.defaultParams;
+            delete jqxOptions.mustSelect;
+            delete jqxOptions.editPageable;
+        } catch (e) {
+
+        }
+        if (instance.settings.isEditMode) {
+            instance.settings.editMode = true;
+        }
+        var dataAdapter = new $.jqx.dataAdapter(instance.source, {
+            formatData: function(data) {
+                if (jqxOptions.pageable) {
+                    data.pageSize = data.pagesize;
+                    data.pageNumber = data.pagenum + 1;
+                }
+
+                if (instance.settings.isOnceEmpty) {
+                    data.pageSize = 1;
+                    data.pageNumber = 1;
+                    data.querySetting = '[{"name":"' + instance.source.datafields[0].name + '","builder":"include","linkOpt":"AND","value":"NULL"}]';
+                    delete instance.settings.isOnceEmpty;
+                }
+
+                var sortorder = '+';
+                if (jqxOptions.sortable &amp;&amp; data.sortdatafield &amp;&amp; data.sortorder) {
+                    if (data.sortorder == 'asc') {
+                        sortorder = '+';
+                    } else if (data.sortorder == 'desc') {
+                        sortorder = '-';
+                    }
+                    data['*order'] = sortorder + data.sortdatafield.split('_DISPLAY')[0];
+                }
+
+                if (instance.settings.formatData &amp;&amp; typeof instance.settings.formatData == 'function') {
+                    data = instance.settings.formatData(data);
+                }
+                try {
+                    delete data.pagesize;
+                    delete data.pagenum;
+                    delete data.filterslength;
+                    delete data.sortdatafield;
+                    delete data.sortorder;
+                } catch (e) {}
+                instance.$element.data('currentQueryParams', data);
+                instance.$element.data('changedRowsData', []);
+                return data;
+            },
+            beforeSend: function(xhr) {
+                if (typeof instance.settings.beforeSend === 'function') {
+                    instance.settings.beforeSend.call(this, arguments);
+                }
+            },
+            downloadComplete: function(data, status, xhr) {
+                // 添加downloadComplete 回调  zhuhui 0726
+                if (typeof instance.settings.downloadComplete === 'function') {
+                    if (instance.settings.downloadComplete(data, status, xhr) === false) {
+                        return;
+                    }
+                }
+
+                // 添加全局ajax的complete回调  liujun 2017-02-28
+                if (typeof WIS_EMAP_CONFIG.dataTableAjaxCompleteCallback === 'function') {
+                    WIS_EMAP_CONFIG.dataTableAjaxCompleteCallback(data, status, xhr);
+                }
+
+                //如果未登录则跳转至登录地址
+                if (typeof data.loginURL != 'undefined' &amp;&amp; data.loginURL != '') {
+                    window.location.href = data.loginURL;
+                    return;
+                }
+
+                //qiyu 2016-7-21 将emapdatatable中的获取mock的url提取函数，在mock文件中重新定义
+                if (typeof window.MOCK_CONFIG != 'undefined') {
+                    instance.source.totalRecords = getTotalRecordsMock(data, instance.settings.action);
+                } else {
+                    if (data.code === '0' || data.code === 0 || data.code === undefined) {
+                        instance.source.totalRecords = data.datas[instance.settings.action].totalSize || data.datas[instance.settings.action].total_size;
+                    } else {
+                        console &amp;&amp; console.log(data);
+                        if (data.code) {
+                            // 应李忻均要求，若返回的信息里带有logId，则用logId代替code作为展示 zhuhui 2017-4-19
+                            $.bhTip({
+                                content: $.i18n('bh-edt-error') + (data.logId || data.code) + (data.msg ? ',' + data.msg : (',' + $.i18n('bh-edt-systemError'))),
+                                state: 'danger'
+                            });
+                        }
+                    }
+                }
+
+                //qiyu 2016-6-8 解决翻页总数刷新问题
+                //instance.source.totalrecords = instance.source.totalRecords;
+
+                instance.$element.data('tableResult', data);
+
+                // 联动高级搜索的
+                if (instance.settings.searchElement &amp;&amp; instance.settings.searchElement.length > 0) {
+                    instance.settings.searchElement.emapAdvancedQuery('updateTotalNum', (instance.source.totalRecords ? instance.source.totalRecords : 0));
+                }
+            }
+        });
+
+        //保存调用组件时传进来的ready和rendered函数。因为后面checkbox会复写此函数
+        var custom_ready = jqxOptions.ready;
+        var custom_rendered_tmp = jqxOptions.rendered;
+
+        var custom_rendered = jqxOptions.rendered = function() {
+            //处理无排序时表格列背景色及排序按钮背景色问题
+            _handleSortStyle(instance);
+            if (typeof custom_rendered_tmp === 'function') {
+                custom_rendered_tmp();
+            }
+        };
+
+        jqxOptions.columns = _genColums(instance, jqxOptions, custom_ready, custom_rendered);
+        if (jqxOptions.sortable !== true) {
+            $(jqxOptions.columns).each(function() {
+                if (this.sortable === true) {
+                    jqxOptions.sortable = true;
+                } else {
+                    this.sortable = false;
+                }
+            });
+        }
+
+        jqxOptions.source = dataAdapter;
+        _decorateRendered(jqxOptions, instance);
+        instance.$element.jqxDataTable(jqxOptions);
+
+        instance.$element.on('sort', function(event) {
+            var args = event.args;
+            // column's data field.
+            //var sortcolumn = args.sortcolumn;
+            instance.$element.data("sortfield", args);
+        });
+
+        instance.$element.on('bindingComplete', function(event) {
+            bindingComplete(instance, event);
+        });
+
+        //qiyu 2016-6-7 增加创建时事件，用于提供给产品线，创建后的行为。需求人：孟斌。如：表格默认增加右侧自定义显示列
+        instance.$element.trigger("emapdatatable.created", [instance]);
+
+        if (instance.settings.columnsReorder) {
+            instance.$element.on('columnReordered', WIS_EMAP_SERV.debounce(function() {
+                _saveSchema($(this).emapdatatable(true), $(this).data('columns'));
+            }, 500));
+        }
+    }
+
+    function bindingComplete(instance, event) {
+        var editModeTimer = instance.$element.data('editModeTimer');
+        clearTimeout(editModeTimer);
+        if (instance.settings.editMode) {
+            showLoading(instance);
+            editModeTimer = setTimeout(function() {
+                _setEditModeData(instance);
+            }, 10);
+            instance.$element.data('editModeTimer', editModeTimer);
+        } else {
+            _handleSortStyle(instance);
+            _handleMinHeight(instance);
+            _handleHorizontalScrollBar(instance);
+            _handleVerticalScrollBar(instance);
+            _resetPageFooter(instance);
+        }
+    }
+
+    //在纸质弹窗中的页面，改变分页大小，需要重置页脚
+    function _resetPageFooter(instance) {
+        //当弹框内容的高度出现变化的时候调用以下两个方法
+        if (instance.$element.closest(".bh-paper-pile-dialog").length > 0) {
+            $.bhPaperPileDialog.resetPageFooter(); //改变页面的页脚位置
+            $.bhPaperPileDialog.resetDialogFooter(); //改变弹框的页脚位置
+        }
+    }
+
+    /**
+     * 处理出现横向滚动条后导致的纵向滚动条
+     */
+    function _handleHorizontalScrollBar(instance) {
+        var id = instance.$element.attr('id');
+        //qiyu 2016-9-21 希望永远不显示纵向滚动条，判断依此调整，处理出现横向滚动条后导致的纵向滚动条
+        // var $selector = $('#horizontalScrollBar' + id);
+        var $selector = $('#verticalScrollBar' + id);
+        if ($selector.css('visibility') != 'hidden') {
+            var height = instance.$element.jqxDataTable('height');
+            if (height != null) {
+                //qiyu 2016-9-14 解决刷新会不断增高的问题，之前的临时方案是设置表格的height=null
+                //instance.$element.jqxDataTable('height', height + 17);
+                //qiyu 2016-9-21 调整行高为10px
+                instance.$element.jqxDataTable('height', height + 10);
+            }
+        }
+    }
+
+    /**
+     * 处理表格行高因自定义内容被撑大后，出现纵向滚动条问题
+     */
+    function _handleVerticalScrollBar(instance) {
+        var id = instance.$element.attr('id');
+        var $selector = $('#verticalScrollBar' + id);
+        var rowsData = instance.$element.jqxDataTable('getRows');
+        var minLineNum = instance.settings.minLineNum;
+        if (minLineNum == null || isNaN(minLineNum)) {
+            return;
+        }
+        if ($selector.css('visibility') != 'hidden' &amp;&amp; rowsData.length &lt;= minLineNum) {
+            instance.$element.jqxDataTable('height', null);
+        }
+    }
+    /**
+     * 处理表格最小高度
+     */
+    function _handleMinHeight(instance) {
+        var rowsData = instance.$element.jqxDataTable('getRows');
+        var minLineNum = instance.settings.minLineNum;
+
+        if (minLineNum == null || isNaN(minLineNum)) {
+            return;
+        }
+
+        if (rowsData.length &lt; minLineNum) {
+            instance.$element.jqxDataTable('height', BH_UTILS.getTableHeight(parseInt(minLineNum)));
+        } else {
+            instance.$element.jqxDataTable('height', null);
+        }
+
+    }
+
+    /**
+     * 初始化 schema, 如果启用schema， 则返回 schema 的数据
+     * @param  {object} instance  
+     * @param  {string} modelName
+     */
+    function _initSchema(instance, modelName, contextPath) {
+        var $elem = instance.$element;
+        var res;
+        if (!instance.settings.schema || !instance.settings.contextPath) { //disable schema
+            return false;
+        }
+        //TODO: enable schema         
+        $elem.emapSchema({
+            schemaType: 'col',
+            contextPath: contextPath,
+            data: {
+                modelName: modelName
+            }
+        });
+
+        res = $elem.emapSchema('getSchemaList');
+        if (res &amp;&amp; res[0] &amp;&amp; res[0].CONTENT) {
+            return res[0].CONTENT.split(',');
+        }
+        return [];
+    }
+
+    function _handleSortStyle(instance) {
+        //处理无排序时表格列背景色问题
+        var sortObj = instance.$element.data("sortfield");
+        if (typeof sortObj == 'undefined' || (sortObj.sortdirection.ascending == false &amp;&amp; sortObj.sortdirection.descending == false)) {
+            instance.$element.find('td.jqx-grid-cell-sort').removeClass('jqx-grid-cell-sort');
+        }
+
+        //处理表格排序按钮背景色问题
+        instance.$element.find('div.sortasc, div.sortdesc').css('background', 'none');
+    }
+
+    function _convertEditModeCols(columns, newmodel) {
+        columns.forEach(function(col, i) {
+            var model = newmodel[i];
+            var isCustom = model.custom &amp;&amp; model.custom.hasOwnProperty('colIndex');
+            if (isCustom) {
+                col.hidden = true;
+            }
+            var edit = col.datafield === 'field_checkbox' || (model.custom &amp;&amp; model.custom.type === 'edit_tpl');
+            if (edit) {
+                col.hidden = false;
+            }
+        });
+    }
+
+    /**
+     * 生成表格列
+     * @param  {any} instance
+     * @param  {any} jqxOptions
+     * @param  {any} custom_ready
+     * @param  {any} custom_rendered    
+     */
+    function _genColums(instance, jqxOptions, custom_ready, custom_rendered) {
+        var columns = [],
+            schemaList;
+
+        var datamodel = instance.settings.datamodel ||
+            WIS_EMAP_SERV.getModel(instance.settings.pagePath, instance.settings.action, "grid", instance.settings.params);
+        //保存datamodel
+        instance.$element.data('tableDataModel', $.extend([], datamodel));
+
+        instance.$element.attr("emap", JSON.stringify({
+            "emap-pagePath": instance.settings.pagePath,
+            "emap-action": instance.settings.action,
+            "emap-url": WIS_EMAP_SERV.url,
+            "emap-name": WIS_EMAP_SERV.name,
+            "emap-app-name": WIS_EMAP_SERV.appName,
+            "emap-model-name": WIS_EMAP_SERV.modelName
+        }));
+        schemaList = instance.settings.schemaList || _initSchema(instance, WIS_EMAP_SERV.modelName || instance.settings.customModelName, instance.settings.contextPath);
+        //保存datamodel
+        instance.$element.data('schemaList', schemaList);
+        delete WIS_EMAP_SERV.url;
+        delete WIS_EMAP_SERV.name;
+        delete WIS_EMAP_SERV.appName;
+        delete WIS_EMAP_SERV.modelName;
+
+        var cusColLen = 0;
+        var customColumns = instance.settings.customColumns;
+        if (typeof customColumns != 'undefined' &amp;&amp; customColumns != null) {
+            cusColLen = customColumns.length;
+        }
+
+        //重新组织datamodel
+        //type为link时只能为某列快速设置为链接类型，该列必须是模型中已经存在的数据列（此设定为兼容上一版本）
+        var newmodel = [];
+        var lastcolumn = null;
+        var linkCol = [];
+        if (cusColLen > 0) {
+            for (var i = 0; i &lt; cusColLen; i++) {
+                var colIndex, colField, type;
+                if (customColumns &amp;&amp; customColumns[i]) {
+                    colIndex = customColumns[i].colIndex;
+                    colField = customColumns[i].colField;
+                    type = customColumns[i].type;
+                    if (colIndex > 40) {
+                        colIndex = 'last';
+                    }
+                    if (colIndex == 'last') {
+                        lastcolumn = customColumns[i];
+                    } else if (typeof colField != 'undefined' &amp;&amp; colField != '') {
+                        for (var j = 0; j &lt; datamodel.length; j++) {
+                            if (datamodel[j].name == colField) {
+                                datamodel[j].custom = customColumns[i];
+                            }
+                        }
+                    } else if (colIndex != 'undefined') {
+                        colIndex = colIndex &lt; 0 ? 0 : colIndex;
+
+                        //兼容上一版本设定
+                        if (type != 'link') {
+                            newmodel[colIndex] = {
+                                custom: customColumns[i]
+                            }
+                        } else {
+                            linkCol.push({
+                                colIndex: colIndex,
+                                column: customColumns[i]
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        //datamodel保存至source的datafields数组中
+        for (var m = 0; m &lt; datamodel.length; m++) {
+            if (typeof datamodel[m].get == 'function') {
+                instance.source.datafields.push({
+                    name: datamodel[m].name,
+                    type: 'string'
+                });
+                if (typeof datamodel[m].url != 'undefined') {
+                    instance.source.datafields.push({
+                        name: datamodel[m].name + '_DISPLAY',
+                        type: 'string'
+                    });
+                }
+            }
+        }
+        for (var k = 0; k &lt; newmodel.length; k++) {
+            if (newmodel[k] == undefined) {
+                if (datamodel.length > 0) {
+                    newmodel[k] = datamodel.shift();
+                } else {
+                    newmodel.splice(k, 1);
+                    k--;
+                }
+            }
+        }
+
+        if (datamodel.length > 0) {
+            newmodel = newmodel.concat(datamodel);
+        }
+
+        if (lastcolumn != null) {
+            newmodel.push({
+                custom: lastcolumn
+            });
+        }
+
+        var datafield;
+        var _col;
+        var thiner_columns = [];
+        var isFastRender = instance.settings.fastRender;
+        for (var n = 0; n &lt; newmodel.length; n++) {
+            //设置自定义列类型为link，且指定了colIndex的项
+            for (var t = 0; t &lt; linkCol.length; t++) {
+                if (n == linkCol[t].colIndex) {
+                    newmodel[n].custom = linkCol[t].column;
+                }
+            }
+            //设置数据类型全部是string
+            if (typeof newmodel[n].name != 'undefined') {
+                instance.source.datafields.push({
+                    name: newmodel[n].name,
+                    type: 'string'
+                });
+            }
+            if (typeof newmodel[n].url != 'undefined') {
+                datafield = newmodel[n].name + '_DISPLAY';
+                instance.source.datafields.push({
+                    name: datafield,
+                    type: 'string'
+                });
+            } else {
+                datafield = newmodel[n].name
+            }
+
+            var width = null;
+            var minWidth = null;
+            var widthObj = {};
+            var attr = WIS_EMAP_SERV.getAttr(newmodel[n], 'grid');
+            var isHidden = attr.hidden;
+
+            //schema: schema 权重高于 hidden属性， 如果不在schemaList中，则隐藏该列
+            if (instance.settings.schema &amp;&amp; schemaList &amp;&amp; schemaList.length &amp;&amp; newmodel[n].name &amp;&amp; newmodel[n]['grid.fixed'] !== true) {
+                _col = newmodel[n].name
+
+                var arrNoDisplay = schemaList.map(function(val) {
+                    return val.replace('_DISPLAY', '');
+                })
+                isHidden = $.inArray(_col, arrNoDisplay) === -1
+            }
+
+            //固定列属性pinned 默认值
+            var pinned = false;
+            //从后台模型中读取固定列属性pinned
+            pinned = newmodel[n].pinned;
+            if (pinned !== true) {
+                pinned = false;
+            }
+            // 默认列宽为100px
+            if (newmodel[n].custom == undefined) {
+                width = attr.width;
+                minWidth = attr.minWidth;
+                widthObj = _genWidthObj(width, minWidth, instance.settings.colHasMinWidth);
+                var dCol = $.extend({}, {
+                    text: newmodel[n].caption,
+                    datafield: datafield,
+                    hidden: isHidden,
+                    pinned: pinned,
+                    cellsRenderer: _defaultCellsRenderer
+                }, widthObj);
+                dCol = _proxyColOpt(dCol, instance.settings, newmodel[n]);
+                columns.push(dCol);
+                if (isFastRender &amp;&amp; _canColFastRender(dCol)) {
+                    thiner_columns.push(dCol);
+                }
+            } else {
+                var type = newmodel[n].custom.type;
+                var showCheckAll = newmodel[n].custom.showCheckAll;
+                width = newmodel[n].custom.width;
+                minWidth = newmodel[n].custom.minWidth;
+                if (width == undefined) {
+                    width = attr.width;
+                }
+                if (minWidth == undefined) {
+                    minWidth = newmodel[n]['grid.minWidth'] == undefined ? null : newmodel[n]['grid.minWidth'];
+                }
+                widthObj = _genWidthObj(width, undefined, instance.settings.colHasMinWidth);
+                var col = _genCustomColumns(type, instance, jqxOptions, showCheckAll, widthObj, newmodel[n], datafield, custom_ready, custom_rendered);
+                var cCol = $.extend({
+                    hidden: isHidden,
+                    pinned: pinned,
+                    cellsRenderer: _defaultCellsRenderer
+                }, col);
+                cCol = _proxyColOpt(cCol, instance.settings, newmodel[n]);
+                columns.push(cCol);
+                if (isFastRender) {
+                    thiner_columns.push(cCol);
+                }
+            }
+        }
+
+        if (instance.settings.editMode) {
+            _convertEditModeCols(columns, newmodel);
+        }
+
+        //根据schema排序列
+        if (instance.settings.columnsReorder &amp;&amp; schemaList.length) {
+            var orderedCols = [];
+            var indexs = [];
+            columns.forEach(function(item, i) {
+                if (item.datafield) {
+                    var index = indexOf(schemaList, function(col) {
+                        if (item.datafield) {
+                            return col === item.datafield.replace('_DISPLAY', '');
+                        }
+                    });
+                    if (index > -1) {
+                        orderedCols[index] = item;
+                        return;
+                    }
+                }
+                indexs.push(i);
+            });
+            indexs.forEach(function(i) {
+                orderedCols.splice(i, 0, columns[i]);
+            });
+            columns = compact(orderedCols);
+        }
+
+        if (isFastRender) {
+            instance.$element.data('newmodel', newmodel);
+            instance.$element.data('columns', columns);
+            return thiner_columns;
+        } else {
+            instance.$element.data('newmodel', newmodel);
+            instance.$element.data('columns', columns);
+            return columns;
+        }
+    }
+
+    //默认单元格渲染函数
+    function _defaultCellsRenderer(row, column, value, rowData) {
+        return '&lt;span title="' + $("&lt;div>" + value + "&lt;/div>").text() + '">' + value + '&lt;/span>';
+    }
+
+    function _canColFastRender(col) {
+        if (col['grid.hidden'] === true) {
+            return false;
+        } else if (col['grid.hidden'] === undefined &amp;&amp; col['hidden'] === true) {
+            return false;
+        }
+        return true;
+    }
+
+    function _genWidthObj(width, minWidth, colHasMinWidth) {
+        var widthStr = width == null ? '' : width.toString();
+        widthStr = widthStr.replace('px', '').replace('PX', '').replace('%', '');
+        widthStr = $.trim(widthStr);
+        if (!colHasMinWidth) {
+            if (width &amp;&amp; widthStr != '' &amp;&amp; !isNaN(widthStr)) {
+                return {
+                    width: width,
+                    minWidth: minWidth
+                };
+            }
+            return {};
+        } else {
+            if (width != null &amp;&amp; widthStr != '' &amp;&amp; !isNaN(widthStr)) {
+                width = width.toString();
+                width.replace('px', '').replace('PX', '');
+                //qiyu 2017-1-18 解除宽度设定小于100的值仍然按照100来设置的限制。需求人：力磊
+                // if (width.indexOf("%") == -1 &amp;&amp; parseInt(width) &lt; 100) {
+                //     width = 100;
+                // }
+
+                // return {
+                //     width: width,
+                //     minWidth: 100
+                // };
+                return {
+                    width: width,
+                    minWidth: minWidth
+                }
+            }
+            return {
+                minWidth: minWidth || 100
+            };
+        }
+    }
+
+    function _saveSchema(instance, columns) {
+        var $elem = instance.$element;
+        //1. 获取 含有 name的 显示列
+        var data = [];
+        columns.forEach(function(column) {
+            if (column.hasOwnProperty('datafield') &amp;&amp; !column.hidden) {
+                data.push(column.datafield)
+            }
+        });
+        //2. 保存 显示列 到 schema
+        $elem.emapSchema('saveSchema', [
+            'emap.table',
+            data.join(',')
+        ]);
+    }
+    /*
+     *   列表字段的显示隐藏策略
+     *   fixed > 保存方案 > 模型配置
+     *   保存方案的优先级高于模型中的显示隐藏配置
+     *   模型中配置了固定的字段的显示隐藏以模型中的配置为准，优先级高于保存方案
+     * 
+     */
+    function _initSelectColumnsWindow(instance, newmodel, columns, action) {
+        var itemHtml = '';
+        var commonList = [];
+        var availableList = [];
+        var showNum = 0;
+        $.each(columns, function(i, col) {
+            // 排除自定义列和checkbox列
+            if (!col.datafield || col.datafield == 'field_checkbox' || col.datafield == 'field_radio') {
+                return;
+            }
+            // 固定字段的处理 
+            var modelItem = {};
+            $.each(newmodel, function(ix, item) {
+                var name = col.datafield &amp;&amp; col.datafield.replace('_DISPLAY', '');
+                if (name &amp;&amp; item.name == name) {
+                    modelItem = item;
+                    return false;
+                }
+            });
+            var fixed = false;
+            if (modelItem) {
+                fixed = modelItem.fixed || modelItem['grid.fixed'];
+            } else {
+                if (newmodel[i]) {
+                    modelItem = newmodel[i];
+                    fixed = modelItem.fixed || modelItem['grid.fixed'];
+                }
+            }
+            var colHidden = col.hidden;
+
+            if (fixed) {
+                if (modelItem['grid.hidden'] !== undefined) {
+                    colHidden = modelItem['grid.hidden'];
+                } else {
+                    colHidden = modelItem['hidden'];
+                }
+            }
+            if (instance.settings.alwaysHide.length &amp;&amp; $.inArray(col.datafield.replace('_DISPLAY', ''), instance.settings.alwaysHide) > -1) {
+                fixed = true;
+                colHidden = true;
+            }
+            var reorder = '';
+            var reoderable = '';
+            if (action.columnsReorder) {
+                reorder = '&lt;i class="iconfont icon-menu order-handle">&lt;/i>';
+                reoderable = 'reoderable';
+            }
+            if (colHidden) {
+                // 模型里的参数里的alwaysHide 字段不展示 6-6  zhuhui
+                // 模型里 hidden 并且 fixed 的字段不展示
+                // 已隐藏字段
+                itemHtml = ' &lt;li class="bh-col-md-3" ' + (fixed ? 'style="display: none;line-height: 32px;"' : '') + '>' +
+                    ' &lt;div class="bh-checkbox bh-str-cut ' + reoderable + '" title="' + col.text + '">&lt;label>&lt;input type="checkbox" name="' + col.datafield + '" data-caption="' + col.text + '">' +
+                    '     &lt;i class="bh-choice-helper">&lt;/i>' + col.text +
+                    '   &lt;/label>' +
+                    reorder +
+                    ' &lt;/div>' +
+                    '&lt;/li>';
+                availableList.push(itemHtml);
+                if (!fixed) {
+                    showNum++;
+                }
+            } else {
+                //已显示字段
+                itemHtml = ' &lt;li class="bh-col-md-3" style="line-height: 32px;">' +
+                    ' &lt;div class="bh-checkbox bh-str-cut ' + reoderable + '" title="' + col.text + '">&lt;label>&lt;input type="checkbox" ' + (fixed ? 'disabled' : '') + ' name="' + col.datafield + '" data-caption="' + col.text + '" checked>' +
+                    '     &lt;i class="bh-choice-helper">&lt;/i>' + col.text +
+                    '   &lt;/label>' +
+                    reorder +
+                    ' &lt;/div>' +
+                    '&lt;/li>';
+                availableList.push(itemHtml);
+                showNum++;
+            }
+            if (modelItem.common) {
+                commonList.push(itemHtml);
+            }
+        });
+        var remainder = showNum % 6;
+        if (remainder) {
+            for (var i = 0; i &lt; (6 - remainder); i++) {
+                availableList.push('&lt;li class="bh-col-md-3">');
+            }
+        }
+        if (commonList.length % 6) {
+            var remaind = commonList.length % 6;
+            for (var j = 0; j &lt; (6 - remaind); j++) {
+                commonList.push('&lt;li class="bh-col-md-3" style="line-height: 32px;">');
+            }
+        }
+        var dialog = '&lt;div class="bh-emapdatatable-dialog">' +
+            '&lt;div>&lt;h2>' + action.name + '&lt;/h2>&lt;/div>' +
+            '&lt;div class="bh-emapdatatable-dialog-content">' +
+            '&lt;div>' +
+            (commonList.length ?
+                '&lt;div class="bh-clearfix">' +
+                '&lt;div class="bh-checkbox bh-mb-8">&lt;label>&lt;input type="checkbox" bh-emapdatatable-role="selectAllField">' +
+                '&lt;i class="bh-choice-helper">&lt;/i>&lt;b>' + $.i18n('bh-edt-selectAll') + '&lt;/b>' +
+                '&lt;/label>&lt;/div>' +
+                '&lt;ul class="bh-emapdatatable-dialog-list" bh-emapdatatable-role="commonList" style="list-style:none">' + commonList.join('') + '&lt;/ul>' +
+                '&lt;/div>' : '') +
+            '&lt;div class="bh-text-caption bh-color-caption">' + $.i18n('bh-edt-availableField') + '（' + showNum + '）&lt;/div>' +
+            '&lt;div class="bh-clearfix">' +
+            '&lt;div class="bh-checkbox bh-mb-8" style="padding-left: 12px;">&lt;label>&lt;input type="checkbox" bh-emapdatatable-role="selectAllField">' +
+            '&lt;i class="bh-choice-helper">&lt;/i>&lt;b>' + $.i18n('bh-edt-selectAll') + '&lt;/b>' +
+            '&lt;/label>&lt;/div>' +
+            '&lt;div style="height:206px; overflow-y: auto;overflow-x: hidden;">' +
+            '&lt;ul class="bh-emapdatatable-dialog-list bh-bColor-info-3 bh-clearfix" bh-emapdatatable-role="availableList" style="list-style:none;">' + availableList.join('') + '&lt;/ul>' +
+            '&lt;/div>' +
+            '&lt;/div>' +
+            '&lt;/div>' +
+            '&lt;div class="bh-mt-16 bh-mr-4 bh-text-right">' +
+            '&lt;button bh-emapdatatable-role="confirmSelecte" class="bh-btn bh-btn-primary">' + $.i18n('bh-edt-confirm') + '&lt;/button>' +
+            '&lt;button bh-emapdatatable-role="cancel" class="bh-btn bh-btn-default">' + $.i18n('bh-edt-cancel') + '&lt;/button>' +
+            '&lt;/div>' +
+            '&lt;/div>';
+        instance.$element.after(dialog);
+        var $dialog = instance.$element.next();
+        $dialog.jqxWindow({
+                resizable: false,
+                draggable: true,
+                isModal: true,
+                modalOpacity: 0.3,
+                width: 800,
+                height: 400,
+                autoOpen: false,
+                position: [window.innerWidth / 2 - 800 / 2, window.innerHeight / 2 + $(window).scrollTop() - 200]
+            })
+            .on('close', function() {
+                $('body').niceScroll();
+            })
+            .on("open", function() {
+                $('body').getNiceScroll().remove(); // 弹框弹出式页面居中并 禁止页面滚动
+                $('body').css({
+                    overflow: 'hidden',
+                    'overflow-x': 'hidden',
+                    'overflow-y': 'hidden'
+                });
+            });
+
+        _bindEvent(instance, $dialog, columns, action);
+        $dialog.jqxWindow('open');
+    }
+
+    /**
+     * 选择列 窗口的 事件绑定
+     * @param  {object} instance this
+     * @param  {object} $dialog  jqxWindow
+     * @param  {object} columns  窗口的列
+     * @param  {function} action   确定按钮的回调动作, 在打开窗口selectToShowColumns 中就已确定
+     */
+    function _bindEvent(instance, $dialog, columns, action) {
+        var _$dialog = $dialog;
+        var _columns = columns;
+        _$dialog.on('click', '[bh-emapdatatable-role="confirmSelecte"]', function() {
+            if ($(this).attr('disabled')) {
+                return;
+            }
+            var cols = [];
+            _$dialog.find('input[type="checkbox"]:not([bh-emapdatatable-role="selectAllField"])').each(function() {
+                cols.push({
+                    name: $(this).attr('name'),
+                    hidden: !$(this).prop('checked')
+                });
+            });
+
+            if (action.columnsReorder) {
+                if (_columns.length === 1 &amp;&amp; cols.length) {
+                    _columns[0].hidden = cols[0].hidden;
+                }
+                var orderedCols = [];
+                var indexs = [];
+                _columns.forEach(function(item, i) {
+                    if (item.datafield) {
+                        var index = indexOf(cols, function(col) {
+                            return col.name === item.datafield;
+                        });
+                        if (index > -1) {
+                            item.hidden = cols[index].hidden;
+                            orderedCols[index] = item;
+                            return;
+                        }
+                    }
+                    indexs.push(i);
+                });
+                indexs.forEach(function(i) {
+                    orderedCols.splice(i, 0, _columns[i]);
+                });
+                _columns = compact(orderedCols);
+            } else {
+                var colMap = {};
+                cols.forEach(function(item) {
+                    colMap[item.name] = {
+                        hidden: item.hidden
+                    };
+                });
+                for (var i = 0; i &lt; _columns.length; i++) {
+                    if (_columns[i].datafield) {
+                        var key = _columns[i].datafield;
+                        if (colMap[key]) {
+                            _columns[i].hidden = colMap[key].hidden;
+                        }
+                    }
+                }
+            }
+
+            if (action.type !== 'export') {
+                cols = [];
+                instance.$element.trigger('custom.grid', [cols]);
+            }
+            action.handler(_columns);
+
+            _$dialog.jqxWindow('close');
+        });
+
+        _$dialog.on('click', '[bh-emapdatatable-role="cancel"]', function() {
+            _$dialog.jqxWindow('close');
+        });
+
+        _$dialog.on('close', function() {
+            _$dialog.jqxWindow('destroy');
+        });
+
+
+        _$dialog.on('open', function() {
+            $(this).find('[bh-emapdatatable-role="selectAllField"]').each(function() {
+                var $checkbox = $(this).closest('.bh-checkbox').next().find('li:visible input:not(:disabled)');
+                var isAllSelected = $checkbox.filter(':not(:checked)').length === 0;
+                $(this).prop('checked', isAllSelected);
+            });
+        });
+
+        $dialog.find('input[bh-emapdatatable-role="selectAllField"]').change(function() {
+            var $checkbox = $(this).closest('.bh-checkbox').next().find('li:visible input');
+            $checkbox.filter(':not(:disabled)').prop('checked', $(this).prop('checked'));
+            var disabled = !$(this).prop('checked');
+            $checkbox.filter(':disabled').each(function() {
+                if ($(this).prop('checked')) {
+                    disabled = false;
+                    return false;
+                }
+            });
+            if (instance.settings.mustSelect) {
+                $dialog.find('[bh-emapdatatable-role="confirmSelecte"]').attr('disabled', disabled);
+            }
+        });
+
+        $dialog.find('li input').change(function() {
+            var $list = $(this).closest('.bh-emapdatatable-dialog-list');
+            if (!$(this).prop('checked')) {
+                $list.parent().prev().find('input[bh-emapdatatable-role="selectAllField"]').prop('checked', false);
+            } else {
+                var isAllChecked = true;
+                $list.find('li:visible input:not(:disabled)').each(function() {
+                    if (!$(this).prop('checked')) {
+                        isAllChecked = false;
+                        return false;
+                    }
+                });
+                $list.parent().prev().find('input[bh-emapdatatable-role="selectAllField"]').prop('checked', isAllChecked);
+            }
+            if (instance.settings.mustSelect) {
+                $dialog.find('[bh-emapdatatable-role="confirmSelecte"]').attr('disabled', !$dialog.find('li:visible input:checked').length);
+            }
+        });
+
+        if (action.columnsReorder) {
+            $dialog.find('.bh-emapdatatable-dialog-list').each(function() {
+                Sortable.create(this, {
+                    handle: '.order-handle',
+                    draggable: '.bh-col-md-3',
+                    animation: 300
+                });
+            });
+        }
+    }
+
+    /**
+     * 生成自定义列
+     * @param  {String} type 自定义列类型
+     * @return {Object}       自定义列column
+     */
+    function _genCustomColumns(type, instance, jqxOptions, showCheckAll, widthObj, model, datafield, custom_ready, custom_rendered) {
+        var column = null;
+        // checkbox列不可排序
+        switch (type) {
+            case 'checkbox':
+                var pinned = model.custom.pinned;
+                if (pinned !== true) {
+                    pinned = false;
+                }
+                column = {
+                    text: 'checkbox',
+                    datafield: 'field_checkbox',
+                    //qiyu 2016-11-30 checkbox列增加标示，解决改变宽度后checkbox状态丢失的问题，该修改会影响到翻页后仍然勾选、纸质弹窗子页勾选，所以仍然退回原有状态
+                    cellClassName: 'datatable-checkbox-column',
+                    width: 32,
+                    minWidth: 32,
+                    maxWidth: 32,
+                    cellsAlign: 'center',
+                    align: 'center',
+                    sortable: false,
+                    pinned: pinned,
+                    draggable: false,
+                    renderer: function(text, align, height) {
+                        var checkBox = '&lt;div class="selectAllCheckboxFlag bh-checkbox bh-mh-8">&lt;label>&lt;input type="checkbox" value="">&lt;i class="bh-choice-helper">&lt;/i>&lt;/label>&lt;/div>';
+                        if (showCheckAll === false) {
+                            return ' ';
+                        }
+                        return checkBox;
+                    },
+                    rendered: function(element, align, height) {
+                        //头部的checkbox点击事件的绑定
+                        element.on("click", "input", function(e) {
+                            var $table = instance.$element;
+                            var $tableContent = $table.find('table:not([id^="pinnedtable"])');
+                            if ($table.find('table[id^="pinnedtable"]').length > 0) {
+                                $tableContent = $table.find('table[id^="pinnedtable"]');
+                            }
+                            var $checkboxList = $tableContent.find("div.bh-checkbox");
+
+                            var $input = $(this);
+                            if ($input.hasClass("selectFlag")) {
+                                $input.prop("checked", false).removeClass("selectFlag");
+                                $checkboxList.each(function() {
+                                    $(this).find("input").not(':disabled').prop("checked", false);
+                                });
+                            } else {
+                                $input.prop("checked", true).addClass("selectFlag");
+                                $checkboxList.each(function() {
+                                    $(this).find("input").not(':disabled').prop("checked", true);
+                                });
+                            }
+
+                            //触发自定义全选按钮事件
+                            $(this).trigger('checkall');
+                            e.stopPropagation();
+                        });
+                        return true;
+                    },
+                    cellsRenderer: function(row, column, value, rowData) {
+                        //qiyu 2016-11-30 checkbox列增加标示，解决改变宽度后checkbox状态丢失的问题，该修改会影响到翻页后仍然勾选、纸质弹窗子页勾选，所以仍然退回原有状态
+                        var checked = false;
+                        if (!rowData.rowguid) {
+                            rowData.rowguid = BH_UTILS.NewGuid();
+                        }
+                        var guid = rowData.rowguid;
+                        var cbitem = '&lt;input type="checkbox" value="' + rowData.uid + '" data-guid="' + guid + '">';
+                        var jqcb = $('.datatable-checkbox-column input[type=checkbox][data-guid="' + guid + '"]', this.owner.host);
+                        //qiyu 2017-1-7 解决render表格时checkbox未正确选中的问题。发生在首次打开页面，点击出现bhWindow时，会改表格变宽度。报告者：梅晓龙
+                        // if (jqcb.length > 0 &amp;&amp; jqcb[row]) {
+                        // checked = jqcb[row].checked;
+                        if (jqcb.length > 0) {
+                            checked = jqcb[0].checked;
+                            if (checked) {
+                                cbitem = '&lt;input type="checkbox" value="' + rowData.uid + '" data-guid="' + guid + '" checked>';
+                            }
+                        }
+
+                        var checkBox = '&lt;div data-sss="" class="bh-checkbox bh-mh-4" style="margin-left:0 !important;">&lt;label>' + cbitem + '&lt;i class="bh-choice-helper">&lt;/i>&lt;/label>&lt;/div>';
+                        // var checkBox = '&lt;div data-sss="" class="bh-checkbox bh-mh-4" style="margin-left:0 !important;">&lt;label>&lt;input type="checkbox" value="">&lt;i class="bh-choice-helper">&lt;/i>&lt;/label>&lt;/div>';
+
+                        return checkBox;
+                    }
+                };
+
+                //增加处理函数
+                jqxOptions.rendered = function() {
+                    //数据加载完成，读取各列的checkbox，判断头部的checkbox是否要勾选
+                    var $table = instance.$element;
+                    var $tableContent = $table.find('table:not([id^="pinnedtable"])');
+                    if ($table.find('table[id^="pinnedtable"]').length > 0) {
+                        $tableContent = $table.find('table[id^="pinnedtable"]');
+                    }
+                    var $checkboxList = $tableContent.find(".datatable-checkbox-column div.bh-checkbox");
+                    var isSelectAllFlag = true;
+                    if ($checkboxList.length == 0) {
+                        isSelectAllFlag = false;
+                    }
+                    $checkboxList.each(function() {
+                        var $itemCheckbox = $(this);
+                        if ($itemCheckbox.find("input[checked]").length === 0) {
+                            isSelectAllFlag = false;
+                            return false;
+                        }
+                    });
+                    var $selectAllCheckbox = $table.find("div.selectAllCheckboxFlag").find("input");
+                    if (isSelectAllFlag) {
+                        $selectAllCheckbox.prop("checked", true).addClass("selectFlag");
+                    } else {
+                        $selectAllCheckbox.prop("checked", false).removeClass("selectFlag");
+                    }
+
+                    //调用外部定义的rendered函数
+                    if (typeof custom_rendered === 'function') {
+                        custom_rendered();
+                    }
+                };
+
+                jqxOptions.ready = function() {
+                    //初始化完成后，绑定checkbox的点击事件
+                    instance.$element.on("click", "div.bh-checkbox", function() {
+                        _scenesTableContentCheckboxClick($(this).find("input"), instance);
+                        //触发自定义事件
+                        $(this).trigger('checkone');
+                    });
+
+                    //调用外部定义的rendered函数
+                    if (typeof custom_ready === 'function') {
+                        custom_ready();
+                    }
+
+                };
+                break;
+
+            case 'radio':
+                var guid = BH_UTILS.NewGuid();
+                var pinned = model.custom.pinned;
+                if (pinned !== true) {
+                    pinned = false;
+                }
+                column = {
+                    text: 'radio',
+                    datafield: 'field_radio',
+                    width: 40,
+                    minWidth: 40,
+                    maxWidth: 40,
+                    cellsAlign: 'center',
+                    align: 'center',
+                    sortable: false,
+                    pinned: pinned,
+                    draggable: false,
+                    renderer: function(text, align, height) {
+                        var radio = '选择';
+                        return radio;
+                    },
+                    cellsRenderer: function(row, column, value, rowData) {
+                        var radio = '&lt;div data-sss="" class="bh-radio bh-mh-4" style="margin-left:0 !important;">&lt;label style="padding-left: 0;">&lt;input name="' + guid + '" type="radio" value="">&lt;i class="bh-choice-helper">&lt;/i>&lt;/label>&lt;/div>';
+                        return radio;
+                    }
+                };
+
+                jqxOptions.ready = function() {
+                    //初始化完成后，绑定checkbox的点击事件
+                    instance.$element.on("click", "div.bh-radio", function() {
+                        //触发自定义事件
+                        $(this).trigger('checkone');
+                    });
+
+                    //调用外部定义的rendered函数
+                    if (typeof custom_ready === 'function') {
+                        custom_ready();
+                    }
+                };
+                break;
+            case 'link':
+                var pinned = model.custom.pinned;
+                if (pinned !== true) {
+                    pinned = false;
+                }
+                var default_column = {
+                    text: model.caption,
+                    datafield: datafield,
+                    pinned: pinned,
+                    draggable: false,
+                }
+                var cus_column = {
+                    cellsRenderer: function(row, column, value, rowData) {
+                        if (!isNaN(value)) {
+                            value = value.toString();
+                        }
+                        //qiyu 2016-8-31 解决ie9，placeholder插件点击后不再显示的问题
+                        // return '&lt;a href="javascript:void(0);" class="j_link_' + column + '">' + value + '&lt;/a>';
+                        return '&lt;a class="sc-cursor-point j_link_' + column + '">' + value + '&lt;/a>';
+                    }
+                }
+                column = $.extend(default_column, cus_column, widthObj);
+                break;
+            case 'tpl':
+                var default_column = {
+                    text: model.caption,
+                    datafield: datafield,
+                    draggable: false,
+                    sortable: (model.custom.column &amp;&amp; model.custom.column.sortable) || false
+                }
+                column = $.extend(default_column, model.custom.column, widthObj);
+                break;
+            case 'edit_tpl':
+                var default_column = {
+                    text: model.caption,
+                    datafield: datafield,
+                    hidden: true,
+                    draggable: false,
+                    sortable: false //自定义显示列默认不能排序
+                }
+                column = $.extend(default_column, model.custom.column, widthObj);
+                break;
+        }
+        return column;
+    }
+
+    /***
+     * [_proxyColOpt description]
+     * @param  {[type]} col      [description]
+     * @param  {[type]} settings [description]
+     * @param  {[type]} colModel [description]
+     * @return {[type]}          [description]
+     */
+    function _proxyColOpt(col, settings, colModel) {
+        var oldCellsRenderer = col.cellsRenderer;
+        var oldCellClassName = col.cellClassName;
+
+        function cellsRenderer(row, column, value, rowData) {
+            var args = $(arguments).toArray();
+            if (settings.editMode &amp;&amp; colModel.name) {
+                var model = $.extend(true, {}, colModel);
+                var cell = '';
+                if (!__isCellEditable.apply(this, args.concat([colModel, settings]))) {
+                    //判断用户是否自定义了单元格渲染函数
+                    if (oldCellsRenderer === _defaultCellsRenderer) {
+                        model.xtype = 'static';
+                        cell = WIS_EMAP_INPUT.renderPlaceHolder(model).addClass('bh-str-cut bh-form-static');
+                        cell = $('&lt;div>' + cell.prop('outerHTML') + '&lt;/div>');
+                        WIS_EMAP_INPUT.formSetValue(cell, rowData, {});
+                        cell = cell.html();
+                    } else {
+                        cell = oldCellsRenderer.apply(this, args.concat([colModel, settings]));
+                    }
+                } else {
+                    var minHeight = 28;
+                    if (model.xtype === 'textarea') {
+                        minHeight = 102;
+                    }
+                    cell = '&lt;div class="form-validate-block" style="min-height:' + minHeight + 'px">' +
+                        '&lt;div class="bh-form-group ' + (model.required ? 'bh-required' : '') + '" style="margin-bottom:0;background:none">' +
+                        '   &lt;label class="bh-form-label" style="display:none">' + col.text + '&lt;/label>' +
+                        '        &lt;div>' +
+                        '             &lt;div class="bh-form-placeholder bh-form-flow">&lt;/div>' +
+                        WIS_EMAP_INPUT.renderPlaceHolder(model).attr('data-jsonparam', model.JSONParam).prop('outerHTML') +
+                        '        &lt;/div>' +
+                        '    &lt;/div>' +
+                        '&lt;/div>';
+                    if (model.xtype === 'radiolist') {
+                        cell = '&lt;form>' + cell + '&lt;/form>';
+                    }
+                }
+                cell += '&lt;div class="' + toDeleteLine + '">&lt;/div>';
+                return cell;
+            } else {
+                if (oldCellsRenderer) {
+                    if (column === 'field_checkbox') {
+                        return oldCellsRenderer.apply(this, args.concat([colModel, settings])) + '&lt;div class="' + toDeleteLine + '">&lt;/div>';
+                    }
+                    return oldCellsRenderer.apply(this, args.concat([colModel, settings]));
+                }
+            }
+            return value === undefined ? '' : (value + '');
+        }
+
+        function cellClassName(row, column, value, rowData) {
+            var args = $(arguments).toArray().concat([colModel, settings]);
+            var className = oldCellClassName;
+            if ($.isFunction(oldCellClassName)) {
+                className = oldCellClassName.apply(this, args);
+            }
+            className = className || '';
+            if (settings.editMode) {
+                var isEditable = __isCellEditable.apply(this, args);
+                if (!isEditable) {
+                    className = className + ' bh-form-static';
+                }
+                if (rowData[toDeleteKey]) {
+                    className += ' ' + showToDeleteLine;
+                }
+                if (isEditable &amp;&amp; (column !== 'field_checkbox') &amp;&amp; (column !== 'field_radio')) {
+                    className += ' p-1';
+                }
+            }
+            return className;
+        }
+        col.cellsRenderer = cellsRenderer;
+        col.cellClassName = cellClassName;
+        return col;
+    }
+
+    function __isCellEditable(row, column, value, rowData, colModel, settings) {
+        var args = arguments;
+        if (settings.isCellEditable) {
+            return settings.isCellEditable.apply(this, args);
+        }
+        if (colModel.hasOwnProperty('readonly')) {
+            return colModel.readonly !== true;
+        }
+        if (colModel.hasOwnProperty('grid.readonly')) {
+            return colModel['grid.readonly'] !== true;
+        }
+        if (colModel.hasOwnProperty('xtype')) {
+            return colModel.xtype !== 'static';
+        }
+        return true;
+    }
+
+    function _decorateRendered(jqxOptions, instance) {
+        var oldRendered = jqxOptions.rendered;
+        var rendered = function() {
+            var editModeTimer = instance.$element.data('editModeTimer');
+            clearTimeout(editModeTimer);
+            if ($.isFunction(oldRendered)) {
+                oldRendered.apply(this, arguments);
+            }
+
+            if (instance.settings.editMode) {
+                showLoading(instance);
+                editModeTimer = setTimeout(function() {
+                    _setEditModeData(instance);
+                }, 10);
+                instance.$element.data('editModeTimer', editModeTimer);
+            }
+        };
+        jqxOptions.rendered = rendered;
+    }
+
+    function _setEditModeData(instance) {
+        var $content = instance.$element.jqxDataTable('content').find('table:not([id^="pinnedtable"])');
+        var $trs = $content.find('tbody>tr');
+        if ($trs.first().data('formInit')) {
+            hideLoading(instance);
+            return;
+        }
+
+        instance.$element.trigger('editabletatable.renderingcomponent');
+
+        instance.$element.jqxDataTable('content').find('table tbody>tr').addClass('bh-table-form');
+        $content.off('change');
+
+        $trs.first().data('formInit', true);
+
+        var rows = instance.$element.jqxDataTable('getRows');
+        $trs.find('.form-validate-block').hover(function() {
+            var offset = $(this).offset();
+            $(this).find('.jqx-validator-error-info').css({
+                position: 'fixed',
+                top: offset.top - 27 - $('body').scrollTop() + 'px',
+                left: offset.left + 8 - $('body').scrollLeft() + 'px',
+                width: 'auto',
+                right: 'auto'
+            });
+            $(this).addClass('bh-actived');
+        }, function() {
+            $(this).removeClass('bh-actived');
+        });
+
+        var model = instance.getModel();
+        var selectModels = model.filter(function(mod) {
+            return mod.xtype === 'radiolist' || mod.xtype === 'checkboxlist';
+        });
+        var dfds = selectModels.map(function(mod) {
+            return $.ajax({
+                url: mod.url,
+                datatype: "json",
+                success: function(resp) {
+                    if (resp &amp;&amp; resp.datas &amp;&amp; resp.datas.code) {
+                        $trs.find('[data-name="' + mod.name + '"][xtype="' + mod.xtype + '"]').data('optiondata', resp.datas.code.rows);
+                    }
+                }
+            });
+        });
+
+        $.when.apply($, dfds).always(function() {
+            $trs.emapFormInputInit({});
+
+            $trs.each(function(i) {
+                WIS_EMAP_INPUT.formSetValue($(this), rows[i], {});
+                if (rows[i] &amp;&amp; rows[i][toDeleteKey]) {
+                    $(this).find('>td [data-sss] input').prop('disabled', true);
+                }
+                $(this).emapValidate({
+                    fieldModel: model
+                });
+            });
+
+            //隐藏下拉框列表项
+            $('body').trigger('mousedown');
+            $trs.on('mousedown', function() {
+                $('body').trigger('mousedown');
+            });
+
+            var changedRowsData = instance.$element.data('changedRowsData');
+            if (!changedRowsData) {
+                changedRowsData = [];
+                instance.$element.data('changedRowsData', changedRowsData);
+            }
+            $trs.on('change', function(e) {
+                var $target = $(e.target);
+                var $block = $target.closest('.form-validate-block');
+                if ($block.length) {
+                    var comp = WIS_EMAP_INPUT.core[$block.find('[xtype]').attr('xtype')];
+                    if (comp) {
+                        $block.closest('td').addClass(editedBg);
+                    }
+                }
+            });
+
+            if (changedRowsData.length) {
+                $trs.each(function(i) {
+                    if (changedRowsData[i]) {
+                        WIS_EMAP_INPUT.formSetValue($(this), changedRowsData[i], {});
+                    }
+                });
+            }
+
+            //不要怀疑，上面的change是为渲染时给改变后的添加标志，下面off后再on一个debounce是解决下拉框打开时触发的change导致误加标志
+            $trs.off('change').on('change', WIS_EMAP_SERV.debounce(function(e) {
+                var $target = $(e.target);
+                var $block = $target.closest('.form-validate-block');
+                if ($block.length) {
+                    var index = $block.closest('tr').index();
+                    var values = WIS_EMAP_INPUT.formGetValue($block, {});
+                    var key = $block.find('[data-name]').data('name');
+                    if (changedRowsData[index]) {
+                        //防止添加行后下拉框初次打开时，导致的change
+                        if (changedRowsData[index][key] == values[key]) {
+                            return;
+                        }
+                    } else {
+                        //防止下拉框初次打开时，导致的change
+                        var value = rows[index][key];
+                        if (rows[index][key] === null || rows[index][key] === undefined) {
+                            value = '';
+                        }
+                        if (value == values[key]) {
+                            return;
+                        }
+                    }
+                    $block.closest('td').addClass(editedBg);
+                    if (!changedRowsData[index]) {
+                        changedRowsData[index] = {};
+                    }
+                    changedRowsData[index][key] = values[key];
+                    if (values.hasOwnProperty(key + '_DISPLAY')) {
+                        changedRowsData[index][key + '_DISPLAY'] = values[key + '_DISPLAY'];
+                    }
+                    $target.trigger('editabletatable.cell.change', [$block.closest('tr'), values, key]);
+                }
+            }, 10));
+
+            //标志已删除的行，需要放在赋值语句后面
+            $trs.each(function(i) {
+                if (rows[i] &amp;&amp; rows[i][toDeleteKey]) {
+                    instance.deleteRowInEditMode({
+                        rowIndex: i
+                    });
+                }
+            });
+
+            hideLoading(instance);
+
+            instance.$element.trigger('editabletatable.complete');
+        });
+    }
+
+    function showLoading(instance) {
+        var $load = instance.$element.jqxDataTable('dataloadelement');
+        $load.css({
+            visibility: 'visible',
+            display: 'block',
+            width: instance.$element.jqxDataTable('host').width()
+        });
+    }
+
+    function hideLoading(instance) {
+        instance.$element.jqxDataTable('dataloadelement').css({
+            visibility: 'hidden',
+            display: 'none',
+            width: '100%'
+        });
+    }
+
+    /**
+     * 点击tbody上的checkbox，处理头部的checkbox是否要勾选
+     * @param $input
+     */
+    function _scenesTableContentCheckboxClick($input, instance) {
+        if (!$input.hasClass("selectAllCheckboxFlag")) {
+            var $table = instance.$element;
+            var $selectAllCheckbox = $table.find("div.selectAllCheckboxFlag").find("input");
+            var $tableContent = $table.find("table");
+            var $checkboxList = $tableContent.find("div.bh-checkbox");
+            if ($input.prop("checked")) {
+                var isSelectAllFlag = true;
+                $checkboxList.find("input").each(function() {
+                    if (!$(this).prop("checked")) {
+                        isSelectAllFlag = false;
+                    }
+                });
+
+                if (isSelectAllFlag) {
+                    $selectAllCheckbox.prop("checked", true).addClass("selectFlag");
+                } else {
+                    $selectAllCheckbox.prop("checked", false).removeClass("selectFlag");
+                }
+            } else {
+                $selectAllCheckbox.prop("checked", false).removeClass("selectFlag");
+            }
+        }
+    }
+
+    /**
+     * 这里是关键
+     * 定义一个插件 plugin
+     */
+    $.fn.emapdatatable = function(options, params, callback, flag) {
+        var instance, initParams;
+        instance = this.data('emapdatatable');
+        initParams = this.data('initParams') || {};
+        if (options === true) return instance;
+        /**
+         * 判断插件是否已经实例化过，如果已经实例化了则直接返回该实例化对象
+         */
+        if (!instance) {
+            //params为表格渲染的初始化参数，后续表格的reload始终会携带该参数
+            $(this).data('initParams', options.params);
+            return this.each(function() {
+                //将实例化后的插件缓存在dom结构里（内存里）
+                return $(this).data('emapdatatable', new Plugin(this, options));
+            });
+        }
+        /**
+         * 优雅处： 如果插件的参数是一个字符串，则 调用 插件的 字符串方法。
+         * 如 $('#id').plugin('doSomething') 则实际调用的是 $('#id).plugin.doSomething();
+         * doSomething是刚才定义的接口。
+         * 这种方法 在 juqery ui 的插件里 很常见。
+         */
+        if ($.type(options) === 'string') {
+            var paramsObj = $.extend({}, initParams, params);
+            var querySetting = [];
+            //默认如果请求参数中有高级搜索的参数 会把其他参数合并进高级搜索参数querySetting
+            //如果flag为false则不合并。
+            if (typeof paramsObj.querySetting == 'undefined') {
+
+            }
+            if (typeof paramsObj.querySetting != 'undefined' &amp;&amp; flag !== false) {
+                // add by liujun 2016-12-8 originQuerySettingType  queryStting处理前后保持相同的类型，如果之前的字符串则处理完后也序列号成字符串
+                var originQuerySettingType = ''
+                if (typeof paramsObj.querySetting === 'string') {
+                    querySetting = JSON.parse(paramsObj.querySetting);
+                    originQuerySettingType = 'string'
+                } else {
+                    querySetting = paramsObj.querySetting
+                    originQuerySettingType = 'object'
+                }
+                $.each(paramsObj, function(k, v) {
+                    if (k != 'querySetting' &amp;&amp; ($.type(v) == 'number' || $.type(v) == 'string' || $.type(v) == 'boolean')) {
+                        querySetting.push({
+                            name: k,
+                            value: v,
+                            linkOpt: 'and',
+                            builder: 'equal'
+                        });
+                    }
+                });
+
+                if (originQuerySettingType === 'string') {
+                    paramsObj.querySetting = JSON.stringify(querySetting);
+                }
+            }
+            return instance[options](paramsObj, callback);
+        }
+        return this;
+    };
+
+    /**
+     * 插件的默认值
+     */
+    var height = null;
+    if (typeof BH_UTILS != 'undefined') {
+        height = BH_UTILS.getTableHeight(10);
+    }
+
+    var localization = null;
+    if (typeof Globalize != 'undefined') {
+        localization = Globalize.culture("zh-CN");
+        if (typeof BH_UTILS != 'undefined') {
+            if (BH_UTILS.lang() === 'en') {
+                localization = {};
+            }
+        }
+    }
+
+    /**
+     * @memberOf module:emapdatatable
+     * @event 'emapdatatable.created' 
+     * @description 表格初次渲染完成后触发的事件
+     * @example
+     * $el.on('emapdatatable.created',function(e,instance){
+     *     console.log(instance.getResult());
+     * })
+     */
+
+    /**
+     * @memberOf module:emapdatatable
+     * @event 'editabletatable.renderingcomponent' 
+     * @description 可编辑表格开始渲染组件的事件
+     * @example
+     * $el.on('editabletatable.renderingcomponent',function(e){
+     *     console.log(e);
+     * })
+     */
+
+    /**
+     * @memberOf module:emapdatatable
+     * @event 'editabletatable.complete' 
+     * @description 可编辑表格渲染完成的事件
+     * @example
+     * $el.on('editabletatable.complete',function(e){
+     *     console.log(instance.getResult());
+     * })
+     */
+
+    /**
+     * @memberOf module:emapdatatable
+     * @event 'editabletatable.cell.change' 
+     * @description 可编辑表格单元格值改变事件
+     * @param {DOM} $tr 发生改变的行元素
+     * @param {Object} value 改变后整行的值
+     * @param {String} key 发生改变的字段
+     * @example
+     * $el.on('editabletatable.cell.change',function(e,$tr,value,key){
+     *     console.log(value);
+     * })
+     */
+
+    /**
+     * @memberof module:emapdatatable
+     * @description 其他参数参考jqxDatatable{@link http://www.jqwidgets.com/jquery-widgets-documentation/documentation/jqxdatatable/jquery-datatable-api.htm?search=}
+     * @prop {String} [pk=WID] - 数据主键字段
+     * @prop {String} [url] - 请求表格数据的后台接口, url和pagePath二选一必填
+     * @prop {String} [pagePath] - 请求表格数据页面地址, url和pagePath二选一必填
+     * @prop {Object} params - 请求参数
+     * @prop {Array} datamodel - 一般为emap返回的数据模型
+     * @prop {String} action - emap动作名
+     * @prop {Array} customColumns - 自定义表格列,colIndex:该自定义位于表格第几列，从0开始，最后一列可以设置‘last’； colField: 自定义列作用的列模型字段； type: 自定义列类型，支持checkbox，link，tpl。chekcbox不可定义colField参数，如果定义了colIndex，则customColumns数组必须按照colIndex值由小到大排序
+     * @prop {Int|Stirng} [height] - 高度, 表格自适应高度传null
+     * @prop {Boolean} [pageable=true] - 是否分页
+     * @prop {String} [pagerMode=advanced] - 分页形式 'advanced' 'simple'
+     * @prop {Boolean} [serverProcessing=true] - 是否开启服务端分页 
+     * @prop {Array} [pageSizeOptions=['10', '20', '50', '100']] - 分页条数选项
+     * @prop {String} [localization='zh-CN'] - 语言选择
+     * @prop {Boolean} [sortable=false] - 排序
+     * @prop {String} [selectionMode='custom'] - Sets or gets the selection mode. Possible values: "multipleRows", "singleRow" and "custom". In the "custom" mode, rows could be selected/unselected only through the API.
+     * @prop {Boolean} [enableBrowserSelection=true] - Enables or disables the default text selection of the web browser.
+     * @prop {Boolean} [columnsResize=true] - Sets or gets the jqxDataTable's columnsResize.
+     * @prop {Boolean} [colHasMinWidth=true] - 列宽是否有默认最小值100px
+     * @prop {Boolean} [schema=true] - 启用schema，必须定义 contextPath   &amp;&amp;  未定义contextPath时   schema 不生效
+     * @prop {String} [contextPath] - 根路径
+     * @prop {Int} [minLineNum] - 最小高度行数 
+     * @prop {Boolean} [fastRender=false] - 快速渲染， 用于提高表格渲染速度 
+     * @prop {Function} [beforeSend] - 请求发送前的回调函数
+     * @prop {Function} [downloadComplete] - 表格数据请求完成的回调 
+     * @prop {Boolean} [mustSelect=true] - 自定义显示列弹窗是否开启必须勾选字段校验 
+     * @prop {Boolean} [columnsReorder=false] - 是否开启列拖拽排序 
+     * @example
+        $el.emapdatatable({
+            pagePath: bs.api.pageModel,
+            action: 'T_PXXX_XSJBXX_QUERY',
+            customColumns: [{
+                colIndex: '0',
+                type: 'checkbox'
+            }]
+        });
+     */
+    $.fn.emapdatatable.defaults = {
+        width: '100%',
+        height: height,
+        pageable: true,
+        pagerMode: 'advanced',
+        serverProcessing: true,
+        pageSizeOptions: ['10', '20', '50', '100'],
+        localization: localization,
+        sortable: false,
+        columnsReorder: false,
+        selectionMode: "custom",
+        enableBrowserSelection: true,
+        incrementalSearch: false,
+        columnsResize: true,
+        defaultParams: false,
+        onceParams: false,
+        colHasMinWidth: true, // 列宽是否有默认最小值100px
+        beforeSend: null,
+        contextPath: '', //
+        schema: true, // 启用schema，必须定义 contextPath   &amp;&amp;  未定义contextPath时   schema 不生效
+        minLineNum: null,
+        alwaysHide: ['WID', 'TBRQ', 'TBLX', 'CZRQ', 'CZZ', 'CZZXM'], // 自定义显示列的隐藏字段
+        fastRender: false,
+        canEdit: true,
+        isCellEditable: null,
+        isEditMode: false,
+        editPageable: false,
+        isOnceEmpty: false,
+        mustSelect: true
+    };
+
+}).call(this);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapAvatarUpload.html">emapAvatarUpload</a>&nbsp;(头像裁剪上传)</li><li><a href="module-emapCard.html">emapCard</a>&nbsp;(卡片列表)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownTable.html">emapDropdownTable</a>&nbsp;(下拉表格/模糊搜索)</li><li><a href="module-emapDropdownTree.html">emapDropdownTree</a>&nbsp;(下拉树)</li><li><a href="module-emapEditableDataTable.html">emapEditableDataTable</a>&nbsp;(编辑表格)</li><li><a href="module-emapEditor.html">emapEditor</a></li><li><a href="module-emapFileDownload.html">emapFileDownload</a>&nbsp;(文件下载)</li><li><a href="module-emapFileUpload.html">emapFileUpload</a>&nbsp;(文件上传)</li><li><a href="module-emapForm.html">emapForm</a>&nbsp;(表单)</li><li><a href="module-emapgrid.html">emapgrid</a>&nbsp;(grid列表)</li><li><a href="module-emapImageUpload.html">emapImageUpload</a>&nbsp;(多图片上传)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapLinkage.html">emapLinkage</a>&nbsp;(表单联动)</li><li><a href="module-emapPDFViewer.html">emapPDFViewer</a>&nbsp;(PDF文件预览)</li><li><a href="module-emapRulesConstructor.html">emapRulesConstructor</a>&nbsp;(条件构造器)</li><li><a href="module-emapSchema.html">emapSchema</a>&nbsp;(方案模块)</li><li><a href="module-emapSingleImageUpload.html">emapSingleImageUpload</a>&nbsp;(单图片上传)</li><li><a href="module-emapUploadCore.html">emapUploadCore</a>&nbsp;(上传核心模块)</li><li><a href="module-emapValidate.html">emapValidate</a>&nbsp;(表单校验)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_EMAP_SERV.html">WIS_EMAP_SERV</a>&nbsp;(公共方法)</li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:10:03 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

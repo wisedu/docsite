@@ -13,6 +13,7 @@
 * [echarts图表](#echarts)
 * [APP嵌入模式](#embed)
 * [config.js配置项说明](#config)
+* [utils方法列表](#utils)
 * [技术选型](#technology)
 * [常见问题](#faq)
 
@@ -179,6 +180,7 @@ http://res.wisedu.com/FE/HRMS/个人填报单页版/index.html?min=1#/txsbb
     "SERVER_CONFIG_API": "", // 服务器端生成配置的api 返回的数据会覆盖config.js中相同的配置项
     "MINI_MODE": true, // 只显示主体部分内容， 去除页头和页脚 默认false
     "HIDE_NAV":true, // 隐藏导航菜单 默认false
+    "RELEASE_MODE": false, // 执行gulp build后，前端业务代码统一压缩打包成all.css和packege.js，需要在index.html手动引用这2个文件  然后配置该参数为true， 发布后如果需要看到单独的文件调试：执行 store.session('debug',  true) 刷新页面即可看到非压缩的文件
     "MODULES": [{ // 需要展示的模块
         title: "体检管理", // 模块名称
         route: "tjgl",// 模块路由 url和route二选一
@@ -234,6 +236,18 @@ http://res.wisedu.com/FE/HRMS/个人填报单页版/index.html?min=1#/txsbb
     }
 }
 ```
+
+## utils方法列表
+* utils.loadCompiledPage('indexPage', require) // 加载html模版 返回的为模版编译后的对象（第二个参数设置为require时， html使用的是相对当前js的相对路径）
+* utils.getEcharts() // 详见上面echarts图表
+* utils.fetch(options) // ajax请求方法
+* utils.dialog(options) // 警告提示框
+* utils.window(options) // 对话框
+* utils.getUserParams() // 后去url后面的参数
+* utils.getConfig(key) // 获取config.js中的参数值
+* utils.go(path, blank) // 路由调转 当blank为true时在新tab页打开
+* utils.refreshButtonAuth() // 刷新按钮级授权（配合config.js中modules下的buttons使用）
+
 ## 技术选型
 
 * 模块化：requirejs

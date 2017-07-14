@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhCustomizeColumn/bhCustomizeColumn.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhCustomizeColumn/bhCustomizeColumn.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function() {
+    /**
+     * 选择和排序字段弹框
+     * @module bhCustomizeColumn
+     * @param  {Object} options 入参
+     * @example
+     * $.bhCustomizeColumn({
+     *     model:[],
+     *     alwaysHide:[],
+     *     title:'添加/删除字段',
+     *     columns:[{
+     *         name: 'xxxx',
+     *         hidden: false
+     *     }]
+     * })
+     * @return {Object} 弹框实例
+     */
+    $.bhCustomizeColumn = function(options) {
+        var opt = $.extend({}, $.bhCustomizeColumn.default, options);
+        return new bhCustomizeColumn(opt);
+    };
+
+    /**
+     * @property {String} title 标题
+     * @property {Array} model 模型，同emap模型
+     * @property {Array} [alwaysHide] 一直隐藏的字段
+     * @property {String} [modelType='grid'] 
+     * @property {Boolean} [multiSelect=true] 必选
+     * @property {Boolean} [useGroup=false] 使用分组
+     * @property {Boolean} [columnsReorder] 是否开启拖动排序
+     * @property {Number} [colNum=6] 一行显示几个字段
+     * @property {Function} [callback] 点击确定的回调函数,入参为(values)
+     * @property {Object} [params] 弹框参数，同BH_UTILS.bhWindow
+     * @type {Object}
+     */
+    $.bhCustomizeColumn.default = {
+        title: '',
+        model: [],
+        columns: [],
+        alwaysHide: [],
+        modelType: 'grid',
+        multiSelect: true,
+        useGroup: false,
+        mustSelect: true,
+        columnsReorder: false,
+        type: 'toggle',
+        colNum: '6',
+        callback: null,
+        params: null
+    };
+
+    function bhCustomizeColumn(options) {
+        this.options = options;
+        this.$element = _init(options);
+        bindEvent(this.$element, this.options);
+        checkToSelectAll(this.$element);
+    }
+
+    function _init(options) {
+        var model = [];
+        if (options.useGroup) {
+            model = WIS_EMAP_SERV._sortModel(options.model);
+        } else {
+            model.push(options.model);
+        }
+        var columns = options.columns;
+        var query = '&lt;div class="bh-customize-column-search bh-mb-16">&lt;input type="text" class="bh-form-control" placeholder="' + $.i18n('bha-column-searchWord') + '">&lt;i class="iconfont icon-search bh-import-step" style="position: absolute;left: 6px;top: 6px;">&lt;/i>&lt;span class="bh-color-caption">&lt;/span>' +
+            '&lt;div class="bh-customize-column-choose-finder bh-clearfix bh-color-info-2">' +
+            '&lt;div class="bh-pull-left bh-bg-info-5 bh-border-v bh-border-r bh-bColor-info-3" action-type="up">&lt;i class="iconfont icon-keyboardarrowup">&lt;/i>&lt;/div>' +
+            '&lt;div class="bh-pull-left bh-bg-info-5 bh-border-v bh-border-r bh-bColor-info-3" action-type="down">&lt;i class="iconfont icon-keyboardarrowdown">&lt;/i>&lt;/div>' +
+            '&lt;/div>&lt;/div>';
+        var fieldContent = '&lt;div class="bh-customize-content">';
+        var reorder = '';
+        var reoderable = '';
+        if (options.columnsReorder) {
+            reorder = '&lt;i class="iconfont icon-menu order-handle">&lt;/i>';
+            reoderable = 'reoderable';
+        }
+        $(model).each(function() {
+            var fieldList = [];
+            var showNum = 0;
+            var selectedNum = 0;
+            var colNum = options.colNum || 6;
+            var colWidth = 100 / colNum + '%';
+            var curGroupName = this.groupName;
+            $.each(columns, function(i, col) {
+                if (col.datafield === undefined &amp;&amp; col.name) {
+                    col.datafield = col.name;
+                }
+                var name = col.datafield &amp;&amp; col.datafield.replace('_DISPLAY', '');
+                var modelItem = options.model.filter(function(item) {
+                    return item.name == name;
+                });
+                if (modelItem.length) {
+                    col.text = modelItem[0]['caption'] || col.text; // 自定义显示列 没有caption 会在城text为undefined的情况  zhuhui 2016-9-9
+                }
+                if ($.type(name) === 'undefined' || name == 'field_checkbox' || name == 'field_radio') {
+                    return;
+                }
+                var flag = false;
+                options.alwaysHide &amp;&amp; options.alwaysHide.length &amp;&amp; (flag = $.inArray(name, options.alwaysHide) > -1);
+
+                // 隐藏且固定的字段 不展示
+                var hidden = options.model[i]['grid.hidden'] !== undefined ? options.model[i]['grid.hidden'] : options.model[i].hidden;
+
+                // 固定列只对 表格的自定义列生效， 对高级搜索 添加字段无影响
+                var fixed = false;
+                if (options.modelType == 'grid') {
+                    fixed = options.model[i]['grid.fixed'] !== undefined ? options.model[i]['grid.fixed'] : options.model[i].fixed;
+                }
+
+                if (hidden &amp;&amp; fixed) {
+                    flag = true;
+                }
+                if (modelItem.length) {
+                    if (!options.useGroup || modelItem[0].groupName == curGroupName) {
+                        // 显示且固定的字段不能被取消勾选
+
+                        fieldList.push(' &lt;li class="cell bh-bColor-info-3" style="width:' + colWidth + ';' + (flag ? 'display: none;' : '') + '">' +
+                            '&lt;div class="bh-checkbox bh-str-cut ' + reoderable + '" title="' + col.text + '">&lt;label>&lt;input type="checkbox" name="' + name + '" ' + (col.hidden ? '' : 'checked') +
+                            ' ' + (fixed &amp;&amp; !hidden ? 'disabled' : '') +
+                            '>' +
+                            '&lt;i class="bh-choice-helper">&lt;/i>' + '&lt;span class="filed-name">' + (col.text) + '&lt;/span>' +
+                            '&lt;/label>' +
+                            reorder +
+                            '&lt;/div>' +
+                            '&lt;/li>');
+
+                        if (!col.hidden &amp;&amp; !flag) {
+                            selectedNum++;
+                        }
+                        if (!flag) {
+                            showNum++;
+                        }
+                    }
+                }
+
+            });
+            var remainder = showNum % colNum;
+            if (remainder) {
+                for (var i = 0; i &lt; (colNum - remainder); i++) {
+                    fieldList.push('&lt;li class="cell bh-bColor-info-3" style="width:' + colWidth + '">');
+                }
+            }
+            var groupName = this.groupName;
+            if (!this.groupName || !options.useGroup) {
+                if (model.length == 1) {
+                    groupName = $.i18n('bha-column-selectAll');
+                } else {
+                    groupName = $.i18n('bha-column-nonGroupingField');
+                }
+            }
+            if (showNum > 0) {
+                if (options.multiSelect === false) {
+                    fieldContent += '&lt;div class="group-select sc-title-borderLeft bh-mb-8" ' + (showNum ? '' : 'style="display: none;"') + '>' +
+                        '&lt;b>' + groupName + '&lt;/b>' +
+                        '&lt;/div>';
+                } else {
+                    fieldContent += '&lt;div class="group-select bh-mb-8" ' + (showNum ? '' : 'style="display: none;"') + '>&lt;div class="bh-checkbox" style="padding-left: 9px;">&lt;label>&lt;input type="checkbox" name="' + groupName + '" title="' + groupName + '">' +
+                        '&lt;i class="bh-choice-helper">&lt;/i>&lt;b>' + groupName + '&lt;/b>' +
+                        '&lt;/label>&lt;span class="bh-text-caption bh-color-caption">' + $.i18n('bha-column-chosen') + '：&lt;span class="bh-color-warning selected-num">' + selectedNum + '&lt;/span>&lt;/span>&lt;/div>&lt;/div>';
+                }
+
+                fieldContent += '&lt;div class="bh-customize-column-grid bh-bColor-info-3">' + '&lt;ul class="bh-clearfix" style="list-style:none">' + fieldList.join('') + '&lt;/ul>&lt;/div>';
+            }
+        });
+        fieldContent += '&lt;/div>';
+        var content = query + fieldContent;
+        var title = options.title || $.i18n('bha-column-addDelete');
+        var isExport = options.type === 'export';
+        var btns = [{
+            text: (isExport ? $.i18n('bha-column-export') : $.i18n('bha-column-save')),
+            className: 'bh-btn-primary',
+            callback: function() {
+                okEvent.call(this, options);
+            }
+        }, {
+            text: $.i18n('bha-column-cancel'),
+            className: 'bh-btn-default',
+            callback: $.noop
+        }];
+        var params = $.extend({
+            width: '944px'
+        }, options.params);
+        var winElement = BH_UTILS.bhWindow(content, title, btns, params);
+        WIS_EMAP_INPUT.placeHolder($('input[type=text]', winElement));
+
+        var $jqxContent = winElement.find('.jqx-window-content');
+        $jqxContent.niceScroll().remove();
+        var height = $jqxContent.height() - winElement.find('.bh-customize-column-search').outerHeight(true);
+        winElement.find('.bh-customize-content').css({
+            height: height,
+            width: $jqxContent.width()
+        }).niceScroll();
+        if (isExport &amp;&amp; winElement.find('.bh-customize-column-grid').length > 1) {
+            winElement.find('#buttons').append('&lt;div class="select-all-for-export bh-form-group bh-l-inline bh-pull-right">' +
+                '&lt;div class="bh-checkbox">' +
+                '&lt;label>' +
+                '&lt;input type="checkbox" value="">' +
+                '&lt;i class="bh-choice-helper">&lt;/i>' + $.i18n('bha-column-selectAll') +
+                '&lt;/label>' +
+                '&lt;/div>' +
+                '&lt;/div>');
+        }
+
+        return winElement;
+    }
+
+    function checkToSelectAll($element) {
+        $element.find('.group-select').each(function() {
+            var isAllChecked = true;
+            $(this).next().find('input:visible:not(:disabled)').each(function() {
+                if (!$(this).prop('checked')) {
+                    isAllChecked = false;
+                    return false;
+                }
+            });
+            $(this).find('input').prop('checked', isAllChecked);
+        });
+        _checkToSelectAllForExport($element);
+    }
+
+    function bindEvent($element, options) {
+        bindSearchEvent($element);
+        bindSelectAllEvent($element, options);
+        bindBoxChangeEvent($element, options);
+        bindChooseFinderEvent($element);
+
+        if (options.multiSelect === false) {
+            // 单选
+            var checkboxs = $('.bh-customize-column-grid input[type=checkbox]', $element);
+            checkboxs.on('change', function(e) {
+                checkboxs.each(function(i) {
+                    if ($(this).prop('checked') &amp;&amp; this !== e.target) {
+                        $(this).prop('checked', false);
+                    }
+                });
+            });
+        }
+
+        bindSelectAllForExport($element);
+
+        if (options.columnsReorder) {
+            bindReorderEvent($element);
+        }
+    }
+
+    function bindSearchEvent($element) {
+        $element.find('.bh-customize-column-search input').on('input', function() {
+            var val = $(this).val();
+            if (val) {
+                var num = 0;
+                var $content = $(this).closest('.content');
+                $content.find('li:visible .bh-checkbox').each(function() {
+                    var $box = $(this);
+                    var title = $box.attr('title');
+                    if (val &amp;&amp; title.indexOf(val) > -1) {
+                        title = title.replace(val, '&lt;i class="bh-bg-warning-3" role-box-index="' + num + '">' + val + '&lt;/i>');
+                        num++;
+                    }
+                    $box.find('.filed-name').html(title);
+                });
+                $(this).closest('.bh-customize-column-search').find('.bh-customize-column-choose-finder').show();
+                _renderChosedBox($content);
+            } else {
+                $(this).nextAll('span').text('');
+                $(this).closest('.bh-customize-column-search').find('.bh-customize-column-choose-finder').hide();
+            }
+        });
+    }
+
+    //分组字段全选事件
+    function bindSelectAllEvent($element, options) {
+        $element.on('change', '.group-select input', function(e) {
+            var isChecked = $(this).prop('checked');
+            var $curtInputs = $(this).closest('.group-select').next().find('li:visible input');
+            $curtInputs.filter(':not(:disabled)').prop('checked', isChecked);
+            $(this).closest('.group-select').find('.selected-num').text($curtInputs.filter(':checked').length);
+            if (options.mustSelect) {
+                var $num = $(e.delegateTarget).find('.selected-num');
+                var num = 0;
+                $num.each(function() {
+                    num += $(this).text() * 1;
+                });
+                $(e.delegateTarget).find('#buttons:last button.bh-btn-primary').attr('disabled', !num);
+            }
+        });
+    }
+
+    //字段更改事件
+    function bindBoxChangeEvent($element, options) {
+        $element.find('.bh-customize-column-grid').on('change', 'li input', function(e) {
+            var $delegate = $(e.delegateTarget);
+            var $num = $delegate.prev().find('.selected-num');
+            var num = $num.text() * 1;
+            if ($(this).prop('checked')) {
+                $delegate.closest('.content').next().find('button.bh-btn-primary').removeAttr('disabled');
+                num++;
+                $delegate.prev().find('input').prop('checked', $delegate.find('li:visible :input').length === num);
+            } else {
+                var $parent = $delegate.parent();
+                if (options.mustSelect) {
+                    var isNoneChecked = true;
+                    $parent.find('li:visible input').each(function() {
+                        if ($(this).prop('checked')) {
+                            isNoneChecked = false;
+                            return false;
+                        }
+                    });
+                    $delegate.closest('.content').next().find('button.bh-btn-primary').attr('disabled', isNoneChecked);
+                }
+                $delegate.prev().find('input').prop('checked', false);
+                num--;
+            }
+            $num.text(num);
+        });
+    }
+
+    function bindChooseFinderEvent($element) {
+        $element.on('click', '.bh-customize-column-choose-finder>div', function(e) {
+                _renderChosedBox($(e.delegateTarget), $(e.currentTarget).attr('action-type'));
+            })
+            // 回车搜索 
+            .on('keyup', 'input[type=text].bh-form-control', function(e) {
+                if (e.keyCode == 13) {
+                    _renderChosedBox($(e.delegateTarget), 'down');
+                }
+            });
+    }
+
+    function bindReorderEvent($element) {
+        $element.find('.bh-customize-column-grid').each(function() {
+            Sortable.create(this.children[0], {
+                handle: '.order-handle',
+                draggable: '.cell',
+                animation: 300
+            });
+        });
+    }
+
+    //导出全选事件
+    function bindSelectAllForExport($element) {
+        $element.on('change', '.select-all-for-export input', function(e) {
+            var isChecked = $(this).prop('checked');
+            $(e.delegateTarget).find('.group-select input').each(function() {
+                $(this).prop('checked', isChecked);
+                $(this).trigger('change');
+            });
+        });
+        $element.on('change', '.bh-customize-content input', function(e) {
+            _checkToSelectAllForExport($(e.delegateTarget));
+        });
+    }
+
+    function _checkToSelectAllForExport($element) {
+        var isChecked = true;
+        $element.find('.group-select input').each(function() {
+            if (!$(this).prop('checked')) {
+                isChecked = false;
+                return false;
+            }
+        });
+        $element.find('.select-all-for-export input').prop('checked', isChecked);
+    }
+
+    function okEvent(options) {
+        var value = [];
+        $(this).find('li input[type="checkbox"]').each(function() {
+            value.push({
+                name: $(this).attr('name'),
+                hidden: !$(this).prop('checked')
+            });
+        });
+        options.callback &amp;&amp; options.callback.call(this, value);
+    }
+
+    function _renderChosedBox($el, type) {
+        var $boxes = $el.find('i[role-box-index]');
+        var num = $boxes.length;
+        var text = $.i18n('bha-column-total') + num + $.i18n('bha-column-tiaoo');
+        var $last = $el.find('.bh-bg-warning-2');
+        if (num) {
+            var nextIndex = 0;
+            if ($last.length) {
+                $last.removeClass('bh-bg-warning-2').addClass('bh-bg-warning-3');
+                var currentIndex = $last.attr('role-box-index') * 1;
+                if (type !== 'up') {
+                    if (currentIndex === (num - 1)) {
+                        nextIndex = 0;
+                    } else {
+                        nextIndex = currentIndex + 1;
+                    }
+                } else {
+                    if (currentIndex === 0) {
+                        nextIndex = num - 1;
+                    } else {
+                        nextIndex = currentIndex - 1;
+                    }
+                }
+            }
+            $boxes.eq(nextIndex).removeClass('bh-bg-warning-3').addClass('bh-bg-warning-2').focus();
+            _focusChosedBox($el);
+            text = $.i18n('bha-column-number') + (nextIndex + 1) + $.i18n('bha-column-tiao') + '；' + text;
+        } else {
+            text = $.i18n('bha-column-number0') + '；' + text;
+        }
+
+        $el.find('.bh-customize-column-search>span').text(text);
+    }
+
+    function _focusChosedBox($el) {
+        var $li = $el.find('.bh-bg-warning-2').closest('li');
+        var boxHeight = $li.height();
+        var position = $li.position();
+        //元素相对于content的top值
+        var top = $li.closest('.bh-customize-column-grid').position().top + position.top;
+        var $content = $el.find('.bh-customize-content');
+        var contentHeight = $content.height();
+        var y = $content.niceScroll().newscrolly || 0;
+        if (top &lt; 0 || (top + boxHeight) > contentHeight) {
+            var scrolly = top - contentHeight / 2;
+            $content.niceScroll().doScrollTop(y + scrolly, 0.3);
+        }
+    }
+
+    var proto = bhCustomizeColumn.prototype;
+
+    /**
+     * [getValue description]
+     * @return {}
+     * {
+     *     key:{
+     *        hidden:Boolean 
+     *     }
+     * }
+     */
+    proto.getValue = function() {
+        var value = {};
+        this.$element.find('li input[type="checkbox"]').each(function() {
+            value[$(this).attr('name')] = {
+                hidden: !$(this).prop('checked')
+            };
+        });
+        return value;
+    };
+
+}).call(this);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhCalculator.html">bhCalculator</a></li><li><a href="module-bhCustomizeColumn.html">bhCustomizeColumn</a></li><li><a href="module-bhDateAreaPicker.html">bhDateAreaPicker</a></li><li><a href="module-bhDateTimePicker.html">bhDateTimePicker</a></li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhSlider.html">bhSlider</a></li><li><a href="module-bhTree.html">bhTree</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

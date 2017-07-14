@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhTip/bhTip.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhTip/bhTip.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module bhTip
+ * @description 全局提示
+ * @example
+ $.bhTip({
+    content: '评价成功！',
+    state: 'success'
+ });
+ */
+(function($) {
+	'use strict';
+
+	/**
+	 * 这里是一个自运行的单例模式。
+	 */
+	$.bhTip = function(data) {
+
+		/**
+		 * @memberof module:bhTip
+		 * @description 内置默认值
+		 * @prop {object}  data
+		 * 
+		 * @prop {string}  data.content - 必填，提示框的文本内容
+		 * @prop {string}  data.state - 必填，提示框类型，有3种类型可选：成功success，警告warning，失败danger
+		 * @prop {string}  data.iconClass - 可选，提示图标的样式类
+		 * @prop {Array}  data.options - 可选，提示框链接
+		 * @prop {string}  data.options.text - 可选，提示框链接文字
+		 * @prop {function}  data.options.callback - 可选，提示框链接的回调方法
+		 * @prop {number}  data.hideWaitTime - 可选，停留时间
+		 * @prop {function}  data.onClosed - 可选，提示框消失后的回调事件
+		 */
+		var bhTipDefaults = {
+			content: '', //必填，提示框的文本内容
+			state: 'success', //必填，提示框类型，有3种类型可选：成功success，警告warning，失败danger,加载中loading
+			iconClass: '', //可选，提示图标的样式类
+			options: [{ //可选，提示框链接
+				text: '', //可选，提示框链接文字
+				callback: null //可选，提示框链接的回调方法
+			}],
+			hideWaitTime: 5000, //可选，停留时间
+			onClosed: function() {} //可选，提示框消失后的回调事件
+		};
+		//将插件的默认参数及用户定义的参数合并到一个新的options里
+		var options = $.extend({}, bhTipDefaults, data);
+		//记录鼠标移入移出的状态
+		var _leaving = true;
+		init(options);
+
+		/***
+		 * 初始化全局提示函数
+		 * @param {object} options
+		 */
+		function init(options) {
+			options = setDefaultIconClass(options);
+			var tipHtml = getTipHtml(options);
+			var $tipObj = $(tipHtml);
+			setTipHtml($tipObj);
+			//记录当前时间
+			var initTime = +(new Date());
+			var stayId = setTimeoutTohide($tipObj, options.hideWaitTime);
+			mouseOverAndOut($tipObj, stayId, initTime, options.hideWaitTime);
+			clickEventsListen($tipObj, options);
+		}
+
+		/***
+		 * 获取全局提示HTML
+		 * @param {object} options
+		 * @returns {string}
+		 */
+		function getTipHtml(options) {
+			var tipBtnHtml = '';
+			var optionsArr = options.options;
+			var optionsArrLen = optionsArr.length;
+			if (optionsArrLen >= 1 &amp;&amp; optionsArr[0].text !== '' &amp;&amp; optionsArr[0].text !== null) { // 判断是否传参options，动态添加tip-btn
+				for (var i = 0; i &lt; optionsArrLen; i++) {
+					tipBtnHtml += '&lt;a href="javascript:void(0);" class="bh-tip-btn" bh-tip-btn-role="tipBtn">' + optionsArr[i].text + '&lt;/a>';
+				}
+				tipBtnHtml = '&lt;div class="bh-tip-btn-group">' + tipBtnHtml + '&lt;/div>';
+			}
+			var tipHtml =
+				'&lt;div class="bh-tip bh-tip-animate-top-opacity bh-tip-' + options.state + '" bh-tip-role="bhTip">' +
+				'&lt;div class="bh-tip-top-bar">&lt;/div>' +
+				'&lt;div class="bh-card bh-card-lv4">' +
+				'&lt;a class="bh-tip-closeIcon" bh-tip-btn-role="closeIcon">×&lt;/a>' +
+				'&lt;div class="bh-tip-content">' +
+				'&lt;i class="iconfont ' + options.iconClass + '" >&lt;/i> ' +
+				'&lt;span>' + options.content + '&lt;/span> ' +
+				tipBtnHtml +
+				'&lt;/div>' +
+				'&lt;/div>' +
+				'&lt;/div>';
+
+			return tipHtml;
+		}
+
+		/***
+		 * 在浏览器顶部或者模态弹窗顶部显示
+		 * @param {object} $tipObj
+		 */
+		function setTipHtml($tipObj) {
+			var $body = $('body');
+			var windowObj = $body.find('div.jqx-window');
+			var inWindowTop = 0;
+
+			//处理存在模态弹框时,提示的显示   ghlong  2017-3-2
+			if (windowObj.length > 0) {
+				var windowDialogDom = null;
+				var dialogZindex = 0;
+				windowObj.each(function() {
+					if (this.style.display !== 'none') {
+						var zIndex = parseInt(this.style.zIndex, 10);
+						if (zIndex > dialogZindex) {
+							dialogZindex = zIndex;
+							windowDialogDom = this;
+						}
+					}
+				});
+				if (windowDialogDom) {
+					var $windowDialog = $(windowDialogDom);
+					//调整在弹框存在时,提示在距离弹框8px的地方  ghlong 2017-3-3
+					var windowDialogHeight = $windowDialog.outerHeight();
+					var clientHeight = window.innerHeight;
+					inWindowTop = parseInt((clientHeight - windowDialogHeight)/2, 10) - 48;
+				}
+			}
+
+			//不存在模态弹框时，提示在浏览器顶部显示
+			// if (windowObj.length == 0) {
+			// 	$body.append($tipObj);
+			// 	$tipObj.css({
+			// 		"position": "fixed"
+			// 	});
+			// } else {
+			// 	var windowDialogDom = null;
+			// 	var dialogZindex = 0;
+			// 	windowObj.each(function() {
+			// 		if (this.style.display !== 'none') {
+			// 			var zIndex = parseInt(this.style.zIndex, 10);
+			// 			if (zIndex > dialogZindex) {
+			// 				dialogZindex = zIndex;
+			// 				windowDialogDom = this;
+			// 			}
+			// 		}
+			// 	});
+			// 	if (windowDialogDom) {
+			// 		var $windowDialog = $(windowDialogDom);
+			// 		//提示在模态弹框中显示
+			// 		$windowDialog.append($tipObj);
+            //
+			// 		//调整在弹框存在时,提示在距离弹框8px的地方  ghlong 2017-2-27
+			// 		var windowDialogTop = $windowDialog.offset().top;
+			// 		inWindowTop = windowDialogTop - 48;
+			// 		$tipObj.css({
+			// 			"position": "fixed"
+			// 		});
+			// 	} else {
+			// 		$body.append($tipObj);
+			// 		$tipObj.css({
+			// 			"position": "fixed"
+			// 		});
+			// 	}
+			// }
+
+			//处理存在模态弹框时,提示的显示   ghlong  2017-3-2
+			$body.append($tipObj);
+			$tipObj.css({
+				"position": "fixed"
+			});
+
+			//调整在弹框存在时,提示在距离弹框8px的地方  ghlong 2017-2-27
+			var defaultTipTop = 16;
+			if(inWindowTop){
+				defaultTipTop = inWindowTop;
+			}
+
+			//显示提示框，显示效果为向下滑动+渐隐渐现
+			var tipWidth = $tipObj.outerWidth();
+			$tipObj.css({
+				top: defaultTipTop+'px',
+				left: 'calc(50% - ' + tipWidth / 2 + 'px)',
+				opacity: 1
+			});
+
+			//计算内容宽度设置水平居中
+			var contentObj = $tipObj.find(".bh-tip-content");
+			//获得字符串内容
+			var objText = $.trim(contentObj.text());
+			//实际字符个数    
+			var textLen = objText.length;
+			// 计算内容实际宽度：字符个数*每个字符宽度 + 图标宽 + 图标与文字的间距
+			var textWidth = textLen * 12 + 16 + 8;
+			//去掉宽度设置,由于宽度计算误差导致会出现折行  ghlong 2017-2-27
+			// contentObj.css({
+			// 	"width": textWidth + "px"
+			// });
+			//192: 最小宽度240px下内容的最大宽度 (240px - 左右内边距 - 右侧跟关闭按钮间的距离);
+			if (textWidth > 192) {
+				contentObj.css({
+					"margin-right": "16px"
+				});
+			}
+
+		}
+
+		/**
+		 * 定时隐藏提示框
+		 * @param {object} $tipObj
+		 */
+		function setTimeoutTohide($tipObj, hideWaitTime) {
+			if (!_leaving) {
+				return;
+			} else {
+				var stayId = setTimeout(function() {
+					if ($tipObj) {
+						hideDom($tipObj);
+					}
+				}, hideWaitTime);
+				return stayId;
+			}
+		}
+
+		/**
+		 * 隐藏提示后，删除DOM节点
+		 * @param {object} $tipObj
+		 */
+		function hideDom($tipObj) {
+			$tipObj.css({
+				opacity: 0,
+				top: '-40px'
+			});
+
+			setTimeout(function() {
+				$tipObj.remove();
+				if (options.onClosed) {
+					options.onClosed();
+				}
+			}, getAnimateTime());
+		}
+
+		/**
+		 * 鼠标移入和移出的事件监听
+		 * @param  {object} $tipObj 事件监听的提示框对象
+		 * @param  {number} stayId  计时器ID
+		 * @param  {string} initTime  动画开始时间
+		 * @param {string} remainTime  鼠标移出后，剩余停留时间	
+		 */
+		function mouseOverAndOut($tipObj, stayId, initTime, remainTime) {
+			var startTime = initTime; //动画开始时间
+			var remainTime = remainTime; //鼠标移出后，剩余停留时间	
+			var stayId = stayId; //标记计时器
+			var hoverTime; //鼠标移入时间
+			var leaveTime; // 鼠标移出时间
+			$tipObj.off('mouseenter').on("mouseenter", function() {
+				_leaving = false;
+				hoverTime = +(new Date()); //鼠标移入时间
+				// 停止计时器
+				clearTimeout(stayId);
+				var timeDiff = hoverTime - startTime;
+				if (timeDiff &lt; remainTime) {
+					remainTime = remainTime - timeDiff;
+				}
+
+			});
+
+			$tipObj.off('mouseleave').on("mouseleave", function() {
+				_leaving = true;
+				leaveTime = +(new Date()); //鼠标移出时间	
+				stayId = setTimeoutTohide($tipObj, remainTime); //从剩余时间继续执行动画
+				mouseOverAndOut($tipObj, stayId, leaveTime, remainTime);
+			});
+		}
+
+		/***
+		 * 点击事件监听
+		 * @param {object} $tipObj 
+		 * @param {object} options
+		 */
+		function clickEventsListen($tipObj, options) {
+			//点击关闭按钮,隐藏提示
+			$tipObj.off("click", "a[bh-tip-btn-role=closeIcon]").on("click", "a[bh-tip-btn-role=closeIcon]", function() {
+				hideDom($tipObj);
+			});
+
+			//操作按钮的回调
+			$tipObj.off("click", "a[bh-tip-btn-role=tipBtn]").on("click", "a[bh-tip-btn-role=tipBtn]", function(event) {
+				//获取当前点击按钮的索引
+				var btnIndex = $(event.target).index();
+				var btnOptions = {};
+				btnOptions = options.options[btnIndex];
+				if (typeof btnOptions.callback != 'undefined' &amp;&amp; btnOptions.callback instanceof Function) {
+					btnOptions.callback();
+				}
+			});
+		}
+
+		/***
+		 * 动画的执行的基础时间
+		 * @returns {number}
+		 */
+		function getAnimateTime() {
+			return 250;
+		}
+
+
+		/***
+		 * 设置不同状态下的默认图标样式
+		 * @param {object} options
+		 * @returns {object}
+		 */
+		function setDefaultIconClass(options) {
+			var iconClass = '';
+			switch (options.state) {
+				case 'success':
+					iconClass = 'icon-checkcircle';
+					break;
+				case 'warning':
+					iconClass = 'icon-erroroutline';
+					break;
+				case 'danger':
+					iconClass = 'icon-error';
+					break;
+				case 'primary':
+					iconClass = 'icon-info';
+			}
+			options.iconClass = options.iconClass ? options.iconClass : iconClass;
+
+			return options;
+		}
+	};
+
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

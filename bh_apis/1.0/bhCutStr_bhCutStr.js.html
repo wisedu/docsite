@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhCutStr/bhCutStr.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhCutStr/bhCutStr.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module bhCutStr
+ * @description 字符截断组件
+ * @example
+$.bhCutStr({
+    dom: { //可选，当要显示文本的dom结构已经存在，选用此方法
+        selector: '', //必选，截断文本所在容器的jquery选择器
+        line: 0, //必选，指定显示的文本行数
+        content: '' //可选，传入的文本内容（若文本已经加载到dom里了，则此项可不加）
+    },
+    text: { //可选，纯粹的对字符串做截断处理,使用该方式显示更多的处理自能自己处理
+        content: '', //必填，传入的文本内容
+        number: 0 //要截断的字符个数
+    },
+    moreBtn: {
+        content: '', //可选，更多按钮的文字
+        url: '', //可选，超链接所指向的地址
+        isOpenNewPage: true //可选，当url存在时，该选项才能生效，默认是打开新页面
+    }
+});
+ */
+(function($) {
+  'use strict';
+  /**
+   * 这里是一个自运行的单例模式。
+   */
+  $.bhCutStr = function(data) {
+    /**
+     * @memberof module:bhCutStr
+     * @description 内置默认值
+     * @prop {object}  data
+     * 
+     * @prop {object}  data.dom - 可选，当要显示文本的dom结构已经存在，选用此方法
+     * @prop {$}       data.dom.selector - 必选，截断文本所在容器的jquery选择器
+     * @prop {number}  data.dom.line - 必选，指定显示的文本行数
+     * @prop {string}  data.dom.content - 可选，传入的文本内容（若文本已经加载到dom里了，则此项可不加）
+     * 
+     * @prop {object}  data.text - 可选，纯粹的对字符串做截断处理,使用该方式显示更多的处理
+     * @prop {number}  data.text.line - 必选，要截断的字符个数
+     * @prop {string}  data.text.content - 必填，传入的文本内容
+     * 
+     * @prop {object}  data.moreBtn - 可选，设置更多按钮
+     * @prop {string}  data.moreBtn.content - 可选，更多按钮的文字
+     * @prop {string}  data.moreBtn.content - 可选,文本展开后的按钮文字, 当showType传入值时为必填
+     * @prop {string}  data.moreBtn.url - 可选，超链接所指向的地址
+     * @prop {boolean} data.moreBtn.isOpenNewPage - 可选，当url存在时，该选项才能生效，默认是打开新页面
+     * @prop {boolean} data.moreBtn.showType - 可选,点击更多按钮的展开方式(默认方式为tooltip方式,expand为直接在节点上展开),该选项不可与url同时使用
+     *
+     */
+    var bhCutStrDefaults = {
+      dom: { //可选，当要显示文本的dom结构已经存在，选用此方法
+        selector: '', //必选，截断文本所在容器的jquery选择器
+        line: 0, //必选，指定显示的文本行数
+        content: '' //可选，传入的文本内容（若文本已经加载到dom里了，则此项可不加）
+      },
+      text: { //可选，纯粹的对字符串做截断处理,使用该方式显示更多的处理自能自己处理
+        content: '', //必填，传入的文本内容
+        number: 0 //要截断的字符个数
+      },
+      moreBtn: {
+        content: '', //可选，更多按钮的文字
+        expandContent: '', //可选,文本展开后的按钮文字, 当showType=expand时为必填
+        url: '', //可选，超链接所指向的地址
+        isOpenNewPage: true, //可选，当url存在时，该选项才能生效，默认是打开新页面
+        showType: '', //可选,点击更多按钮的展开方式,该选项不可与url同时使用
+        compact: false //可选,设置按钮紧跟文字。当showType不设值时,该属性不生效
+      }
+    };
+    //将{}, bhCutStrDefaults, data进行合并，然后将合并结果返回给options
+    var options = $.extend({}, bhCutStrDefaults, data);
+
+    return init(options);
+    /**
+     * 初始化字符串截断函数
+     * @param  options
+     * @return string
+     */
+    function init(options) {
+      var $objArr = options.dom ? options.dom.selector : "";
+      if ($objArr.length > 0) {
+        $objArr.each(function() {
+          /*生成随机字符串*/
+          var guid = BH_UTILS.NewGuid();
+          var $obj = $(this);
+          //在该dom下添加一个零时dom来获取这个块的font-size
+          $obj.append(
+            '&lt;div id="' + guid + '">' +
+            '&lt;div id="chinese-' + guid + '" style="display: none;position: absolute;">是&lt;/div>' +
+            '&lt;div id="lower-english-' + guid + '" style="display: none;position: absolute;">w&lt;/div>' +
+            '&lt;/div>');
+          var tempObj = $obj.find('#' + guid);
+          //中文字符和大写的英文的大小
+          options.chineseFontSize = tempObj.find('#chinese-' + guid).width();
+          //小写的英文和数字的大小
+          options.lowerEnFontSize = tempObj.find('#lower-english-' + guid).width();
+          tempObj.remove();
+
+          //获取文本所在dom的宽度
+          var objWidth = $obj.width();
+          var objText = options.dom.content ? $.trim(options.dom.content) : $.trim($obj.text()); //获得字符串内容
+          var textLen = objText.length; //实际字符个数
+
+          //按所有文本都是中文字符计算出的文字个数
+          var tempComputeTextLen = parseInt(objWidth * options.dom.line / options.chineseFontSize, 10);
+          //当内容的字符数比计算出的字符数少，则不做任何处理
+          if (textLen &lt;= tempComputeTextLen) {
+            return;
+          }
+
+          var expandText = options.moreBtn.content ? options.moreBtn.content : '';
+          var collapseText = options.moreBtn.expandContent ? options.moreBtn.expandContent : '';
+
+          //更多按钮的宽度
+          var moreTextWidth = expandText ? getTextWidth(expandText) : 0;
+          //省略号的宽度，按一个中文字符的宽度算
+          var ellipsisWidth = options.chineseFontSize;
+          //去掉更多按钮和省略号的剩余宽度和一个字符的偏差宽度
+          var canUseWidth = objWidth * options.dom.line - moreTextWidth - ellipsisWidth - options.chineseFontSize;
+          var computeTextLen = parseInt(canUseWidth / options.chineseFontSize, 10);
+          var computeText = getCutText(canUseWidth, computeTextLen, objText);
+          computeText += '...';
+
+          var url = 'javascript:void(0);';
+          var target = 'target="_blank"';
+          var moreStr = '';
+          if (options.moreBtn) {
+            url = !options.moreBtn.url || options.moreBtn.url.length === 0 ? 'javascript:void(0);' : options.moreBtn.url;
+            url = $.trim(url);
+            target = !options.moreBtn.isOpenNewPage ? 'target="blank"' : '';
+            
+            var compact_class = '';
+            if(options.moreBtn.showType &amp;&amp; options.moreBtn.compact){
+              compact_class = 'bh-cut-str-compact';
+            }
+
+            //解决IE下会打开新页面的问题
+            if(url.indexOf('javascript:void(0)') > -1 || url.indexOf('javascript:;') > -1){
+              moreStr = '&lt;span href="' + url + '" class="bh-cut-str-more '+ compact_class+'" bh-cut-str-role="bhCutStr" ' + target + ' data-guid="' + guid + '" data-short-str="'+computeText+'" data-full-str="' + objText + '" data-type="collapse" expand-text="'+expandText+'" collapse-text="'+collapseText+'">' + expandText + '&lt;/span>';
+            }else{
+              moreStr = '&lt;a href="' + url + '" class="bh-cut-str-more '+ compact_class+'" bh-cut-str-role="bhCutStr" ' + target + ' data-guid="' + guid + '" data-short-str="'+computeText+'" data-full-str="' + objText + '" data-type="collapse" expand-text="'+expandText+'" collapse-text="'+collapseText+'">' + expandText + '&lt;/a>';
+            }
+          }
+
+          $obj.html('&lt;span bh-cut-str-role="content">'+ computeText + '&lt;/span>' + moreStr);
+
+          if (moreStr) {
+            moreTextEvent($obj.find('[bh-cut-str-role="bhCutStr"]'), options);
+            setTextContentHeight($obj);
+          }
+        });
+      } else {
+        var text = $.trim(options.text.content);
+        var cutText = text;
+        if (text.length > options.text.number) {
+          cutText = text.substring(0, options.text.number) + '...';
+        }
+
+        var url = 'javascript:void(0);';
+        var target = 'target="blank"';
+        var moreStr = '';
+        var moreText = '';
+        if (options.moreBtn) {
+          url = !options.moreBtn.url || options.moreBtn.url.length === 0 ? 'javascript:void(0);' : options.moreBtn.url;
+          url = $.trim(url);
+          target = !options.moreBtn.isOpenNewPage ? 'target="blank"' : '';
+          moreText = options.moreBtn.content ? options.moreBtn.content : '';
+
+          if(url.indexOf('javascript:void(0)') > -1 || url.indexOf('javascript:;') > -1){
+            moreStr = '&lt;span href="' + url + '" class="bh-cut-str-more" bh-cut-str-role="bhCutStr" ' + target + ' data-full-str="' + text + '">' + moreText + '&lt;/span>';
+          }else{
+            moreStr = '&lt;a href="' + url + '" class="bh-cut-str-more" bh-cut-str-role="bhCutStr" ' + target + ' data-full-str="' + text + '">' + moreText + '&lt;/a>';
+          }
+        }
+
+        cutText += moreStr;
+        return cutText;
+      }
+    }
+    /**
+     * [getCutText 获取截断文本]
+     * @param  {number} width   可以使用的宽度
+     * @param  {number} textLen 计算后文本的字符数
+     * @param  {string} text    字符串内容
+     * @return {string}
+     */
+    function getCutText(width, textLen, text) {
+      //按传入的长度截取字符
+      var cutText = text.substring(0, textLen);
+      //截取后剩余的字符
+      var surplusText = text.substring(textLen, text.length);
+      //获取该字符串的宽度
+      var textWidth = getTextWidth(cutText);
+      //当字符的宽度小于理论宽度，计算偏差字符
+      var diffText = '';
+      if (textWidth > 0 &amp;&amp; textWidth &lt; width) {
+        var diffWidth = width - textWidth;
+        //当偏差的宽度大于1个中文字符时，继续截断
+        if (diffWidth > options.chineseFontSize) {
+          var diffTextLen = parseInt(diffWidth / options.chineseFontSize, 10);
+          diffText = getCutText(diffWidth, diffTextLen, surplusText);
+        }
+      }
+      return cutText + diffText;
+    }
+    /**
+     * [getTextWidth 获取文本宽度]
+     * @param  {type} text 目标文本
+     * @return {type}
+     */
+    function getTextWidth(text) {
+      //匹配中文
+      var chinese = text.match(/[^\x00-\xff]/g);
+      var chineseLen = chinese ? chinese.length : 0;
+      //大写字母和@
+      var capitalEn = text.match(/[A-Z@]/g);
+      var capitalEnLen = capitalEn ? capitalEn.length : 0;
+      var lowerEnLen = text.length - chineseLen - capitalEnLen;
+      //大写字母按中文字符的宽度算
+      var width = (chineseLen + capitalEnLen) * options.chineseFontSize + lowerEnLen * options.lowerEnFontSize;
+      return width;
+    }
+    /**
+     * [moreTextEvent 查看更多文本]
+     * @param  {$} $moreStr jquery选择器
+     *  
+     */
+    function moreTextEvent($moreStr, options) {
+      switch (options.moreBtn.showType){
+        case 'expand':
+          $moreStr.on('click', function () {
+            var $btn = $(this);
+            var type = $btn.attr('data-type');
+            expandOrCollapse(type, $btn);
+          });
+          break;
+        default:
+          $moreStr.on('mouseover', function() {
+            var text = $moreStr.attr('data-full-str');
+            var guid = $moreStr.attr('data-guid');
+
+            //处理在tooltip方式下,快速移动鼠标到更多上时,弹出框会出现重叠的情况   ghlong  2017-3-13
+            var $box = $('#' + guid);
+            if($box.length > 0){
+              $box.addClass('bh-active').data('flag', 'show');
+              return;
+            }
+
+            var $textContainer = $moreStr.parent();
+            var containerWidth = $textContainer.width();
+            setAndShowPopBoxPosition($moreStr, containerWidth, text, guid);
+          });
+          $moreStr.on('mouseout', function() {
+            var guid = $moreStr.attr('data-guid');
+            var $box = $('#' + guid);
+            moreBoxToHide($box);
+          });
+          break;
+      }
+    }
+
+    function moreBoxEvent($moreBox) {
+      $moreBox.on('mouseover', function() {
+        $moreBox.data('flag', 'show');
+      });
+      $moreBox.on('mouseout', function() {
+        moreBoxToHide($moreBox);
+      });
+    }
+
+    function moreBoxToHide($box) {
+      $box.data('flag', 'hide');
+      setTimeout(function() {
+        if ($box.data('flag') === 'hide') {
+          $box.removeClass('bh-active');
+          setTimeout(function() {
+            $box.remove();
+          }, 250);
+        }
+      }, 150);
+    }
+    /**
+     * [setAndShowPopBoxPosition 设置与展示气泡框的位置]
+     * @param {$} $element 
+     * @param {number} boxWidth 
+     * @param {string} content  
+     *      
+     */
+    function setAndShowPopBoxPosition($element, boxWidth, content, id) {
+      var elementPosition = BH_UTILS.getElementPosition($element);
+      var windowHeight = window.innerHeight;
+      var halfWindowHeight = parseInt(windowHeight / 2, 10);
+      var windowScrollTop = window.scrollY;
+      var $content = '&lt;div data-flag="content">' + content + '&lt;/div>';
+      var frameHtml = '&lt;div id="' + id + '" style="width: ' + boxWidth + 'px;" class="bh-cutStr-popBox bh-card bh-card-lv2 bh-animate-transform-fast bh-animate-scale">' + $content + '&lt;/div>';
+      var $frameHtml = $(frameHtml);
+      $('body').append($frameHtml);
+
+      //默认展开的起点是右上角
+      var boxStyle = {
+        left: elementPosition.right - boxWidth + 'px',
+        top: elementPosition.bottom + 'px'
+      };
+      var boxOriginClass = 'bh-animate-origin-TR';
+      var contentHeight = $frameHtml.outerHeight();
+      var maxHeight = 0; //更多展示框的最大高度
+      //查看当前位置高度，辨别是上部还是下部的可用空间较多
+      var canShowHeight = 0;
+      var diff = 8; //留出弹框距离页面的边距
+      if (elementPosition.top - windowScrollTop > halfWindowHeight) {
+        //当上部有更多展示空间的处理
+        canShowHeight = elementPosition.top - windowScrollTop - $('header[bh-header-role="bhHeader"]').outerHeight() - diff;
+        boxOriginClass = 'bh-animate-origin-BR';
+        maxHeight = canShowHeight > contentHeight ? contentHeight : canShowHeight;
+        boxStyle.top = elementPosition.top - maxHeight + 'px';
+      } else {
+        //当下部有更多展示空间的处理
+        canShowHeight = windowHeight + windowScrollTop - elementPosition.bottom - $('footer[class="bh-footer"]').outerHeight() - diff;
+        maxHeight = canShowHeight > contentHeight ? contentHeight : canShowHeight;
+      }
+
+      boxStyle['max-height'] = maxHeight + 'px';
+
+      $frameHtml.css(boxStyle).addClass(boxOriginClass);
+      setTimeout(function() {
+        $frameHtml.addClass('bh-active');
+      }, 10);
+      moreBoxEvent($frameHtml);
+    }
+
+    function expandOrCollapse(type, $btn) {
+      var $parent = $btn.parent();
+      var type = $btn.attr('data-type');
+      var $content = $btn.prev();
+      var content_text = '';
+      var btn_text = '';
+      var height = '';
+      if(type === 'collapse'){
+        content_text = $btn.attr('data-full-str');
+        btn_text = $btn.attr('collapse-text');
+        $btn.attr('data-type', 'expand');
+        height = $parent.attr('bh-cut-str-max-height');
+      }else{
+        content_text = $btn.attr('data-short-str');
+        btn_text = $btn.attr('expand-text');
+        $btn.attr('data-type', 'collapse');
+        height = $parent.attr('bh-cut-str-min-height');
+      }
+
+      $content.html(content_text);
+      $btn.html(btn_text);
+      $parent.css({height: height +'px'});
+
+      //若存在纸质弹框则进行重置页脚 --ghlong 2017-4-13
+      setTimeout(function () {
+        if($('.bh-paper-pile-dialog').length > 0){
+          $.bhPaperPileDialog.resetPageFooter();
+          $.bhPaperPileDialog.resetDialogFooter();
+        }
+      }, 255);
+    }
+
+    function setTextContentHeight($obj) {
+      var min_height = $obj.outerHeight();
+
+      var $newObj = $obj.clone();
+      $newObj.css({display: 'none'});
+      var $btn = $newObj.find('[bh-cut-str-role="bhCutStr"]');
+      var $content = $newObj.find('[bh-cut-str-role="content"]');
+      var full_text = $btn.attr('data-full-str');
+      var btn_text = $btn.attr('collapse-text');
+      $content.html(full_text);
+      $btn.html(btn_text);
+
+      $obj.append($newObj).addClass('bh-collapse-animate-fast')
+          .css({'overflow':'hidden'});
+
+      var max_height = $newObj.outerHeight();
+
+      $obj.attr('bh-cut-str-min-height', min_height)
+          .attr('bh-cut-str-max-height', max_height)
+          .css({'height': min_height+'px'});
+
+      $newObj.remove();
+    }
+  };
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

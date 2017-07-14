@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhWizard/bhWizard.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhWizard/bhWizard.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
+if (typeof(BhUIManagers) == "undefined") {
+    BhUIManagers = {};
+}
+(function($) {
+    /**
+     * @module bhWizard
+     * @description 步骤向导组件
+     * @example
+     $('#bhWizard').bhWizard({});
+     */
+
+    $.fn.bhGetWizardManager = function() {
+        return BhUIManagers[this[0].id + "_Wizard"];
+    };
+
+    //参数命名空间定义
+    $.bhDefaults = $.bhDefaults || {};
+
+    /**
+     * @memberof module:bhWizard
+     * @property {Array} items 步骤参数集合 title,stepId,active,finished
+     * @property {String} [active=''] 当前激活项的stepId
+     * @property {String} [active2=''] 当前激活项的stepId 并调用change事件
+     * @property {Array} [finished=[]] 当前已完成项的stepId数组
+     * @property {DOM} [contentContainer=$("body")] 正文的容器选择器
+     * @property {Function} [change=null] 步骤改变的回调函数
+     */
+    $.bhDefaults.wizard = {
+        items: [], //步骤参数集合 title,stepId,active,finished
+        active: '', //当前激活项的stepId
+        active2: null, //当前激活项的stepId 并调用change事件
+        finished: [], //当前已完成项的stepId数组
+        isAddClickEvent: true, //步骤条是否可点
+        contentContainer: $("body"), //正文的容器选择器
+        change: null
+    };
+
+    //函数命名空间
+    $.bhWizard = $.bhWizard || {};
+
+    /**
+     * @memberof module:bhWizard
+     * @description 构造一个Jquery的对象级别插件,委托页面的id元素初始化
+     * @param options 参数集合
+     * @return {*}
+     * @example
+     * $el.bhWizard({
+     *     items: [{title:'qq',stepId:'1'}],
+     *     change:function(data){
+     *         console.log(data.stepId);
+     *     }
+     * })
+     */
+    $.fn.bhWizard = function(options) {
+        var p = $.extend({}, $.bhDefaults.wizard, options || {});
+
+        this.each(function() {
+            $.bhWizard.bhAddWizard(this, p);
+        });
+
+        //返回管理器
+        if (this.length == 0) {
+            return null;
+        }
+        if (this.length == 1) {
+            return $(this[0]).bhGetWizardManager();
+        }
+
+        //如果初始化的是个数组，返回管理器的集合
+        var managers = [];
+        this.each(function() {
+            managers.push($(this).bhGetWizardManager());
+        });
+        return managers;
+    };
+
+    /**
+     * 构造一个类级别插件
+     * @param wizard 初始化的元素对象
+     * @param options 参数集合
+     */
+    $.bhWizard.bhAddWizard = function(wizard, options) {
+        //如果已经初始化或者步骤为空则返回
+        if (wizard.userWizard){
+            return;
+        }
+
+        /**
+         * 构造li元素集合
+         * @type {Array}
+         */
+        var wizardHtml = [];
+
+        var g = {
+            addItem: function(i, item, total) {
+                var newItem = $('&lt;div class="bh-wizard-item" stepid="' + item.stepId + '">' +
+                    '&lt;div class="left-arrow">&lt;/div>' +
+                    '&lt;div class="title bh-str-cut" title="' + item.title + '">&lt;i>&lt;/i>' + item.title + '&lt;/div>' +
+                    '&lt;div class="right-arrow">&lt;/div>' +
+                    '&lt;/div>');
+                var itemStatus = {
+                    item: newItem,
+                    isActive: false,
+                    isFinished: false
+                };
+                if (i == 0) {
+                    $(newItem).addClass("bh-wizard-item-first");
+                } else if (i == (total - 1)) {
+                    $(newItem).addClass("bh-wizard-item-last");
+                }
+                g.wizardContainer.append(newItem);
+            },
+            resetActiveItem: function(stepId) {
+                g.activeItemStepId = stepId;
+            },
+            resetFinishedItems: function(stepIds) {
+                g.finishedItemStepIds = stepIds;
+                for (var i = 0; i &lt; g.finishedItemStepIds.length; i++) {
+                    var finishedStepId = g.finishedItemStepIds[i];
+                    var finishedIndex = po.getIndexByStepId(finishedStepId);
+                    po.refreshElementByIndex(finishedIndex);
+                }
+            },
+            activeNextItem: function() {
+                //重置上一个激活项的样式
+                var prevActiveItemIndex = po.getActiveItemIndex();
+                var newActiveItemIndex = prevActiveItemIndex + 1;
+                var stepId = g.items[newActiveItemIndex]["stepId"];
+                g.changeToActive(stepId);
+            },
+
+            activePrevItem: function() {
+                //重置上一个激活项的样式
+                var prevActiveItemIndex = po.getActiveItemIndex();
+                var newActiveItemIndex = prevActiveItemIndex - 1;
+                var stepId = g.items[newActiveItemIndex]["stepId"];
+                g.changeToActive(stepId);
+            },
+            /**
+             * 把指定的步骤切成active状态
+             * @param stepId
+             */
+            changeToActive: function(stepId) {
+                //1、取消上一个步骤处于激活状态
+                var prevActiveItemStepId = g.activeItemStepId;
+                var prevActiveItemIndex = po.getActiveItemIndex();
+
+                g.resetActiveItem(stepId);
+
+                po.refreshElementByIndex(prevActiveItemIndex);
+                g.contentContainer.find("#" + prevActiveItemStepId).addClass("bh-hide");
+
+                //2、设置指定的步骤的项为激活状态
+                var newActiveItemIndex = po.getActiveItemIndex();
+                po.refreshElementByIndex(newActiveItemIndex);
+                g.contentContainer.find("#" + g.activeItemStepId).removeClass("bh-hide");
+
+                if (options &amp;&amp; typeof options.change != 'undefined' &amp;&amp; options.change instanceof Function) {
+                    options.change({
+                        "stepId": stepId
+                    });
+                }
+            },
+            changeToFinished: function(finishedStepId) {
+                //1、设置指定的步骤为finished
+                if (po.isExistInFinisheds(finishedStepId)) {
+                    return;
+                }
+                po.addToFinisheds(finishedStepId);
+                var finishedIndex = po.getIndexByStepId(finishedStepId);
+                po.refreshElementByIndex(finishedIndex);
+            }
+        };
+
+        var po = {
+            /**
+             * 判断步骤项是否在已完成列表中
+             * @param stepId
+             * @returns {boolean}
+             */
+            isExistInFinisheds: function(stepId) {
+                var isExist = false;
+                for (var i = 0; i &lt; g.finishedItemStepIds.length; i++) {
+                    if (g.finishedItemStepIds[i] == stepId) {
+                        isExist = true;
+                        break;
+                    }
+                }
+                return isExist;
+            },
+            addToFinisheds: function(finishedStepId) {
+                if (g.finishedItemStepIds) {
+                    var maxLen = g.finishedItemStepIds.length;
+                    if (maxLen > 0) {
+                        g.finishedItemStepIds[maxLen] = finishedStepId;
+                    } else {
+                        g.finishedItemStepIds[0] = finishedStepId;
+                    }
+                }
+            },
+            init: function() {
+                //激活的区域需要打开区域信息
+                g.wizardElement.each(function(i, item) {
+                    if ($(item).hasClass("active")) {
+                        //打开对应的step的信息区域
+                        $("#" + $(item).attr("stepid")).removeClass("bh-hide");
+                    } else {
+                        $("#" + $(item).attr("stepid")).addClass("bh-hide");
+                    }
+                });
+            },
+            isActive: function(index) {
+                var activeIndex = po.getIndexByStepId(g.activeItemStepId);
+                if (activeIndex == index) {
+                    return true;
+                }
+                return false;
+            },
+            isFinished: function(index) {
+                var finishedCount = g.finishedItemStepIds.length;
+                var result = false;
+                if (finishedCount > 0) {
+                    for (var i = 0; i &lt; finishedCount; i++) {
+                        if (index == po.getIndexByStepId(g.finishedItemStepIds[i])) {
+                            result = true;
+                            break;
+                        }
+                    }
+                }
+                return result;
+            },
+            refreshElementByIndex: function(index) {
+                var targetElement = g.wizardElement[index];
+                var icon = $("i", $(targetElement));
+                icon.removeClass();
+                if (po.isFinished(index)) {
+                    $(targetElement).addClass("finished");
+                    icon.addClass("iconfont icon-checkcircle");
+                } else {
+                    $(targetElement).removeClass("finished");
+                }
+                if (po.isActive(index)) {
+                    $(targetElement).addClass("active");
+                    icon.addClass("iconfont icon-edit");
+                } else {
+                    $(targetElement).removeClass("active");
+                }
+            },
+            isActiveItem: function(stepId) {
+                if (stepId == g.activeItemStepId) {
+                    return true;
+                } else {
+                    return false;
+                }
+            },
+            addClickEvent: function() {
+                g.wizardElement.unbind("click").click(function() {
+                    var thisElement = $(this);
+                    var stepId = thisElement.attr("stepid");
+                    if (po.isActiveItem(stepId)) {
+                        return;
+                    }
+                    g.changeToActive(stepId);
+                });
+            },
+            getIndexByStepId: function(stepId) {
+                var index = 0;
+                for (var i = 0; i &lt; g.items.length; i++) {
+                    if (g.items[i]["stepId"] == stepId) {
+                        index = i;
+                        break;
+                    }
+                }
+                return index;
+            },
+            getActiveItemIndex: function() {
+                var index = 0;
+                for (var i = 0; i &lt; g.items.length; i++) {
+                    if (g.items[i]["stepId"] == g.activeItemStepId) {
+                        index = i;
+                        break;
+                    }
+                }
+                return index;
+            }
+        };
+
+        g.items = options.items;
+        g.activeItemStepId = options.active || options.active2;
+        g.finishedItemStepIds = options.finished;
+        g.wizardContainer = $(wizard);
+        g.contentContainer = options.contentContainer;
+        g.wizardContainer.addClass('bh-wizard-container');
+
+        $(options.items).each(function(i, item) {
+            g.addItem(i, item, options.items.length);
+        });
+
+        g.wizardElement = $(g.wizardContainer).children(".bh-wizard-item");
+
+        $(options.items).each(function(i, item) {
+            po.refreshElementByIndex(i);
+        });
+
+        po.init();
+
+        if (options.isAddClickEvent) {
+            //绑定点击事件
+            po.addClickEvent();
+        }
+
+        if (options.active2) {
+            g.changeToActive(options.active2);
+        }
+
+        var itemLen = g.wizardElement.length;
+        if (itemLen > 0) {
+            var $wizardContainer = g.wizardContainer;
+            var sumWidth = $wizardContainer.width();
+            var hiddenCount = $(".bh-wizard-item:hidden", $wizardContainer).length;
+            var count = itemLen - hiddenCount;
+            var itemWidth = Math.floor(sumWidth / count);
+            //40是左右两个箭头的宽度
+            g.wizardElement.find('.title').width(itemWidth - 40);
+        }
+
+        if (wizard.id == undefined) {
+            wizard.id = "BhUI_" + new Date().getTime();
+        }
+        BhUIManagers[wizard.id + "_Wizard"] = g;
+
+        wizard.userWizard = true;
+    };
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

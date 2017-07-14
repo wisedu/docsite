@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhAffix/bhAffix.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhAffix/bhAffix.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function ($) {
+    /**
+     * 初始化
+     * @module bhAffix
+     * @description 浮动组件,页面滚动，使元素块变浮动
+     * @example
+     $.bhAffix({
+        hostContainer: $('section'), //父容器
+        fixedContainer: $('#affixContainer') //浮动元素
+     });
+     * @prop data {object} 初始化参数
+     * @prop data.hostContainer {jQuery} 浮动块所在的父容器
+     * @prop data.fixedContainer {jQuery} 浮动块容器
+     */
+    $.bhAffix = function(data){
+        var bhAffixDefaults = {
+            hostContainer: "", //期望浮动元素在页面滚动到达该容器的top值时变成浮动的容器, 后面简称“父容器”
+            header: $("header.sc-head"), //普通头部
+            miniHeader: $("header.sc-head-mini"), //迷你头部
+            fixedContainer: "", //浮动元素
+            offset: {} //自己调节浮动块的偏移，top和left
+        };
+        var options = $.extend({}, bhAffixDefaults, data);
+
+        //当要浮动的块是大纲时,不予处理,因大纲已默认打开浮动属性    ghlong 2017-3-3
+        if(options.fixedContainer.length > 0){
+            if(options.fixedContainer.attr('bh-role-form-outline-fixed') === 'bhFormOutline'){
+                return;
+            }
+        }
+
+        if(options.fixedContainer.length > 0 &amp;&amp; options.hostContainer.length > 0){
+            if(options.fixedContainer.attr("bh-affix-role") !== "bhAffix"){
+                $(window).on("scroll.bhAffix", function(){
+                    setBlockPosition();
+                });
+
+                options.fixedContainer.attr("bh-affix-role", "bhAffix");
+            }
+        }
+
+        function setBlockPosition(){
+            if(options.fixedContainer.length > 0){
+                var $window = $(window);
+                var scrollTop = $window.scrollTop();
+
+                var hostOffset = options.hostContainer.offset();
+                //父容器的top
+                var hostTop = hostOffset.top;
+                //父容器的left
+                var hostLeft = hostOffset.left;
+                //普通头部的高
+                var headHeight = options.header ? options.header.outerHeight() : 0;
+                var fixedContOffset = options.fixedContainer.offset();
+                //浮动元素的top
+                var fixedContTop = fixedContOffset.top;
+                //浮动元素的left
+                var fixedLeft = fixedContOffset.left;
+                //浮动元素距离父容器的距离
+                var diffHeight = fixedContTop - hostTop;
+                //自定义偏移的top值
+                var offsetTop = options.offset.top ? parseInt(options.offset.top, 10) : 0;
+                //浮动元素距离顶部的距离
+                diffHeight = diffHeight + offsetTop;
+
+                //当滚动高度大于期望高度的处理
+                if(scrollTop >= hostTop - offsetTop - headHeight){
+                    //获取之前存放在浮动元素上的style（是已经计算好的style，避免重复计算）
+                    var fixedStyleData = options.fixedContainer.data("bhAffixStyleData");
+                    if(!fixedStyleData){
+                        if(options.offset.left){
+                            fixedLeft = fixedLeft + parseInt(options.offset.left, 10);
+                        }
+                        var toFixedTop = diffHeight;
+                        if(options.miniHeader){
+                            toFixedTop += options.miniHeader.outerHeight();
+                        }else{
+                            toFixedTop += headHeight;
+                        }
+                        //计算后的浮动style
+                        fixedStyleData = {"left": fixedLeft+"px", "position":"fixed", "top": toFixedTop};
+                        //浮动元素初始的style（用户自己设定的style，将其缓存起来，避免清除浮动style时将用户的style清掉）
+                        var _style = options.fixedContainer.attr("style");
+                        //将计算的和元素的style存入浮动元素中
+                        options.fixedContainer.data("beforeBhAffixStyle", _style).data("bhAffixStyleData", fixedStyleData);
+                    }
+
+                    options.fixedContainer.css(fixedStyleData).data("bhAffixFlag",true).addClass('bh-affix-fixedFlag');
+                }else{
+                    //取消元素浮动的处理，替换style为用户自己设定的style
+                    var _style = options.fixedContainer.data("beforeBhAffixStyle");
+                    var fixedFlag = options.fixedContainer.data("bhAffixFlag");
+                    if(!_style){
+                        _style = "";
+                    }
+                    if(fixedFlag){
+                        options.fixedContainer.attr("style", _style);
+                        options.fixedContainer.data("bhAffixFlag", false).removeClass('bh-affix-fixedFlag');
+                    }
+                }
+            }
+        }
+    };
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

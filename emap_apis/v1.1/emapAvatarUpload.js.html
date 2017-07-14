@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapAvatarUpload.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapAvatarUpload.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function() {
+  var Plugin, _eventBind;
+  var defaultPhoto = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBARXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAABE6ADAAQAAAABAAABSAAAAAD/7QA4UGhvdG9zaG9wIDMuMAA4QklNBAQAAAAAAAA4QklNBCUAAAAAABDUHYzZjwCyBOmACZjs+EJ+/8AAEQgBSAETAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/bAEMABgYGBgYGCgYGCg4KCgoOEw4ODg4TGBMTExMTGB0YGBgYGBgdHR0dHR0dHSMjIyMjIygoKCgoLS0tLS0tLS0tLf/bAEMBBwcHDAsMFAsLFC8gGiAvLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vL//dAAQAEv/aAAwDAQACEQMRAD8A6miiivpz89CiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Q6miiivpz89CiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//R6miiivpz89CiiigAooooAKKKKACiiigAooooAKKw9S8Q6dpuUdvMkH8Ccn8fSuIvfGGo3BK2wEC+3J/OuOvjqVPRvU9LC5TXr6xVl3Z6kzKg3OQB6nis6XWNLh/1lzGPoc/yrxqe8urlt08rOfck1Xrz55u/sxPZpcNL/l5P7kewt4n0Rf8AluD9Af8ACo/+Eq0X/nqf++TXkNFY/wBrVeyOlcO4fu/w/wAj2JfE+iN/y3A+oP8AhV2LV9Mn/wBXcRn6nH868QpaqOb1OsURPhyi/hk/wPflZXG5SCPUUteEwXt3bNut5XQ+xNdNZeMb+AhbtRMvr0b8666WbU3pNWPOr8O1o605J/geoUVj6brun6mAsL7ZP7jcH8PWtivShUjNc0XdHh1aU6cuWaswoooqzMKKKKACiiigAooooAKKKKACiiigD//S6miiivpz89CiiigAooooAKKKKACiignHJoAZJJHDG0srBVUZJPQCvNta8VzXJa308mOLoX/ib6egqDxLrzX8ps7VsW6Hkj+Mj+npXJV4GOzBtunTenc+vynJ4xSrV1r0Xb/gikknJ5JpKKK8g+kCiiigAooooAKKKKACiiigBysykMpwR0IrudD8VvGy2upnch4EncfX2rhKK2oYidKXNBnLisHTxEeSoj39WV1DKcg8gilrzTwvr7W0i6ddtmJjhGP8J9Poa9Lr6jDYiNaPMj4LHYKeGqckvk+4UUUV0HGFFFFABRRRQAUUUUAFFFFAH//T6miiivpz89CiiigAooooAKKKKACuS8WaqbO0FnCcSz9cdl7/AJ9K60nAya8U1m+OoajLcZyudqf7o6f415+ZYj2dOy3Z7OSYNVq3NLaOv+RlUUUV8yfdBRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAC16z4X1U6hZeTMczQYU+47GvJa2tAvzp+pxSk4Rzsf6H/A812YHEeyqLs9zzM2war0GlutUezUUUV9Ufn4UUUUAFFFFABRRRQAUUUUAf/9TqaKKK+nPz0KKKKACiiigAooooAyNeuvsekzyg4YrtH1bivFq9M8bTbbGGAfxyZP0A/wDr15nXzmazvV5ex9tw/S5cPz92FFFFeYe6FFFFABRRRQAUUUUAFFFFABRRRQAUUuCOtJQAUUUUAe2aLd/bdLguCcsVw31HBrUrjPBU++wlgP8AyzkyPow/xzXZ19dhanPSjI/OMwo+yrzgu4UUUV0HGFFFFABRRRQAUUUUAf/V6miiivpz89CiiigAooooAKKKKAPOvHD5nto/RWP5kf4Vwldn42P/ABMIR/0z/qa4yvlce715H6DlCthaf9dQooorjPSCiiigAooooAKKKKACipoLe4upRDbRtLI3RUBYn8BXo+h/DHV7/bNqrCziP8J+aQj6dB+P5UNgebwwzXEqwwI0jucKqjJJ9gK9i8LfDQ5S+8QjjqtuP/Zz/QV6VonhnR9Aj26fCA5GGlblz+P9BgVv1Dl2GUptOsLi3FpPBG8QGAjKCAPpXgvjzwbHoTrqOnA/ZJW2leuxuuM+h7V9D1j+INOTVtGurBhkyRnb/vDlf1ApJ2A+R6KUjBIPakrQR3PgeTFzcRf3kU/kT/jXo9eXeCzjVXX1hP8AMV6jX02WO9FHwufRtim+6QUUUV6B4wUUUUAFFFFABRRRQB//1upooor6c/PQooooAKKKKACiiigDzTxsuL6BvWPH5GuKrv8AxzH81rKP9tT+lcBXyuYK1eR+gZPK+Fh/XUKWkr6N+GMXl+GQ39+Z2/kP6VxN2PTPnZYpG+6pP0FWU07UJf8AV20rfRGP9K+w6KnnHY+S4fDPiKf/AFenXJ9zEwH5kAVtW/w88WXGM2giB7yOg/TJP6V9NUUcwWPCLP4TanIQb68hiHpGGc/rtFdhp/ww8O2uGuzLdMP77bV/JcH9a9HpBS5mBTstN0/TY/KsLeOBfRFAz9cdau0UUgCiiikAUUVVvL+y0+Ez30yQRj+J2Cj9aYHyZrUAttXvLccCOZ1/JiKzK2PENxBea5fXVq2+KWd3RumQWJB5rHrUR13gv/kLP/1xb+a16lXmfglM380n92PH5kf4V6ZX0uVr9yj4bP3fFP0QUUUV6J4oUUUUAFFFFABRRRQB/9fqaKKK+nPz0KKKKACiiigAooqe2t3uplgj6samUkldlQi5NRjuzi/GNq9xp0bRKWZJBwBk4IIrzOe2uLZ9lxG0bdcOCD+tfXtpY29mgWJRu7seprM8SaDa+INMktJ1HmAExPjlW7H6etfJ43Exq1OaKP0HLMJPD0VTm9T5Or6k8DQfZ/C1kpGCylj+LH+lfMDwyRTtbyDa6sUI9CDg19c6PB9l0m0t8Y2QoD9dozXLI9E0qKKKzAKKKKACkFLSCmAtFFFIAooooAK8p+KulifTYNVQfPA+xj/st0/I/wA69WrE8SWQ1HQb20IyWiYr/vL8w/UU0B8lU4KxGQCcU5I3kkWJBlmIUD1J4r6t0LQbLR9Ii05Y1b5R5pIB3sRyT61o3YXoeIeB4vluZvUqo/DJ/rXfVqX3h+00jfPp0YjilfcyjoGI7e3FZdfVZc4+wjys+Aznm+tTclb/AIYKKKK7TywooooAKKKKACiiigD/0Opooor6c/PQooooAKKKKACun8OwgtLOeoAUfj1rmK67w6R5Eo7hhXn5nJqhKx62RxTxUb+f5HRUUUV8mffHzXr+l58eSWCDie4Rh/20wT+pNfSgAAwOgryO8svP+KVuccLEJT/wFWx+oFeuVUgCiiipAKKKKACkFLSCmAtFFFIAooooAKCARg8g0UUAfLuh6eD40gsGHEd0eP8ArmSf6V9RV4LpEAX4oyj+7cTt+Yb/ABr3qqkBWvIhPayRHupx9e1ecnrXprEBST0ArzI9TXvZLJ2mvQ+T4liuanLrqJRRRXuHy4UUUUAFFFFABRRRQB//0epooor6c/PQooooAKKKKACt7QLgRXJhY4Eg4+o6Vg05WZGDKcEcg1jiKKqwcH1OjCYh0asaq6Hp1FYdhrUE6BLlhHIO56GtlJY5OY2DY9Dmvj62HnTdpo/RMPi6VaKlTlci+yWv2n7Z5Seft2+ZtG7b6Z64qxRRWR0BRRRSAKKKKACkFLSCmAtFFFIAooooAKKKKAKS6bpyXRvUtohOckyhBv56/NjNXaCccmqc2oWcC7nkX6A5P5VcYSk7RVyKlWMFebsRarcC2snOfmcbR+NcBWjqN+99Lu6Iv3RWdX1WX4V0adpbs+DzfHLEVrw+FaIKKKK7zygooooAKKKKACiiigD/0upooor6c/PQooooAKKKKACiiigArovDs22eSE/xrkfUVztXLCf7Pdxy9gefoetc2Lpe0pSidmX1/ZV4Tfc9Eooor40/SAooopAFFFFABSClpBTAWiiikAUUUUAFFFFAFLUZfJspX/2cD8eK88rrfEM+2KO3HVjuP0FclX0+UUuWlzPqfEcQV+fEci+ygooor1TwgooooAKKKKACiiigAooooA//0+pooor6c/PQooooAKKKKACiiigAooooA9A0u4+02SMT8yjafqK0K43QrvybgwMflk6fUV2VfIY+h7Kq10ep+h5Vivb0Iye60YUUUVxHohRRRQAUgpaQUwFooopAFFFFABRRWdqt39ktGYH5m+VfxrSnTc5KEepnWqxpQdSWyOR1W5+03rsDlV+UfQVnUtJX2tOmoRUF0PzOtVdScqkt2FFFFWZhRRRQAUUUUAFFFFABRRRQB//U6miiivpz89CiiigAooooAKKKKACiiigBysVIZTgjpXdaZqKXkQVjiVRyPX3rg6ekjxsHjJUjoRXHjMHGvGz3R6OXZhLCzutU90em0VzFlr3SO8H/AAIf1ro4pY5l3xMGB9K+Yr4WpSdpo+4wuOpYhXpv5dSSiiiuY6wpBS0gpgLRRRSAKKKyrzV7W1yqne/oK0pUpVHywVzKtXp0o81R2RpSSJEhkkIVR1JrhNTvjezlh9xeFH9ajvNQuL1syHC9lHSqNfSYDL/Y+/P4vyPjM1zf6x+7p6R/MKKKK9Q8MKKKKACiiigAooooAKKKKACiiigD/9XqaKKK+nPz0KKKKACiiigAooooAKKKKACiiigAqxb3E1u4aFyv0qvTl+8KiaTi0zSlJxmmmdlDqxHE659xWpFd28v3HH0NclRXwfMfrLpJna9aBXHrPMn3XI/Gnm7uW4Mhp8xHsmdU8kcYy7AfWs+bVIU4jG8/pXPFmbliT9aSjmKVJdQ1HULmXC7tqnsKxKu3nVapV9dliX1eLPzvPm/rc16fkFFFFegeOFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAf/W6miiivpz89CiiigAooooAKKKKACiiigAoopkksUK75XVF9WOB+tAJD6cv3hWBL4k0aOUQrOJHJwAnP69KmTXbIuBh+T6D/GuapiaUdJSR6OGyvFVffp0m16HZUUUV8QfqAUUUUAFFFFAFG86rVKmatqdvZypFLuJIzwKxJPEulQsouHMW7oWHH6Zr6vLcRTVGMHJXPg87y3Eyrzrxpvl01tpsb1FVbe+s7sZtpkkz/dIJ/KrVeonfY+bcWtGFFFFMQUUUUAFFFFABRRRQAUUUUAFFFFAH//X6miiivpz89CiiigAooooAKKK5zXvElpokew/vLhh8sY/mfQVM5qKvIulSlUlywV2b8s0UEZlncIi9WY4ArjtQ8c6Xa5S0DXDjuPlX8zXmOp6zqGrS+ZdyEjsg4UfQVlV5tXHN6QPoMPk0VrVd2dfe+NdZusrCywKeyDn8zzXMz3d1ctvuJXkJ7sSarUVxzqSl8TPWp4enT+CNixbS+RcRy/3WBr0ZHBCyIcg4INeY11Oi6ku0Wk5xj7hP8q4cVTbXMuh9LkWNjTm6U9n+Z73pl4t9ZpMDlsYb6jrV+vLNN1KfTZt8fKH7ynof/r16FZapZ3yjyXAbuh4b/69ecd+KwkqcrrY0aKKKRxhSEgAknAHU1FNcQ26eZO4RfUmuJ1jXzdKbazysZ+83dv/AK1BvQw8qrtEytXu1vb+SZPuj5V+grz3xBOHnSBT9wc/U10F/fx2URZuXP3Vrg5JHldpHOWY5NduFpu/Ox53io06SwsN+oiSPGcoxU+xxW7Z+KNassCO4Z1H8L/MP1rn6K9GM3HZnyM6UJq01c9QsPH8bYTUYNv+3Hz+h/xrubDVLDU032Uyyeo6EfUHmvnapoJ5raQTQOUdeQVODXXTxs18Wp5lfJ6Utaej/A+kqK858P8AjUTMtnq5CseFl6A/73p9a9GBBGR0r06dWM1eJ89iMNOjLlmgooorQwCiiigAooooAKKKKAP/0Opooor6c/PQooooAKKKKAMTxBqw0fTXuhgyH5Ywe7H/AA614RPPNdTNPOxd3OST3Ndx4+v/ADb+KwU/LAu5v95v/rfzrga8fGVeafL0R9XlWHUKSm92FFFFcZ6gUUUUAFLSUUAb1lrc0AEdwPMQd+4rpINRs58GOQA+h4Nee0tc9TDRlqtD18LnVakuWXvLzPXYtU1CIDy53wOgySKkfWdTkGDOw+nH8q8iWaVPuOR9DTjcXDcNIx/E1j9Tfc7v7dovV0dfl/kejXN6gJkupvm7lmya5671+NQUtBuP949PyrlCSetJWkMJFavU58Rn1WS5aS5USyzSTuZJWLMe5qKiiupI8OUm3dhRRRQIKKKKACvUPBGuyTE6RdNuKrmInrgdV/wry+r2m3jaffwXi/8ALJwx9x3H4itqFRwkmcuMw6rU3B79D6KopqOsiB0OQwyD7GnV7x8UFFFFABRRRQAUUUUAf//R6miiivpz89CiiigAoJAGT2orG8Q3f2LRbqcHB2FV+rfKP51MpWTZdODnJRXU8Q1W7N/qVxdk5Ejkj6dB+lZ9FFfPN3d2fdRiopRQUUUUigooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD3XwnefbNDgZjloh5bf8B4H6Yro68z+Ht3/AMfViT6SKP0P9K9Mr3cPPmppnxePpclaUf61CiiitzkCiiigAooooA//0upooor6c/PQooooAK4H4gXXl6fBaA8yybj9FH+JFd9Xj3jy687V0tweIIwPxbk/piubFytTZ6GV0+auvLU4iiiivEPrwooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA6fwfdfZdegycLKDGfxHH6gV7jXzdbTtbXMVynWJ1cfgc19HxuskayIchgCD7GvVwEvdcT5vO6dpxn3HUUUV3niBRRRQAUUUUAf/9PqaKKK+nPz0KKKKACvn3Xbn7XrF1PnIMjAfReB+gr6CPSvnC7/AOPub/fb+defmD0SPcyOK5psrUUUV5Z9GFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABXvfhm5+1aFayE5ITYf+AfL/SvBK9u8F/8i/D/ALz/APoRruwD99ryPHzqK9kn5nVUUUV6x8wFFFFABRRRQB//2Q==';
+  /**
+   * @module emapAvatarUpload
+   * @alias 头像裁剪上传
+   * @description 头像裁剪&lt;br>
+   * 依赖项：&lt;br>
+   * @example
+   * &lt;script src="http://res.wisedu.com/bower_components/cropper/cropper.min.js">&lt;/script> 
+   * $container.emapAvatarUpload({
+   *     contextPath: '/emap',
+   *     size: 5120
+   * })
+   */
+  Plugin = (function() {
+    function Plugin(element, options) {
+      this.options = $.extend({}, $.fn.emapAvatarUpload.defaults, options);
+      this.$element = $(element);
+      _init(this.$element, this.options);
+    }
+
+    /**
+     * @method destroy
+     * @description 销毁
+     */
+    Plugin.prototype.destroy = function() {
+      this.options = null;
+      $(this.$element).data('emapAvatarUpload', false).empty();
+    };
+    Plugin.prototype.getValue = function() {};
+
+    /**
+     * @method disable
+     * @description 禁用
+     */
+    Plugin.prototype.disable = function() {
+      $('.bh-emapAvartar-btn', this.$element).hide()
+    };
+
+    /**
+     * @method disable
+     * @description 启用
+     */
+    Plugin.prototype.enable = function() {
+      $('.bh-emapAvartar-btn', this.$element).show()
+    };
+
+    /**
+     * @method save
+     * @description 保存附件
+     */
+    Plugin.prototype.save = function() {
+      if (this.options.fileId) {
+        var result = deleteFileByToken(this.options).success &amp;&amp; saveAttachment(this.options).success;
+        delete this.options.fileId;
+        return result;
+      }
+    };
+    return Plugin;
+  })();
+
+
+  //生成dom
+  function _init(element, options) {
+    // contextPath 兼容
+    options.contextPath = options.contextPath || WIS_EMAP_SERV.getContextPath();
+    // 默认展示头像
+    if (options.defaultAvatar === undefined) {
+      options.defaultAvatar = defaultPhoto
+    }
+    if (options.token &amp;&amp; options.token != null) {
+      // 已有图片
+      options.scope = options.token.substring(0, options.token.length - 1);
+      // options.displayAvatar = options.contextPath + '/sys/emapcomponent/file/getFileByToken/' + options.token + '.do?date=' + new Date().getTime();
+      options.displayAvatar = options.contextPath + '/sys/emapcomponent/file/getSingleImageByToken.do?fileToken=' + options.token + '&amp;date=' + new Date().getTime();
+      options.newToken = false;
+    } else {
+      // 新上传
+      options.scope = new Date().getTime() + "" + parseInt(Math.random() * 100).toString();
+      options.token = options.scope + 1;
+      options.displayAvatar = options.defaultAvatar;
+      options.newToken = true;
+    }
+
+    options.$wrap = $('&lt;div class="bh-emapAvatar-wrap">&lt;img class="bh-emapAvatar-avatar" src="' + options.displayAvatar + '">&lt;a class="bh-emapAvartar-btn" href="javascript:void(0)">' + $.i18n('bh-au-adjustHeadImage') + '&lt;/a>&lt;/div>')
+      .css({
+        'height': options.width / options.ratio,
+        'width': options.width
+      });
+
+    if (options.disabled) $('.bh-emapAvartar-btn', options.$wrap).hide();
+    element.append(options.$wrap);
+
+    _eventBind(element, options);
+
+  }
+
+  _eventBind = function(element, options) {
+    var $wrap = options.$wrap;
+    // 点击修改头像
+    $wrap.on('click', '.bh-emapAvartar-btn', function() {
+      $.emapAvatarUploadWindow(element, options);
+    });
+
+    $('.bh-emapAvatar-avatar', element).one('error', function() {
+      $(this).attr('src', options.defaultAvatar);
+    });
+  };
+
+
+  $.fn.emapAvatarUpload = function(options, params) {
+    var instance;
+    instance = $(this).data('emapAvatarUpload');
+    if (!instance) {
+      return this.each(function() {
+        if (options == 'destroy') {
+          return this;
+        }
+        return $(this).data('emapAvatarUpload', new Plugin(this, options));
+      });
+    }
+    if (options === true) return instance;
+    if ($.type(options) === 'string') return instance[options](params);
+    return this;
+  };
+
+
+  /**
+   * @memberof module:emapAvatarUpload
+   * @prop {String} [contextPath] - 根路径
+   * @prop {Number} [ratio=1] - 图片宽高比
+   * @prop {Int} [width=100] - 图片显示宽度
+   * @prop {Int} [actualWidth] - 裁剪出图片的实际宽度
+   * @prop {String} [token] - 文件token,不传则组件生成随机的新token， 传token则组件自动请求token下已有的文件信息并渲染到页面上
+   * @prop {String} [storeId=image] - emap文件类型
+   * @prop {Array} [type=['jpg', 'png', 'jpeg']] - 上传文件的格式要求
+   * @prop {Int} [size=5120] - 上传文件的大小要求，单位为KB
+   * @prop {Int} [disabled=false] - 是否禁用
+   * @prop {Function} [onSubmit] - 头像裁剪成功的回调 参数为token
+   * @prop {Object} [saveParams] - 保存请求的附带参数
+   * @prop {Boolean} [autoSave=true] - 是否自动调用保存方法
+   */
+  $.fn.emapAvatarUpload.defaults = {
+    storeId: 'image',
+    contextPath: "",
+    ratio: 1,
+    width: 100,
+    actualWidth: null, // 需要图片的实际尺寸
+    type: ['jpg', 'png', 'jpeg'],
+    size: 5120,
+    disabled: false,
+    autoSave: true,
+    saveParams: {}
+  };
+
+  $.emapAvatarUploadWindow = function(element, options) {
+    // 兼容直接调用此方法导致默认参数没有传进来的问题
+    options.autoSave = options.autoSave === undefined ? true : options.autoSave
+    options.winContent = $('&lt;div id="emapAvatarUploadWindow">' +
+      '&lt;ul style="display: none;">' +
+      '&lt;li>' + $.i18n('bh-au-uploadFromLocal') + '&lt;/li>' +
+      '&lt;li>' + $.i18n('bh-au-RecommondHeadImage') + '&lt;/li>' +
+      '&lt;/ul>' +
+      '&lt;div>' +
+      '&lt;div class="bh-emapAvatar-local">&lt;/div>' +
+      '&lt;div class="bh-emapAcatar-error-msg bh-text-center" style="color: red;">&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;div>' +
+      '&lt;/div>');
+
+    var initUpload = function(input, options) {
+      /***
+       * emap 相关逻辑代码
+       *
+       */
+      var fileReader = 'FileReader' in window;
+      input.fileupload({
+        url: options.uploadUrl,
+        autoUpload: true,
+        multiple: false,
+        dataType: 'json',
+        limitMultiFileUploads: 1,
+        formData: {
+          size: options.size,
+          type: options.type,
+          storeId: options.storeId
+        },
+        submit: function(e, data) {
+          $('.bh-emapAcatar-error-msg', options.winContent).html('').hide();
+          var file = data.files[0];
+          $('.bh-emapAvatar-text-info', options.winContent).show();
+          $('.bh-emapAvatar-text-error', options.winContent).hide();
+
+          // 文件的大小 和类型校验
+          if (options.type &amp;&amp; options.type.length > 0) {
+            if (!new RegExp(options.type.join('|').toUpperCase()).test(file.name.toUpperCase())) {
+              $('.bh-emapAvatar-text-info', options.winContent).hide();
+              $('.bh-emapAvatar-text-error', options.winContent).html($.i18n('bh-au-wrongType')).show();
+              return false;
+            }
+          }
+
+          if (fileReader &amp;&amp; options.size) {
+            if (file.size / 1024 > options.size) {
+              $('.bh-emapAvatar-text-info', options.winContent).hide();
+              $('.bh-emapAvatar-text-error', options.winContent).html($.i18n('bh-au-passTheMax')).show();
+              return false;
+            }
+          }
+          $('.bh-emapAvatar-loader', options.winContent).jqxLoader('open');
+
+        },
+        done: function(e, data) {
+          var file = data.files[0];
+          if (data.result.success) {
+            // 上传成功
+            $('.bh-avatar-img', options.winContent).attr('src', data.result.tempFileUrl).cropper('destroy');
+            initCrop($('.bh-avatar-img', options.winContent), options);
+            $('.bh-avatar-img-block', options.winContent).show();
+            // 上传成功后删除原有的 临时文件图片
+            deleteTempFile(options);
+
+            options.fileId = data.result.id;
+          } else {
+            // 上传失败
+            $('.bh-emapAcatar-error-msg', options.winContent).html($.i18n('bh-au-imageUploadFail')).show();
+          }
+          $('.bh-emapAvatar-loader', options.winContent).jqxLoader('close');
+        },
+        fail: function(e, data) {
+          var file = data.files[0];
+          $('.bh-emapAvatar-loader', options.winContent).jqxLoader('open');
+          $('.bh-emapAcatar-error-msg', options.winContent).html($.i18n('bh-au-imageUploadFail')).show();
+        }
+      });
+    };
+
+    options.uploadUrl = options.contextPath + '/sys/emapcomponent/file/uploadTempFile/' + options.scope + '/' + options.token + '.do';
+
+
+    $('.bh-emapAvatar-local', options.winContent).html('&lt;div class="bh-emapAvatar-editArea" bh-avatar-role="editArea">' +
+      '&lt;div class="bh-emapAvatar-upload-block">' +
+      '&lt;a href="javascript:void(0)" class="bh-btn bh-btn-default bh-emapAvatar-upload">' +
+      '&lt;i class="iconfont icon-add">&lt;/i>' + $.i18n('bh-au-chooseImages') +
+      '&lt;input type="file">' +
+      '&lt;/a>' +
+      '&lt;p class="bh-text-caption bh-color-caption bh-text-center bh-emapAvatar-text-info">&lt;/p>' +
+      '&lt;p class="bh-text-caption bh-color-danger bh-text-center bh-emapAvatar-text-error">&lt;/p>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-avatar-img-block">' +
+      '&lt;img class="bh-avatar-img" src="' + options.displayAvatar + '" style="display: none;">' +
+      '&lt;p >&lt;a href="javascript:void(0)" class="bh-emapAvatar-reUpload">' + $.i18n('bh-au-reupload') + '&lt;/a> ' +
+      //  旋转功能暂未提供
+      //'| &lt;a href="javascript:void(0)">&lt;i class="iconfont icon-refresh">&lt;/i>90°旋转&lt;/a>' +
+      '&lt;/p>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-emapAvatar-loader">&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-emapAvatar-display">' +
+      '&lt;div class="bh-emapAvatar-preview-100 bh-emapAvatar-preview">&lt;div class="bh-emapAvatar-preview-div">&lt;/div>&lt;/div>' +
+      '&lt;p class="bh-mb-8">&lt;/p>' +
+      '&lt;div>' +
+      '&lt;div class="bh-emapAvatar-preview-40 bh-pull-left bh-emapAvatar-preview" style="margin-right: 8px;">&lt;div class="bh-emapAvatar-preview-div">&lt;/div>&lt;/div>' +
+      '&lt;div class="bh-emapAvatar-preview-40 bh-pull-left bh-emapAvatar-preview" style="border-radius: 50%;">&lt;div class="bh-emapAvatar-preview-div">&lt;/div>&lt;/div>' +
+      '&lt;p class="bh-clearfix bh-mb-8">&lt;/p>' +
+      '&lt;div class="bh-emapAvatar-preview-28 bh-pull-left bh-emapAvatar-preview" style="margin-right: 8px;">&lt;div class="bh-emapAvatar-preview-div">&lt;/div>&lt;/div>' +
+      '&lt;div class="bh-emapAvatar-preview-28 bh-pull-left bh-emapAvatar-preview" style="border-radius: 50%;">&lt;div class="bh-emapAvatar-preview-div">&lt;/div>&lt;/div>' +
+      '&lt;p class="bh-clearfix bh-mb-8">&lt;/p>' +
+      '&lt;/div>' +
+      '&lt;/div>' +
+      '');
+
+    $('.bh-avatar-img', options.winContent).one('error', function() {
+        $(this).attr('src', options.defaultAvatar);
+      })
+      .on('load', function() {
+        initCrop($(this), options);
+      }); // 初始化裁剪插件
+
+    BH_UTILS.bhWindow(options.winContent, $.i18n('bh-au-uploadHeadImage'), undefined, {
+      width: '560px',
+      close: function() {
+        $('.bh-avatar-img', options.winContent).cropper('destroy');
+      }
+    }, function() {
+      return submitEdit(options);
+    });
+    // 预览窗口 尺寸和文字渲染
+    $('.bh-emapAvatar-preview', options.winContent).each(function() {
+      var width = $(this).width();
+      var height = parseInt($(this).width() / options.ratio);
+      var p = $(this).next('p');
+      $(this).css({
+        height: height
+      });
+      if (p.length > 0) {
+        p.html(width + ' * ' + height + 'px');
+      }
+    });
+
+    // 上传说明渲染
+    var typeStr = options.type.join('、').toUpperCase();
+    var sizeStr = (options.size > 1024) ? options.size / 1024 + 'M' : options.size + 'K';
+    $('.bh-emapAvatar-text-info', options.winContent).html($.i18n('bh-au-onlyHave') + typeStr + '，' + $.i18n('bh-be-sizeNotPass') + sizeStr);
+
+    // 初始化tab  添加推荐头像功能时放开注释
+    //$('#emapAvatarUploadWindow').jqxTabs({ width: '100%', height: 200, position: 'top'});
+
+    //初始化loader
+    $('.bh-emapAvatar-loader', options.winContent).jqxLoader({});
+
+    // 初始化 上传控件
+    initUpload($('input[type=file]', options.winContent), options)
+
+    // 重新上传事件绑定
+    $('.bh-emapAvatar-reUpload', options.winContent).on('click', function() {
+      $('input[type=file]', options.winContent).click();
+    });
+
+    function initCrop(ele, options) {
+      ele.cropper({
+        aspectRatio: options.ratio,
+        viewMode: 1,
+        movable: false,
+        zoomOnWheel: false,
+        preview: '.bh-emapAvatar-preview'
+      });
+    }
+
+    function submitEdit(options) {
+      if (options.fileId) {
+        var cutResult = cutTempFile(options);
+        if (cutResult.success &amp;&amp; deleteTempFile(options).success) {
+          if (options.autoSave &amp;&amp; deleteFileByToken(options).success &amp;&amp; saveAttachment(options).success) {
+            options.onSubmit &amp;&amp; options.onSubmit(options.token);
+            $('.bh-emapAvatar-avatar', element).attr('src', options.contextPath + '/sys/emapcomponent/file/getSingleImageByToken.do?fileToken=' + options.token + '&amp;date=' + new Date().getTime());
+            options.displayAvatar = options.contextPath + '/sys/emapcomponent/file/getSingleImageByToken.do?fileToken=' + options.token + '&amp;date=' + new Date().getTime();
+            return true;
+          } else {
+            // 调整了onSubmit触发的位置，避免保存成功后临时文件取不到的问题
+            $('.bh-emapAvatar-avatar', element).attr('src', cutResult.tempFileUrl);
+            $('.bh-emapAvatar-avatar', element).one('load', function() {
+              options.displayAvatar = cutResult.tempFileUrl;
+              options.onSubmit &amp;&amp; options.onSubmit(options.token);
+            })
+          }
+        } else {
+          if (!cutResult.success) {
+            $('.bh-emapAcatar-error-msg', options.winContent).html(cutResult.error ? cutResult.error : $.i18n('bh-au-avatarFail')).show();
+            return false;
+          }
+        }
+      } else {
+        if (options.newToken) {
+          options.onSubmit &amp;&amp; options.onSubmit();
+        } else {
+          options.onSubmit &amp;&amp; options.onSubmit(options.token);
+        }
+      }
+    }
+
+    // 裁剪图片
+    function cutTempFile(options) {
+      var cutData = $('.bh-avatar-img', options.winContent).cropper('getData', true);
+      if (options.actualWidth) {
+        cutData.actualWidth = options.actualWidth;
+        cutData.actualHeight = parseInt(options.actualWidth / options.ratio);
+      }
+      return doRequest(
+        options.contextPath + '/sys/emapcomponent/file/cutTempFile/' + options.scope + '/' + options.token + '/' + options.fileId + '.do',
+        cutData
+      );
+    }
+
+    // 删除原有的临时文件
+    function deleteTempFile(options) {
+      if (options.fileId) {
+        return doRequest(
+          options.contextPath + '/sys/emapcomponent/file/deleteTempFile/' + options.scope + '/' + options.token + '/' + options.fileId + '.do', {}
+        );
+      }
+      return {
+        success: true
+      };
+    }
+  };
+
+  function deleteFileByToken(options) {
+    return doRequest(
+      options.contextPath + '/sys/emapcomponent/file/deleteFileByToken/' + options.token + '.do', {}
+    );
+  }
+
+  function saveAttachment(options) {
+    var saveParams = $.extend({}, {
+      attachmentParam: JSON.stringify({
+        storeId: options.storeId
+      })
+    }, options.saveParams);
+    return doRequest(options.contextPath + '/sys/emapcomponent/file/saveAttachment/' + options.scope + '/' + options.token + '.do', saveParams);
+  }
+
+  function doRequest(url, param) {
+    var result;
+    $.ajax({
+      type: 'post',
+      data: param,
+      url: url,
+      dataType: 'json',
+      async: false
+    }).done(function(res) {
+      result = res;
+    }).fail(function(res) {
+      $('.bh-emapAcatar-error-msg').html($.i18n('bh-au-requestFail')).show();
+      result = res;
+    });
+    return result;
+  }
+
+}).call(undefined);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapAvatarUpload.html">emapAvatarUpload</a>&nbsp;(头像裁剪上传)</li><li><a href="module-emapCard.html">emapCard</a>&nbsp;(卡片列表)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownTable.html">emapDropdownTable</a>&nbsp;(下拉表格/模糊搜索)</li><li><a href="module-emapDropdownTree.html">emapDropdownTree</a>&nbsp;(下拉树)</li><li><a href="module-emapEditableDataTable.html">emapEditableDataTable</a>&nbsp;(编辑表格)</li><li><a href="module-emapEditor.html">emapEditor</a></li><li><a href="module-emapFileDownload.html">emapFileDownload</a>&nbsp;(文件下载)</li><li><a href="module-emapFileUpload.html">emapFileUpload</a>&nbsp;(文件上传)</li><li><a href="module-emapForm.html">emapForm</a>&nbsp;(表单)</li><li><a href="module-emapgrid.html">emapgrid</a>&nbsp;(grid列表)</li><li><a href="module-emapImageUpload.html">emapImageUpload</a>&nbsp;(多图片上传)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapLinkage.html">emapLinkage</a>&nbsp;(表单联动)</li><li><a href="module-emapPDFViewer.html">emapPDFViewer</a>&nbsp;(PDF文件预览)</li><li><a href="module-emapRulesConstructor.html">emapRulesConstructor</a>&nbsp;(条件构造器)</li><li><a href="module-emapSchema.html">emapSchema</a>&nbsp;(方案模块)</li><li><a href="module-emapSingleImageUpload.html">emapSingleImageUpload</a>&nbsp;(单图片上传)</li><li><a href="module-emapUploadCore.html">emapUploadCore</a>&nbsp;(上传核心模块)</li><li><a href="module-emapValidate.html">emapValidate</a>&nbsp;(表单校验)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_EMAP_SERV.html">WIS_EMAP_SERV</a>&nbsp;(公共方法)</li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:10:03 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

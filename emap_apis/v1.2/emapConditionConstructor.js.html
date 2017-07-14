@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapConditionConstructor.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapConditionConstructor.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function() {
+  var Plugin, _init;
+  /**
+   * @module emapConditionConstructor
+   * @alias 新的条件构造器
+   * @description 新的条件构造器
+   * @example
+   $('#aaa').emapConditionConstructor({
+    searchModel:"easy"
+    data: Data
+  });
+   */
+  Plugin = (function() {
+    function Plugin(element, options) {
+      this.options = $.extend({}, $.fn.emapConditionConstructor.defaults, options);
+      this.$element = $(element);
+      _init(this.$element, this.options);
+    }
+    //插件的公共方法，相当于接口函数，用于给外部调用
+    /**
+     * @method setValue
+     * @description 根据model数据页面生成条件
+     */
+    Plugin.prototype.setValue = function(condition) {
+      htmlTransfrom(condition, this.options);
+    };
+    /**
+     * @method getValue
+     * @description 将插入的条件转换成model数据
+     * @return {String}
+     */
+    Plugin.prototype.getValue = function() {
+      return getData(this.options);
+    };
+    /**
+     * @method clear
+     * @description 清空条件
+     */
+    Plugin.prototype.clear = function() {
+      var element = this.$element;
+      element.find(".bh-condition-content").remove();
+    };
+    /**
+     * @method validate
+     * @description 校验搜索条件
+     * @param {Boolean} [showErrorWindow=false] - 校验出错是否弹出提示弹窗
+     * @return {Boolean} - 校验结果
+     */
+    Plugin.prototype.validate = function(showErrorWindow) {
+        var result = validate(this.$element.find('.bh-condition-content'))
+        if (showErrorWindow === true &amp;&amp; result === false) {
+          showValidateErrorWin()
+        }
+        return result
+      }
+      /**
+       * @method destory
+       * @description 销毁组件实例
+       */
+    Plugin.prototype.destory = function() {
+      var element = this.$element;
+      element.remove();
+    };
+    return Plugin;
+  })();
+  //插件的私有方法
+  _init = function(element, options) {
+    _initHtml(element, options);
+    _renderEasySearch(element, options)
+    _initDropdown(element, options);
+    _eventListen(element, options);
+  };
+
+  $.fn.emapConditionConstructor = function(options, params) {
+    var instance;
+    instance = this.data('plugin');
+    if (!instance) {
+      return this.each(function() {
+        return $(this).data('plugin', new Plugin(this, options));
+      });
+    }
+    if (options === true) return instance;
+    if ($.type(options) === 'string') {
+      return instance[options](params)
+    };
+    return this;
+  };
+  /**
+   * @memberof module:emapConditionConstructor
+   * @prop {String} [searchModel=easy] - 默认搜索模式 可选值： 'easy' 简单模式  'advanced' 高级模式
+   * @prop {Boolean} [schema=false] - 是否开启保存方案
+   */
+  $.fn.emapConditionConstructor.defaults = {
+    searchModel: 'easy',
+    data: {},
+    schema: false
+  };
+  //条件构造器的初始化html代码
+  function _initHtml(element, options) {
+    var html = '';
+    var wrap = '&lt;div class="bh-condition-constructor-cover" bh-type="normal">@content&lt;/div>';
+    var search = '&lt;div class="bh-advancedQuery-inputGroup bh-clearfix" style="padding-bottom: 8px;background: #fff;">' +
+      '&lt;div class="bh-advancedQuery-quick-search-wrap">' +
+      '&lt;input type="text" class="bh-form-control" >' +
+      '&lt;i class="iconfont icon-search" style="position: absolute;left: 6px;top: 6px;">&lt;/i>' +
+      '&lt;/div>' +
+      '&lt;a class="bh-btn bh-btn bh-btn-primary bh-btn-small" bh-advanced-query-role="easySearchBtn">' + $.i18n('bh-cc-search') + '&lt;/a>' +
+      '&lt;a href="javascript:void(0);" class="bh-mh-8" bh-advanced-query-role="advancedOpen">[' + $.i18n('bh-cc-condcons') + ']&lt;/a>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-advancedQuery-form" bh-advanced-query-role="quickSearchForm">' +
+      '&lt;/div>'
+    var condition = '&lt;div class="bh-condition-constructor">' +
+      '&lt;div class="bh-condition-constructor-wrap">' +
+      '&lt;div class="bh-condition-constructor-head">' +
+      '&lt;ul class="bh-pull-clearfix">' +
+      '&lt;li class="bh-pull-left">&lt;span>' + $.i18n('bh-cc-condcons') + '&lt;/span>&lt;/li>' +
+      // '&lt;li class="bh-color-grey-3 bh-pull-left">构造方案:&lt;/li>' +
+      // '&lt;li class="bh-color-primary bh-pull-left">方案1&lt;/li>' +
+      // '&lt;li class="bh-color-primary bh-pull-left">方案2&lt;/li>' +
+      // '&lt;li class="bh-color-primary bh-pull-left">更多>>&lt;/li>' +
+      '&lt;/ul>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-condition-constructor-condition" class="bh-pull-clear">' +
+      '&lt;div class="bh-condition-left bh-pull-left">' +
+      '&lt;label class="bh-tag bh-bg-info-4 bh-color-grey">' + $.i18n('bh-cc-and') + '&lt;/label>' +
+      '&lt;label class="bh-tag bh-bg-info-4 bh-color-grey">' + $.i18n('bh-cc-or') + '&lt;/label>' +
+      '&lt;label class="bh-tag bh-bg-info-4 bh-color-grey" flag="bh-condition-constructor-bracket">(&lt;/label>' +
+      '&lt;label class="bh-tag bh-bg-info-4 bh-color-grey" flag="bh-condition-constructor-bracket">)&lt;/label>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-condition-middle bh-pull-left">' +
+      '&lt;div class="bh-condition-constructor-dropdownlist-wrap bh-pull-left bh-condition-constructor-list-first">' +
+      '&lt;div class="bh-condition-constructor-dropDownList1" >&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-condition-constructor-dropdownlist-wrap1 bh-pull-left bh-condition-constructor-list-second">' +
+      '&lt;div class="bh-condition-constructor-dropDownList2">&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-condition-constructor-dropdownlist-wrap bh-pull-left bh-condition-constructor-list-third">' +
+      '&lt;div class="bh-condition-constructor-dropDownList3">&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-condition-right bh-pull-left">' +
+      '&lt;button type="button" class="bh-btn bh-btn-primary bh-btn-small bh-condition-constructor-insert" bh-advanced-query-role="' + $.i18n('bh-cc-append') + '">' + $.i18n('bh-cc-append') + '&lt;/button>' +
+      '&lt;div class="bh-clearfix bh-hide bh-condition-constructor-modify">&lt;button type="button" class="bh-btn bh-btn-primary bh-btn-small bh-pull-left bh-condition-constructor-save"  bh-advanced-query-role="' + $.i18n('bh-cc-save') + '">' + $.i18n('bh-cc-save') + '&lt;/button>&lt;button type="button" class="bh-btn bh-btn-default bh-btn-small bh-condition-constructor-delete" bh-advanced-query-role="' + $.i18n('bh-cc-delete') + '">' + $.i18n('bh-cc-delete') + '&lt;/button>&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;div class="bh-condition-constructor-content">' +
+      '&lt;div class="bh-condition-content">' +
+      '&lt;/div>' +
+      '&lt;span class="bh-color-primary">&lt;i class="iconfont">&amp;#xe6a7;&lt;/i>&lt;a bh-advanced-query-role="' + $.i18n('bh-cc-clear') + '" class="bh-condition-constructor-clear">' + $.i18n('bh-cc-clear') + '&lt;/a>&lt;/span>' +
+      '&lt;div class="bh-condition-constructor-footer">' +
+      '&lt;div class="bh-btn-grouped">' +
+      '&lt;button type="button" class="bh-btn bh-btn-primary bh-btn-small bh-condition-constructor-search" bh-advanced-query-role="' + $.i18n('bh-cc-takeConditionSearch') + '">' + $.i18n('bh-cc-takeConditionSearch') + '&lt;/button>' +
+      '&lt;button type="button" class="bh-btn bh-btn-default bh-btn-small bh-condition-constructor-case" bh-advanced-query-role="' + $.i18n('bh-cc-saveAsScheme') + '">' + $.i18n('bh-cc-saveAsScheme') + '&lt;/button>' +
+      '&lt;span class="bh-color-primary" bh-advanced-query-role="' + $.i18n('bh-cc-back') + '">&lt;a class="bh-condition-constructor-exit">&lt;i class="iconfont">&amp;#xe85a;&lt;/i>' + $.i18n('bh-cc-back') + '&lt;/a>&lt;/span>' +
+      '&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;/div>' +
+      '&lt;/div>';
+    if (options.searchModel === "easy") {
+      html = wrap.replace('@content', search + condition);
+    } else {
+      html = wrap.replace('@content', condition);
+    }
+    element.html(html);
+    if (options.searchModel === 'advanced') {
+      element.find('.bh-condition-constructor').show()
+      element.find('.bh-condition-constructor-exit').hide()
+      element.find('[bh-advanced-query-role="' + $.i18n('bh-cc-saveAsScheme') + '"]').hide()
+    }
+    if (options.schema === false) {
+
+    }
+    options.container = element.find('.bh-condition-constructor-cover')
+  };
+
+  function _renderEasySearch(element, options) {
+    var modalData = options.data.controls;
+    var guid = BH_UTILS.NewGuid()
+    var quickArray = []
+    var easyArray = []
+    var easySearchPlaceholder = ''
+    options.guid = guid;
+    $('body').append('&lt;div class="bh-advancedQuery-quick-select" bh-advanced-query-role="advancedEasySelect" data-guid="' + guid + '" >&lt;/div>')
+    $(modalData).each(function(i) {
+      //移除 hidden 项
+      var index = modalData.indexOf(this);
+      if (this.get('hidden')) {
+        modalData.splice(index, 1);
+        return true;
+      }
+      if (!this.xtype || this.xtype == 'text') {} else if ($.inArray(this.xtype, ["radiolist", "checkboxlist", "buttonlist", "multi-buttonlist"]) > -1) {
+        options._initCount++;
+      }
+      if (this.quickSearch) {
+        if (!this.xtype || this.xtype == 'text') {
+          easyArray.push(this);
+        } else {
+          quickArray.push(this);
+        }
+      }
+    })
+
+    var easySearch = '';
+    var easySearchPlaceholder = ''; // easySearch 文本框placeholder
+    if (easyArray.length &amp;&amp; easyArray.length > 0) {
+      easySearchPlaceholder += $.i18n('bh-cc-pleaseInput');
+      $(easyArray).each(function() {
+        easySearchPlaceholder += this.caption + '/';
+        easySearch += '&lt;p data-name="' + this.name + '">' + $.i18n('bh-cc-search') + '&lt;span class="bh-advancedQuery-easy-caption">' + this.caption + '&lt;/span> : &lt;span class="bh-advancedQuery-easy-query">&lt;/span>&lt;/p>';
+      });
+      $('.bh-advancedQuery-quick-select[data-guid=' + options.guid + ']').html(easySearch);
+      easySearchPlaceholder = easySearchPlaceholder.substring(0, easySearchPlaceholder.length - 1);
+      $('.bh-advancedQuery-quick-search-wrap input[type=text]', element).attr('placeholder', easySearchPlaceholder);
+    } else {
+      $('.bh-advancedQuery-inputGroup, .bh-advancedQuery-form', element).hide();
+    }
+    // 快速搜索条件渲染
+    quickArray = JSON.parse(JSON.stringify(quickArray));
+    options.quickArray = quickArray;
+    var formOpt = {
+      root: '',
+      defaultOptions: {
+        tree: {
+          // checkboxes: true,
+          width: 300,
+          unblind: '/',
+          search: true // 高级搜索下拉树默认开启 搜索
+        },
+        "multi-tree": {
+          width: "300px",
+          unblind: '/',
+          search: true // 高级搜索下拉树默认开启 搜索
+        },
+        tree2: {
+          // checkboxes: true,
+          width: 300,
+          unblind: '/',
+          search: true // 高级搜索下拉树默认开启 搜索
+        },
+        "multi-tree2": {
+          width: "300px",
+          unblind: '/',
+          search: true // 高级搜索下拉树默认开启 搜索
+        },
+        switcher: {
+          checked: true
+        },
+        "date-range": {
+          defaultType: 'all'
+        },
+        "select": {
+          width: "300px"
+        },
+        "multi-select": {
+          width: "300px"
+        },
+        "multi-select2": {
+          width: "300px"
+        },
+        "date-local": {
+          width: "300px"
+        },
+        "date-ym": {
+          width: "300px"
+        },
+        "date-full": {
+          width: "300px"
+        }
+      },
+      showBlankOption: options.showBlankOption
+    };
+    formOpt.defaultOptions = $.extend({}, formOpt.defaultOptions, options.defaultOptions);
+    var quickSearchHtml = $('&lt;div>&lt;/div>');
+    $(quickArray).each(function(i) {
+      // 应业务线需求将快速搜索中的多选下拉放出  不做类型转换  zhuhui 0722
+      if (this.xtype == 'select' || this.xtype == 'radiolist' || this.xtype == 'checkboxlist' || this.xtype == 'multi-select2') {
+        this['search.xtype'] = 'buttonlist';
+      }
+      // 添加 quickSearchXtype属性, 表示字段在 快速搜索中展示的类型 zhuhui 0725
+      if (this['search.quickSearchXtype']) {
+        this['search.xtype'] = this['search.quickSearchXtype'];
+      }
+      quickSearchHtml.append(_renderInputPlace(this, undefined, options));
+    });
+    $('[bh-advanced-query-role=quickSearchForm]', element).html(quickSearchHtml)
+      .emapFormInputInit(formOpt);
+
+    element.data('modalarray', modalData);
+    element.data('easyarray', easyArray);
+    element.data('quickarray', quickArray);
+  }
+
+  function _renderInputPlace(item, showClose, options) {
+    //showClose  是否显示 关闭按钮
+    var _this = item;
+    _this.get = function(attr) {
+      if (_this['search.' + attr] !== undefined) {
+        return _this['search.' + attr];
+      } else {
+        return _this[attr];
+      }
+    };
+    var attr = WIS_EMAP_SERV.getAttr(_this)
+    var xtype = _this.get("xtype");
+    var caption = _this.get("caption");
+    var builder = _this.get("defaultBuilder");
+    var url = _this.get("url");
+    var name = _this.get("name");
+    var hidden = _this.get("hidden") ? "hidden" : "";
+    var placeholder = _this.get("placeholder") ? _this.get("placeholder") : "";
+    var checkType = _this.get("checkType");
+    var checkSize = _this.get("checkSize");
+    var dataSize = _this.get("dataSize");
+    var checkExp = _this.get("checkExp");
+    var JSONParam = _this.get("JSONParam");
+    var format = _this.get("format") ? _this.get("format") : 'yyyy-MM-dd';
+    var controlHtml = $(' &lt;div class="bh-advancedQuery-form-row bh-advancedQuery-h-28">' +
+      '&lt;div class="bh-advancedQuery-groupName">' + caption + '：&lt;/div>' +
+      '&lt;div class="bh-advancedQuery-groupList bh-label-radio-group">' +
+      '&lt;/div>' +
+      '&lt;/div>');
+
+    if (showClose) {
+      controlHtml.append('&lt;a class="bh-bh-advancedQuery-group-dismiss" bh-advanced-query-role="conditionDismiss"> ' +
+        '&lt;i class="icon-close iconfont">&lt;/i>' +
+        '&lt;/a>');
+    }
+    var inputHtml = '';
+    switch (xtype) {
+
+      case "tree":
+      case "multi-tree":
+      case "tree2":
+      case "multi-tree2":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" data-builder="{{builder}}" data-caption="{{caption}}" data-url="{{url}}" {{hidden}} style="max-width: 300px;">&lt;/div>';
+        break;
+      case "date-local":
+      case "date-range":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-builder="{{builder}}" data-caption="{{caption}}" data-name="{{name}}" data-format="{{format}}" {{hidden}} style="max-width: 300px;">&lt;/div>';
+        break;
+      case "date-ym":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-builder="{{builder}}" data-caption="{{caption}}" data-name="{{name}}" data-format="YYYY-MM" {{hidden}}>&lt;/div>';
+        break;
+      case "date-full":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-builder="{{builder}}" data-caption="{{caption}}" data-name="{{name}}" data-format="yyyy-MM-dd HH:mm" {{hidden}}>&lt;/div>';
+        break;
+      case "switcher":
+        inputHtml += '&lt;div xtype="{{xtype}}"  data-builder="{{builder}}" data-caption="{{caption}}" data-name="{{name}}" {{hidden}}>&lt;/div>';
+        break;
+      case "radiolist":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" class="bh-radio" data-url="{{url}}" data-builder="{{builder}}" data-caption="{{caption}}" {{hidden}}>&lt;/div>';
+        break;
+      case "checkboxlist":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" class="bh-checkbox" data-url="{{url}}" data-builder="{{builder}}" data-caption="{{caption}}" {{hidden}}>&lt;/div>';
+        break;
+      case "buttonlist":
+      case "multi-buttonlist":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" data-url="{{url}}" data-builder="{{builder}}" data-alloption={{allOption}} data-caption="{{caption}}" {{hidden}} >&lt;/div>';
+        break;
+      case "select":
+      case "multi-select":
+      case "multi-select2":
+      case "selecttable":
+        inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" data-url="{{url}}" data-builder="{{builder}}" data-alloption={{allOption}} data-caption="{{caption}}" {{hidden}} style="max-width: 300px;">&lt;/div>';
+        break;
+      case 'number':
+      case 'number-range':
+        inputHtml += '&lt;div xtype="{{xtype}}" data-name="{{name}}" data-url="{{url}}" data-builder="{{builder}}" data-caption="{{caption}}" {{hidden}} style="max-width: 300px;">&lt;/div>';
+        break;
+      default:
+        inputHtml += '&lt;input class="bh-form-control" data-name="{{name}}" name="{{name}}" data-builder="{{builder}}" data-caption="{{caption}}" xtype="text" type="text" {{hidden}} />';
+        break;
+    }
+    inputHtml = inputHtml.replace(/\{\{xtype\}\}/g, xtype)
+      .replace(/\{\{name\}\}/g, name)
+      .replace(/\{\{builder\}\}/g, builder)
+      .replace(/\{\{caption\}\}/g, caption)
+      .replace(/\{\{url\}\}/g, url)
+      .replace(/\{\{hidden\}\}/g, (hidden ? 'style="display:none;"' : ''))
+      .replace(/\{\{allOption\}\}/g, options.allowAllOption)
+      .replace(/\{\{format\}\}/g, format);
+    inputHtml = $(inputHtml);
+    if (JSONParam) {
+      inputHtml.data('jsonparam', JSONParam);
+    }
+    inputHtml.data('attr', attr)
+    $('.bh-advancedQuery-groupList', controlHtml).html(inputHtml);
+    return controlHtml;
+  }
+
+
+
+  //下拉表单的初始化
+  function _initDropdown(element, options) {
+    var firstData = options.data.controls;
+    var source = {
+      localdata: firstData,
+      datatype: "array"
+    };
+    var dataAdapter = new $.jqx.dataAdapter(source);
+
+    var $dropDownList1 = element.find('.bh-condition-constructor-dropDownList1');
+    var $listFirst = element.find('.bh-condition-constructor-list-first');
+    $dropDownList1.jqxDropDownList({
+      selectedIndex: 0,
+      source: dataAdapter,
+      displayMember: "caption",
+      valueMember: "name",
+      height: 28,
+      width: "100%",
+      filterable: true,
+      filterPlaceHolder: $.i18n('bh-cc-pleaseFind'),
+      searchMode: 'containsignorecase',
+      renderer: function(index, label, value) {
+        var builderList = source.localdata[index].builderList;
+        var caption = source.localdata[index].caption;
+        var xtype = source.localdata[index].xtype;
+        var name = source.localdata[index].name;
+        var builderList = builderList;
+        var html = '&lt;div builderList="' + builderList + '" caption="' + caption + '" xtype="' + xtype + '" name="' + name + '">' + caption + '&lt;/div>'
+        return html;
+      }
+    });
+    var initFirstItem = $dropDownList1.jqxDropDownList('getSelectedItem');
+    var initFirstItemData = initFirstItem.originalItem;
+    _relation(initFirstItemData.builderList, initFirstItemData.caption, initFirstItemData.xtype, options);
+    $listFirst.on('change', function(event) {
+      var args = event.args;
+      if (args &amp;&amp; args.item) {
+        var name = args.item.value
+        var modelItem = options.data.controls.filter(function(item) {
+          return item.name === name
+        })[0]
+
+        var listElement = args.item.element;
+        var builderList = modelItem.builderList
+        var caption = modelItem.caption
+        var xtype = modelItem['search.xtype'] || modelItem['xtype']
+        _relation(builderList, caption, xtype, options);
+      }
+    })
+
+    element.on('change', '.bh-condition-constructor-dropDownList2', function(e) {
+      var name = element.find('.bh-condition-constructor-dropDownList1').val()
+      var thirdInput = element.find('.bh-condition-constructor-list-third [xtype]')
+      var value = element.find('.bh-condition-constructor-dropDownList2').val()
+      var modelItem = WIS_EMAP_SERV.cloneObj(options.data.controls.filter(function(item) {
+        return item.name === name
+      })[0])
+      if (thirdInput.length > 0) {
+        var inputXtype = thirdInput.attr('xtype')
+          // 构造器为多值包含或多值相等时，将下拉、下拉树转变为多选
+        if (value === 'm_value_equal' || value === 'm_value_include') {
+          if ($.inArray(inputXtype, ['tree', 'tree2', 'select']) > -1) {
+            modelItem['search.xtype'] = 'multi-' + inputXtype
+            if (inputXtype === 'select') {
+              modelItem['search.xtype'] += '2'
+            }
+            WIS_EMAP_INPUT.init(element.find('.bh-condition-constructor-list-third').empty()
+              .append(WIS_EMAP_INPUT.renderPlaceHolder(modelItem)))
+          }
+        } else {
+          // 构造器为不为多值时，将多选下拉、多选下拉树转变为单选
+          if ($.inArray(inputXtype, ['multi-tree', 'multi-tree2', 'multi-select', 'multi-select2']) > -1) {
+            modelItem['search.xtype'] = inputXtype.replace('multi-', '')
+            if (inputXtype === 'multi-select2') {
+              modelItem['search.xtype'] = modelItem['search.xtype'].replace('2', '')
+            }
+            WIS_EMAP_INPUT.init(element.find('.bh-condition-constructor-list-third').empty()
+              .append(WIS_EMAP_INPUT.renderPlaceHolder(modelItem)))
+          }
+        }
+      }
+    })
+
+  }
+
+  function isMultiInput(xtype) {
+    return /multi/.test(xtype)
+  }
+
+  function triggerSearch(element, options, conditions, event) {
+    if (options.beforeSearch) {
+      if (options.beforeSearch(conditions, options) === false) return;
+    }
+    element.trigger('search', [conditions, options, event]);
+  }
+  //所有的事件监听
+  function _eventListen(element, options) {
+    // easySearch 下拉框的关闭
+    $(document).on('click', function(e) {
+        var target = e.target;
+        if ($(target).closest('[bh-advanced-query-role=advancedEasySelect]').length == 0) {
+          var selectDiv = $('.bh-advancedQuery-quick-select');
+          selectDiv.css({
+            'height': 0,
+            'border-width': '0'
+          });
+        }
+      })
+      // easy搜索 监听 按键输入
+    element.on('keyup', '.bh-advancedQuery-quick-search-wrap input[type=text]', function(e) {
+      var easySelectH = element.data('easyarray').length * 28 + 1; // 下拉框高度
+      var easySelectW = $(this).outerWidth(); // 下拉框宽度
+      var searchValue = $(this).val();
+      var pos = $(this).offset();
+      var selectDiv = $('.bh-advancedQuery-quick-select[data-guid=' + options.guid + ']');
+      pos.top += 28;
+      // 回车快速搜索
+      if (e.keyCode == 13) {
+        selectDiv.css({
+          'height': 0,
+          'border-width': '0'
+        });
+        triggerSearch(element, options, _getSearchCondition(element, options), e);
+        return;
+      }
+      if (searchValue == '') {
+        selectDiv.css({
+          'height': 0,
+          'border-width': '0'
+        });
+      } else {
+        $('.bh-advancedQuery-easy-query', selectDiv).text(searchValue);
+        selectDiv.css({
+          'height': easySelectH + 'px',
+          'width': easySelectW + 'px',
+          'border-width': '1px',
+          'top': pos.top,
+          'left': pos.left
+        });
+      }
+    });
+
+    // 点击下拉快速搜索
+    $('[bh-advanced-query-role=advancedEasySelect][data-guid=' + options.guid + ']').on('click', 'p', function(event) {
+      var selectDiv = $(this).closest('[bh-advanced-query-role=advancedEasySelect]');
+      if (selectDiv.height() > 0) {
+        selectDiv.css({
+          'height': 0,
+          'border-width': '0'
+        });
+      }
+      triggerSearch(element, options, _getSearchCondition(element, options, $(this).data('name')), event);
+    });
+
+    // 点击搜索按钮  easy search
+    element.on('click', '[bh-advanced-query-role=easySearchBtn]', function(event) {
+      triggerSearch(element, options, _getSearchCondition(element, options), event);
+    });
+
+    // 点击筛选条件  quick search
+    element.on('click', '[bh-advanced-query-role=quickSearchForm] .bh-label-radio', function(event) {
+      // radio 的事件冒泡问题
+      setTimeout(function() {
+        triggerSearch(element, options, _getSearchCondition(element, options), event);
+      }, 200);
+    });
+
+    element.on('click', '[bh-advanced-query-role=advancedOpen]', function(e) {
+      extend('open', options)
+    });
+    var exitButton = element.find(".bh-condition-constructor-exit");
+    exitButton.on('click', function(e) {
+      $.bhPopOver({
+        content: '&lt;h4>' + $.i18n('bh-cc-backTip') + '&lt;/h4>' +
+          '&lt;div class="bh-btn-grouped">&lt;button type="button" class="bh-btn bh-btn-circle bh-btn-primary" id="bhConditionConstructorExit">&lt;i class="iconfont icon-check">&lt;/i>&lt;/button>&lt;button type="button" class="bh-btn bh-btn-circle bh-btn-default" id="bhConditionConstructorClose">&lt;i class="iconfont icon-close">&lt;/i>&lt;/button>&lt;/div>',
+        selector: exitButton,
+        showCloseButton: false,
+        width: 236
+      });
+      $("#bhConditionConstructorClose").on('click', function() {
+        $.bhPopOver.close();
+      });
+      var $insert = element.find(".bh-condition-constructor-insert");
+      var $modify = element.find(".bh-condition-constructor-modify");
+      $("#bhConditionConstructorExit").on('click', function() {
+        var content = element.find(".bh-condition-content");
+        content.children().remove();
+        $insert.removeClass("bh-hide");
+        $modify.addClass("bh-hide");
+        $.bhPopOver.close();
+        extend('close', options);
+        triggerSearch(element, options, _getSearchCondition(element, options), event);
+      });
+    });
+    var left = element.find(".bh-condition-constructor-condition").find(".bh-condition-left");
+
+    // 点击左侧按钮
+    left.on('click', 'label', function() {
+      var $clickItem = $(this);
+      var $highlight = left.find('.bh-condition-active');
+      if ($highlight.length > 0) {
+        $highlight.removeClass("bh-tag-primary")
+          .removeClass("bh-color-white")
+          .removeClass("bh-condition-active")
+          .addClass("bh-bg-info-4")
+          .addClass("bh-color-grey");
+      }
+      $clickItem.removeClass('bh-bg-info-4').removeClass("bh-color-grey")
+        .addClass("bh-tag-primary").addClass("bh-color-white").addClass("bh-condition-active");
+      var val = $clickItem.text();
+      var flag = $clickItem.attr('flag');
+      var className = '';
+      if (!flag) {
+        flag = '';
+      }
+      if (WIS_I18N.i18n.locale === 'zh') {
+        if (val === "且" || val === "或") {
+          className = 'bh-condition-constructor-logic';
+        }
+      } else {
+        if (val === "AND" || val === "OR") {
+          className = 'bh-condition-constructor-logic';
+        }
+      }
+      var contentwrap = $clickItem.closest(".bh-condition-constructor-condition").siblings(".bh-condition-constructor-content").find(".bh-condition-content");
+      contentwrap.append('&lt;span class="' + className + ' bh-color-grey-3 ' + flag + '">' + val + '&lt;input type="text" class="bh-condition-constructor-input">&lt;/span>');
+    });
+    var constructor = element.find(".bh-condition-constructor");
+    // 点击编辑区tag
+    constructor.on('click', 'span', function() {
+      var $clickItem = $(this);
+      $clickItem.find("input").focus();
+      var $highlight = constructor.find('.bhFocusFlag');
+      if ($highlight.length > 0) {
+        $highlight.removeClass("bhFocusFlag");
+      }
+      $clickItem.addClass("bhFocusFlag");
+    });
+    constructor.on('keyup', 'input', function(event) {
+      var $insert = element.find(".bh-condition-constructor-insert");
+      var $modify = element.find(".bh-condition-constructor-modify");
+      var item = $(this);
+      if (event.keyCode === 37) {
+        var prev = item.parent().prev();
+        item.removeClass("bhFocusFlag");
+        prev.addClass("bhFocusFlag");
+        prev.find("input").focus();
+      }
+      if (event.keyCode === 39) {
+        var next = item.parent().next();
+        item.removeClass("bhFocusFlag");
+        next.addClass("bhFocusFlag");
+        next.find("input").focus();
+      }
+      if (event.keyCode === 46) {
+        item.parent().next("span").remove();
+      }
+      if (event.keyCode === 8) {
+        item.parent().remove();
+        $insert.removeClass("bh-hide");
+        $modify.addClass("bh-hide");
+      }
+    });
+    constructor.on('click', '.bh-constructor-content', function(event) {
+      var $insert = element.find('.bh-condition-constructor-insert');
+      var $modify = element.find('.bh-condition-constructor-modify');
+      var $dropDownList1 = element.find(".bh-condition-constructor-dropDownList1");
+      var $dropDownList2 = element.find(".bh-condition-constructor-dropDownList2");
+      var $clickItem = $(this);
+      var $highlight = constructor.find('.bhChosenFlag');
+      if ($highlight.length > 0) {
+        $highlight.removeClass("bh-bg-primary-3")
+          .removeClass("bhChosenFlag")
+          .addClass("bh-bg-primary-4")
+      }
+      $clickItem.removeClass("bh-bg-primary-4")
+        .addClass("bh-bg-primary-3").addClass("bhChosenFlag");
+      var caption = $clickItem.attr("caption");
+      var builder = $clickItem.attr("builder");
+      var value = $clickItem.attr("value");
+      var name = $clickItem.attr("name");
+      var modelItem = options.data.controls.filter(function(item) {
+        return item.name === name
+      })[0]
+      var xtype = modelItem['search.xtype'] || modelItem['xtype']
+      var obj = {};
+      obj[name] = value;
+      $insert.addClass('bh-hide');
+      var $modify = element.find(".bh-condition-constructor-modify");
+      $modify.removeClass('bh-hide');
+
+      var item1 = $dropDownList1.jqxDropDownList('getItemByValue', name);
+      $dropDownList1.jqxDropDownList('selectItem', item1);
+
+      setTimeout(function() {
+        var item2 = $dropDownList2.jqxDropDownList('getItemByValue', builder);
+        $dropDownList2.jqxDropDownList('selectItem', item2);
+        var children = element.find(".bh-condition-constructor-list-third").children();
+        WIS_EMAP_INPUT.setValue(children, name, xtype, obj, '');
+      }, 100);
+    });
+    var condition = element.find('.bh-condition-constructor-search');
+    condition.on('click', function(e) {
+      doConditionSearch(element, options);
+    });
+    // var save = element.find('[bh-advanced-query-role="保存为方案"]');
+    // save.on('click', function(e) {
+    //     htmlTransfrom(element);
+    // });
+    var insert = element.find('.bh-condition-constructor-insert');
+    insert.on('click', function(e) {
+      insertValidate(e, options);
+    });
+    var emptyClear = element.find('.bh-condition-constructor-clear');
+    emptyClear.on('click', function(e) {
+      clearAll(e, element);
+    });
+    var deletebutton = element.find(".bh-condition-constructor-delete");
+    deletebutton.on('click', function() {
+      var chosen = element.find(".bhChosenFlag");
+      var $insert = element.find('.bh-condition-constructor-insert');
+      var $modify = element.find('.bh-condition-constructor-modify');
+      chosen.remove();
+      $insert.removeClass("bh-hide");
+      $modify.addClass("bh-hide");
+    });
+    var save = element.find(".bh-condition-constructor-save");
+    save.on('click', function(e) {
+      var $insert = element.find('.bh-condition-constructor-insert');
+      var $modify = element.find('.bh-condition-constructor-modify');
+      var chosen = element.find(".bhChosenFlag");
+      var html = getValidateHtml(e, options);
+      chosen.before(html);
+      chosen.remove();
+      $insert.removeClass("bh-hide");
+      $modify.addClass("bh-hide");
+    });
+  };
+  //表单的联动
+  function _relation(builderList, caption, xtype, options) {
+    var res = options.data
+    var firstData = res.controls
+    var reg = /multi/;
+    var selectedIndex = 0;
+    if (reg.test(xtype)) {
+      var builderListData = res.builderLists[builderList];
+      for (var i = 0; i &lt; builderListData.length; i++) {
+        if (WIS_I18N.i18n.locale === 'zh') {
+          if (builderListData[i].caption === "多值相等") {
+            selectedIndex = i;
+            break;
+          }
+        } else {
+          if (builderListData[i].caption === "m_value_equal") {
+            selectedIndex = i;
+            break;
+          }
+        }
+      }
+    }
+    var secondData = res.builderLists[builderList];
+    var source = {
+      localdata: secondData,
+      datatype: "array"
+    };
+    var dataAdapter = new $.jqx.dataAdapter(source);
+    $(".bh-condition-constructor-list-second", options.container).empty();
+    $(".bh-condition-constructor-list-second", options.container).html('&lt;div class="bh-condition-constructor-dropDownList2" >&lt;/div>');
+    $('.bh-condition-constructor-dropDownList2', options.container).jqxDropDownList({
+      selectedIndex: selectedIndex,
+      source: dataAdapter,
+      displayMember: "caption",
+      valueMember: "name",
+      height: 28,
+      width: "100%"
+    });
+    var dom;
+    for (var i = 0; i &lt; firstData.length; i++) {
+      if (caption === firstData[i].caption) {
+        var obj = firstData[i];
+        dom = WIS_EMAP_INPUT.renderPlaceHolder(obj);
+        break;
+      }
+    }
+    $(".bh-condition-constructor-list-third", options.container).empty();
+    $(".bh-condition-constructor-list-third", options.container).html(dom);
+    WIS_EMAP_INPUT.init(dom, {});
+  }
+
+  function _findModel(name, modelArray) {
+    for (var i = 0; i &lt; modelArray.length; i++) {
+      if (modelArray[i].name == name) {
+        return modelArray[i];
+      }
+    }
+  }
+
+  function _getSearchCondition(element, options, name, blank_condition) {
+    var conditionResult = [];
+    var easyArray = element.data('easyarray');
+    var modalarray = element.data('modalarray')
+    var orCondition = [];
+    if (options.searchModel == 'easy') {
+      var searchKey = $.trim($('.bh-advancedQuery-quick-search-wrap input', element).val());
+      // 简单搜索
+      if (searchKey != "") {
+        if (name) {
+          //简单搜索的下拉框搜索
+          var searchItem = _findModel(name, easyArray);
+          var conditionData = {
+            "caption": searchItem.caption,
+            "name": searchItem.name,
+            "value": searchKey,
+            "builder": (searchItem.defaultBuilder == "equal" ? "include" : searchItem.defaultBuilder), // equal时强制转换为include
+            "linkOpt": "AND"
+          };
+          conditionResult.push(conditionData);
+        } else {
+          for (var i = 0; i &lt; easyArray.length; i++) {
+            var conditionData = {
+              "caption": easyArray[i].caption,
+              "name": easyArray[i].name,
+              "value": searchKey,
+              "builder": (easyArray[i].defaultBuilder == "equal" ? "include" : easyArray[i].defaultBuilder), // equal时强制转换为include
+              "linkOpt": "OR"
+            };
+            orCondition.push(conditionData);
+          }
+          conditionResult.push(orCondition);
+        }
+      }
+      conditionResult = conditionResult.concat(_getConditionFromForm($('[bh-advanced-query-role=quickSearchForm]', options.$advanced), options));
+    }
+    return JSON.stringify(conditionResult)
+  }
+
+  function _getConditionFromForm(form, options) {
+    var model = form.closest('.bh-condition-constructor-cover').parent().data('modalarray');
+    var conditionArray = [];
+    var formElement = $('[xtype]', form);
+    var formValue = WIS_EMAP_INPUT.formGetValue(form, options);
+    return WIS_EMAP_INPUT.getConvertCondition(formValue, model, true);
+  }
+
+  //条件构造器展开动画
+  // action  open close
+  function extend(action, options) {
+    var $condition = options.container
+    var type = $condition.attr('bh-type');
+    if (action === 'open') {
+      $condition.attr('bh-type', 'extend').css('height', '0');
+      setTimeout(function() {
+        $condition.find('.bh-advancedQuery-inputGroup, .bh-advancedQuery-form').hide();
+        $condition.find('.bh-condition-constructor').show();
+        $condition.css('height', '272px');
+      }, 360);
+      options.searchModel = 'advanced'
+    } else {
+      $condition.attr('bh-type', 'normal').css('height', '0');
+      setTimeout(function() {
+        $condition.find('.bh-condition-constructor').hide();
+        $condition.find('.bh-advancedQuery-inputGroup, .bh-advancedQuery-form').show();
+        $condition.css('height', 'auto');
+      }, 360);
+      options.searchModel = 'easy'
+    }
+  };
+  //插入条件操作
+  function insertValidate(e, options) {
+    var $target = $(e.target);
+    var html = getValidateHtml(e, options);
+    if (html) {
+      var right = $target.closest(".bh-condition-right");
+      var content = right.closest(".bh-condition-constructor-condition").siblings(".bh-condition-constructor-content").find(".bh-condition-content");
+      var span = content.find(".bhFocusFlag");
+      if (span.length) {
+        span.after(html);
+      } else {
+        content.append(html);
+      }
+    } else {
+      console.log('没有选中值');
+    }
+  };
+  //获取输入条件html代码
+  function getValidateHtml(e, options) {
+    if (WIS_I18N.i18n.locale === 'zh') {
+      var character = {
+        "等于": '=',
+        "包含": '包含',
+        "不包含": '不包含',
+        "不等于": '不等于',
+        "大于": '>',
+        "小于": '&lt;',
+        "大于等于": '>=',
+        "小于等于": "&lt;=",
+        "以..开始": '以..开始',
+        "以..结束": '以..结束',
+        "多值相等": '='
+      };
+    } else {
+      var character = {
+        'equal': '=',
+        'more': '>',
+        'less': '&lt;',
+        'm_value_equal': '=',
+        "include": 'include',
+        "not_include": 'not_include',
+        "not_equal": 'not_equal',
+        "more_equal": '>=',
+        "less_equal": "&lt;=",
+        "start_with": 'start_with',
+        "end_with": 'end_with'
+      };
+    }
+    var $target = $(e.target);
+    var right = $target.closest(".bh-condition-right");
+    var middle = right.siblings(".bh-condition-middle");
+    var left = middle.siblings(".bh-condition-left");
+    var first = middle.find(".bh-condition-constructor-list-first");
+    var second = middle.find(".bh-condition-constructor-list-second");
+    var third = middle.find(".bh-condition-constructor-list-third");
+    var item1 = first.find(".bh-condition-constructor-dropDownList1").jqxDropDownList('getSelectedItem');
+    var name1 = item1.value
+    var originalItem1 = options.data.controls.filter(function(item) {
+      return item.name === name1
+    })[0]
+
+    var value1 = item1.label;
+    // var originalItem1 = item1.originalItem;
+    var xtype = originalItem1.xtype || 'text';
+    // var name1 = originalItem1.name;
+    var caption1 = originalItem1.caption;
+    var builderList1 = originalItem1.builderList;
+    var item2 = second.find(".bh-condition-constructor-dropDownList2").jqxDropDownList('getSelectedItem');
+    var key = item2.label;
+    var originalItem2 = item2.originalItem;
+    var builder = originalItem2.name;
+    var value2 = character[key];
+    var value_dis = {};
+    var value = WIS_EMAP_INPUT.getValue(third.children(), value_dis);
+    var value_display = value_dis[name1 + '_DISPLAY'];
+    if (!value_display) {
+      value_display = value;
+    }
+    var content = right.closest(".bh-condition-constructor-condition").siblings(".bh-condition-constructor-content").find(".bh-condition-content");
+    var html = '';
+    if (value1 &amp;&amp; value2 &amp;&amp; value) {
+      html = '&lt;span class="bh-constructor-content bh-bg-primary-4" name=' + name1 + ' caption=' + caption1 + ' builderList=' + builderList1 + ' builder=' + builder + ' value=' + value + ' value_display=' + value_display + ' xtype=' + xtype + '>' + value1 + '&lt;span class=" bh-color-primary-2"> ' + value2 + '&lt;/span>' + value_display + '&lt;input type="text" class="bh-condition-constructor-input">&lt;/span>';
+    }
+    return html;
+  };
+  //清空条件
+  function clearAll(e, element) {
+    var $target = $(e.target);
+    $.bhPopOver({
+      content: '&lt;h4>' + $.i18n('bh-cc-willClearConditions') + '&lt;/h4>' +
+        '&lt;div class="bh-btn-grouped">&lt;button type="button" class="bh-btn bh-btn-circle bh-btn-primary" id="bhConditionConstructorClear">&lt;i class="iconfont icon-check">&lt;/i>&lt;/button>&lt;button type="button" class="bh-btn bh-btn-circle bh-btn-default" id="bhConditionConstructorClose1">&lt;i class="iconfont icon-close">&lt;/i>&lt;/button>&lt;/div>',
+      selector: $($target),
+      showCloseButton: false,
+      width: 236
+    });
+    $("#bhConditionConstructorClear").on('click', function() {
+      var content = element.find(".bh-condition-content");
+      content.children().remove();
+      var $insert = element.find(".bh-condition-constructor-insert");
+      $insert.removeClass('bh-hide');
+      var $modify = element.find(".bh-condition-constructor-modify");
+      $modify.addClass('bh-hide');
+      element.trigger('search', ['[]']);
+      $.bhPopOver.close();
+    });
+    $("#bhConditionConstructorClose1").on('click', function() {
+      $.bhPopOver.close();
+    });
+  };
+
+  function renderConditionItem(itemData, modelItem, options) {
+    var dom = $('&lt;span class="bh-constructor-content bhFocusFlag bh-bg-primary-3 bhChosenFlag">&lt;/span>')
+    dom.attr({
+      name: itemData.name,
+      caption: itemData.caption || modelItem.caption,
+      builderlist: modelItem.builderList,
+      builder: itemData.builder,
+      value_display: itemData.value_display,
+      value: itemData.value
+    })
+    dom.append(itemData.caption || modelItem.caption)
+    dom.append('&lt;span class="concat bh-color-primary-2">' + getBuilderText(itemData.builder, options) + '&lt;/span>')
+    dom.append(itemData.value_display)
+    dom.append('&lt;input type="text" class="bh-condition-constructor-input">')
+    return dom
+  }
+
+  function getBuilderText(builder, options) {
+    var builderMap = {
+      'equal': '=',
+      'more': '>',
+      'less': '&lt;',
+      'm_value_equal': '='
+    }
+    if (builderMap[builder]) {
+      return builderMap[builder]
+    } else {
+      return options.data.builderLists[builder].filter(function(item) {
+        return item.name === builder
+      })[0]['caption']
+    }
+  }
+
+  function getLinkOpt(item) {
+    var linkOpt
+    if (item instanceof Array) {
+      for (var i = 1; i &lt; item.length; i++) { // 跳过数组第一项
+        if (!(item[i] instanceof Array)) {
+          linkOpt = item[i].linkOpt
+          break
+        }
+      }
+      if (linkOpt === undefined &amp;&amp; item.length > 1) {
+        linkOpt = getOuterLinkOpt(item[2])
+      }
+    } else {
+      linkOpt = item.linkOpt
+    }
+    return linkOpt
+  }
+  // 获取外层linkOpt
+  function getOuterLinkOpt(item) {
+    if (item instanceof Array) {
+      return getLinkOpt(item[0])
+    } else {
+      return item.linkOpt
+    }
+  }
+
+  function renderConditionArray(itemArray, model, options) {
+    if (itemArray.length === 0) return ''
+    var dom = $('&lt;div>&lt;span class=" bh-color-grey-3 bh-condition-constructor-bracket">(&lt;input type="text" class="bh-condition-constructor-input">&lt;/span>&lt;/div>')
+    var linkOpt = getLinkOpt(itemArray)
+    var linkText
+    if (linkOpt === 'OR') {
+      if (WIS_I18N.i18n.locale === 'zh') {
+        linkText = '或'
+      } else {
+        linkText = 'OR'
+      }
+    } else if (linkOpt === 'AND') {
+      if (WIS_I18N.i18n.locale === 'zh') {
+        linkText = '且'
+      } else {
+        linkText = 'AND'
+      }
+    } else {
+      linkText = linkOpt
+    }
+    itemArray.map(function(item, index) {
+      if (item instanceof Array) {
+        dom.append(renderConditionArray(item, model, options))
+      } else {
+        var modelItem = model.filter(function(mItem) {
+          return mItem.name === item.name
+        })[0]
+        dom.append(renderConditionItem(item, modelItem, options))
+      }
+      if (index + 1 &lt; itemArray.length) {
+        dom.append('&lt;span class="bh-condition-constructor-logic bh-color-grey-3 ">' + linkText + '&lt;input type="text" class="bh-condition-constructor-input">&lt;/span>')
+      }
+    })
+    dom.append('&lt;span class=" bh-color-grey-3 bh-condition-constructor-bracket">)&lt;input type="text" class="bh-condition-constructor-input">&lt;/span>')
+    return dom.html()
+  }
+
+  //将model数据转换为搜索条件的html代码
+  function htmlTransfrom(condition, options) {
+    var con
+    var content = options.container.find(".bh-condition-content")
+    var model = options.data.controls
+    if (typeof condition === 'string') {
+      try {
+        con = JSON.parse(condition)
+      } catch (e) {
+        console &amp;&amp; console.error('无效的json格式')
+      }
+    } else {
+      con = condition
+    }
+    var contentHtml = $(renderConditionArray(con, model, options))
+      // 去掉开始和结束位置的两个括号
+    content.html(contentHtml)
+    content.find('.bh-condition-constructor-bracket:first').remove()
+    content.find('.bh-condition-constructor-bracket:last').remove()
+      /*
+      var data = [{
+          builder: "equal",
+          builderlist: "cbl_List",
+          caption: "性别",
+          linkOpt: "或",
+          name: "XBDM",
+          value: "1",
+          value_display: "男"
+        },
+        {
+          builder: "equal",
+          builderlist: "cbl_List",
+          caption: "性别",
+          linkOpt: "或",
+          name: "XBDM",
+          value: "2",
+          value_display: "女"
+        }
+      ];
+      var aa = JSON.stringify(data);
+      var html = '';
+      var templString = '';
+      var nowBracketFlag = false;
+      var htmlData = [];
+      var json = {
+        "equal": "=",
+        "multiEqual": "="
+      };
+      for (var i = 0; i &lt; aa.length; i++) {
+        var char = aa[i];
+        switch (char) {
+          case '[':
+            html += '&lt;span class=" bh-color-grey-3 bh-condition-constructor-bracket">(&lt;input type="text" class="bh-condition-constructor-input">&lt;/span>';
+            break;
+          case ']':
+            html += '&lt;span class=" bh-color-grey-3 bh-condition-constructor-bracket">)&lt;input type="text" class="bh-condition-constructor-input">&lt;/span>';
+            break;
+          case '{':
+            nowBracketFlag = true;
+            templString += char;
+            break;
+          case '}':
+            nowBracketFlag = false;
+            templString += char;
+            var templObj = JSON.parse(templString);
+            html = html.replace(',', '&lt;span class="bh-condition-constructor-logic bh-color-grey-3 ">' + templObj.linkOpt + '&lt;input type="text" class="bh-condition-constructor-input">&lt;/span>');
+            html += '&lt;span class="bh-constructor-content bh-bg-primary-4" name="' + templObj.name + '" caption="' + templObj.caption + '" builderlist="' + templObj.builderlist + '" builder="' + json[templObj.builder] + '" value="' + templObj.value + '" value_display="' + templObj.value_display + '" xtype="' + templObj.xtype + '">' + templObj.caption + '&lt;span class="concat bh-color-primary-2">' + json[templObj.builder] + '&lt;/span>' + templObj.value_display + '&lt;input type="text" class="bh-condition-constructor-input">&lt;/span>';
+            templString = '';
+            break;
+          case ',':
+            if (nowBracketFlag) {
+              templString += char;
+            } else {
+              html += ',';
+            }
+            break;
+          default:
+            if (nowBracketFlag) {
+              templString += char;
+            }
+            break;
+
+        }
+      }
+      var content = element.find(".bh-condition-content");
+      content.html(html);
+      */
+  };
+  //执行条件搜索
+  function doConditionSearch(element, options) {
+    var $content = element.find(".bh-condition-content");
+    $content.children('span').each(function() {
+      var item = $(this);
+      item.removeAttr("start").removeAttr("end").removeAttr("level").removeClass("bh-color-danger").addClass("bh-color-grey-3");
+    });
+    var result = dentifyRelationship();
+
+    if (result) {
+      var data = getData(options);
+      element.trigger('search', [data]);
+    } else {
+      showValidateErrorWin()
+    }
+  };
+
+  function showValidateErrorWin() {
+    var dailog = $('&lt;p>' + $.i18n('bh-cc-checkError') + '&lt;/p>&lt;ul class="bh-mt-24">&lt;li>' + $.i18n('bh-cc-checkBrackets') + '&lt;/li>&lt;li>' + $.i18n('bh-cc-conditionsWithoutAndOr') + '&lt;/li>&lt;li>' + $.i18n('bh-cc-andOrWithoutConditions') + '&lt;/li>&lt;/ul>');
+    BH_UTILS.bhWindow(dailog, $.i18n('bh-cc-error'), [{
+      text: $.i18n('bh-cc-ok'),
+      className: 'bh-btn-primary',
+      callback: function() {
+        BH_UTILS.bhWindow.close()
+      }
+    }], {
+      height: 238,
+      width: 512
+    });
+  }
+
+  //确定括号层级关系
+  function dentifyRelationship() {
+    var initialization = {
+      start: 0,
+      level: 0
+    };
+    var $content = $(".bh-condition-content");
+    var $span = $content.children("span");
+    //设置括号起始结束位置和条件等的层级
+    setBracket(initialization, $span);
+
+    //校验括号,内容,且或关系
+    var flag = validate($content);
+    if (!flag) {
+      return false;
+    } else {
+      // return getData($content);
+      return true;
+    }
+
+  };
+
+  /***
+   * 设置括号的起始结束位置和层级
+   * 条件和且或的层级
+   * @param initialization
+   * @param $span
+   */
+  function setBracket(initialization, $span) {
+    $span.each(function() {
+      var $item = $(this);
+      //对括号进行设置
+      if ($item.hasClass("bh-condition-constructor-bracket")) {
+        if ($item.text() === "(") {
+          setLeftBracket(initialization, $item);
+        } else {
+          setRightBracket(initialization, $item);
+        }
+      } else {
+        setCondition(initialization, $item);
+      }
+    });
+  };
+
+  /***
+   * 设置左括号的起始值和层级
+   * 当前左括号的相邻的左侧元素是左括号的时候,当前左括号的层级加1
+   * 否则与前一个元素的层级相同
+   * @param initialization
+   * @param $item
+   */
+  function setLeftBracket(initialization, $item) {
+    var start = initialization.start;
+    var level = initialization.level;
+    $item.attr("start", start);
+    initialization.start++;
+    var prev = $item.prev();
+    if (prev.length > 0) {
+      if (prev.text() === "(") {
+        level = parseInt(prev.attr('level'), 10) + 1;
+      } else {
+        level = prev.attr("level");
+      }
+    }
+    $item.attr("level", level);
+  };
+
+  /***
+   * 设置右括号的起始值和层级
+   * 向该右括号的左侧依次寻找到与之匹配的左括号,同时给左括号和当前右括号添加完结标识
+   * @param initialization
+   * @param $item
+   */
+  function setRightBracket(initialization, $item) {
+    var prev = $item.prevAll();
+    prev.each(function() {
+      var it = $(this);
+      if (it.hasClass("bh-condition-constructor-bracket") &amp;&amp; !it.attr("over")) {
+        var start = it.attr("start");
+        var level = it.attr("level");
+        $item.attr("end", start).attr("level", level).attr("over", "true");
+        it.attr("over", "true");
+        return false;
+      }
+    });
+  };
+
+  /***
+   * 给条件和且或添加层级
+   * 给且或添加start标识,用于校验处理
+   * @param initialization
+   * @param $item
+   */
+  function setCondition(initialization, $item) {
+    var prev = $item.prev();
+    var level = initialization.level;
+    if (prev.length > 0) {
+      if (prev.text() === "(") {
+        level = parseInt(prev.attr('level'), 10) + 1;
+      } else {
+        level = prev.attr("level");
+      }
+    }
+    initialization.start++;
+    $item.attr("level", level).attr('start', initialization.start);
+  };
+
+  /***
+   * 校验条件,并给不符合的条件添加高亮
+   * @param $content
+   * @returns {boolean}
+   */
+  function validate($content) {
+    var flag = true;
+    //校验括号
+    flag = validateBracket($content);
+    if (!flag) {
+      return flag;
+    }
+
+    //校验条件内容
+    flag = validateContent($content);
+    if (!flag) {
+      return flag;
+    }
+
+    //校验且或关系
+    flag = validateLogic($content);
+    return flag;
+  };
+
+  /***
+   * 校验括号
+   * 1、括号是否闭合
+   * 2、左右括号是否相邻
+   * @param $content
+   * @returns {boolean}
+   */
+  function validateBracket($content) {
+    var flag = true;
+    $content.children('.bh-condition-constructor-bracket').each(function() {
+      var $bracket = $(this);
+      var checkFlag;
+      if ($bracket.text() === '(') {
+        checkFlag = validateBracketLeft($bracket, $content);
+      } else {
+        checkFlag = validateBracketRight($bracket, $content);
+      }
+      if (!checkFlag) {
+        flag = false;
+      }
+    });
+    return flag;
+  }
+
+  /***
+   * 校验左括号
+   * 取到当前左括号的start,寻找end值与之匹配的右括号
+   * 若与当前左括号相邻的右侧元素是右括号,校验不通过
+   * 若与之相邻的右侧元素是且或关系符,校验不通过
+   * @param $bracket
+   * @param $content
+   * @returns {boolean}
+   */
+  function validateBracketLeft($bracket, $content) {
+    var flag = true;
+    var start = $bracket.attr('start');
+    var $rightBracket = $content.children('[end="' + start + '"]');
+    if ($rightBracket.length === 0) {
+      $bracket.addClass('bh-color-danger').removeClass('bh-color-grey-3');
+      flag = false;
+    }
+
+    // 若与当前左括号相邻的右侧元素是右括号,校验不通过
+    //若与之相邻的右侧元素是且或关系符,校验不通过
+    var $next = $bracket.next();
+    if (($next.hasClass('bh-condition-constructor-bracket') &amp;&amp; $next.text() === ')') || $next.hasClass('bh-condition-constructor-logic')) {
+      $bracket.addClass('bh-color-danger').removeClass('bh-color-grey-3');
+      $next.addClass('bh-color-danger').removeClass('bh-color-grey-3');
+      flag = false;
+    }
+    return flag;
+  }
+
+  /***
+   * 校验右括号
+   * 1、没有与之匹配的左括号,校验不通过
+   * 2、相邻的右侧元素是左括号,校验不通过
+   * @param $bracket
+   * @param $content
+   * @returns {boolean}
+   */
+  function validateBracketRight($bracket, $content) {
+    var flag = true;
+    var end = $bracket.attr('end');
+    var $next = $bracket.next();
+    var $rightBracket = $content.children('[start="' + end + '"]');
+    if (!end || $rightBracket.length === 0) {
+      $bracket.addClass('bh-color-danger').removeClass('bh-color-grey-3');
+      flag = false;
+    }
+    if ($next.length > 0 &amp;&amp; (($next.hasClass('bh-condition-constructor-bracket') &amp;&amp; $next.text() === '(') || $next.hasClass('bh-constructor-content'))) {
+      $bracket.addClass('bh-color-danger').removeClass('bh-color-grey-3');
+      $next.addClass('bh-color-danger').removeClass('bh-color-grey-3');
+      flag = false;
+    }
+    var $prev = $bracket.prev();
+    if ($prev.hasClass('bh-condition-constructor-logic')) {
+      $bracket.addClass('bh-color-danger').removeClass('bh-color-grey-3');
+      $prev.addClass('bh-color-danger').removeClass('bh-color-grey-3');
+      flag = false;
+    }
+
+    return flag;
+  }
+  /***
+   * 校验条件
+   * 与之相邻的右侧元素依然是条件时,校验不通过
+   * @param $content
+   * @returns {boolean}
+   */
+  function validateContent($content) {
+    var flag = true;
+    $content.children('.bh-constructor-content').each(function() {
+      var $condition = $(this);
+      var $next = $condition.next();
+      if ($next.hasClass('bh-constructor-content')) {
+        $condition.addClass('bh-color-danger').removeClass('bh-color-grey-3');
+        $next.addClass('bh-color-danger').removeClass('bh-color-grey-3');
+        flag = false;
+      }
+    });
+    return flag;
+  }
+  /***
+   * 校验且或
+   * 先克隆内容
+   * 先将条件清空
+   * 寻找到括号范围内的且或符,只有同为且或者同为或的才能校验通过
+   * @param $content
+   * @returns {boolean}
+   */
+  function validateLogic($content) {
+    var flag = true;
+
+    $content.children('.bh-condition-constructor-logic').each(function() {
+        var $logic = $(this);
+        var $prev = $logic.prev();
+        var $next = $logic.next();
+        if ($prev.length === 0 || $next.length === 0) {
+          flag = false;
+          $logic.addClass('bh-color-danger').removeClass('bh-color-grey-3');
+        }
+      })
+      //先克隆内容
+    var $clone = $content.clone();
+    //移除条件
+    $clone.children('.bh-constructor-content').remove();
+    //找到所有的且或
+    $clone.children('.bh-condition-constructor-logic').each(function() {
+      //临时存放同级且或符
+      var tempLogic = [];
+      var $item = $(this);
+      //排除括号,排除已验证过的且或符(通过checked标识)
+      if (!$item.attr('checked')) {
+        //取到且或符右侧的所有元素
+        var $nextAll = $item.nextAll();
+        //将当前元素放入临时数组
+        tempLogic.push($item);
+        //循环所有的右侧元素并放入临时数组,直到遇到括号,结束当前遍历
+        $nextAll.each(function() {
+          var $next = $(this);
+          //没遇到括号,将元素并放入临时数组
+          if ($next.hasClass('bh-condition-constructor-bracket')) {
+            //结束当前遍历
+            return false;
+          } else {
+            tempLogic.push($next);
+          }
+        });
+        //判断临时变量中的且或关系是否符合逻辑,若校验不通过设置对应的且或符高亮
+        var checkLogicFlag = checkLogicIsSame(tempLogic, $content);
+        if (!checkLogicFlag) {
+          flag = false;
+        }
+      }
+    });
+    return flag;
+  }
+  /***
+   * 判断临时变量中的且或关系是否符合逻辑,若校验不通过设置对应的且或符高亮
+   * @param $logicList
+   * @param $content
+   * @returns {boolean}
+   */
+  function checkLogicIsSame($logicList, $content) {
+    var flag = true;
+    var len = $logicList.length;
+    if (len > 1) {
+      //临时存放且或符,第一次进入循环时存入且或符,然后与之依次进行判断
+      var temp = '';
+      for (var i = 0; i &lt; len; i++) {
+        if (temp) {
+          if (temp !== $logicList[i].text()) {
+            flag = false;
+            break;
+          }
+        } else if (!temp) {
+          temp = $logicList[i].text();
+        }
+      }
+      //校验不通过,设置且或符高亮
+      if (!flag) {
+        setLogicHeight($logicList, $content);
+      }
+    }
+    return flag;
+  }
+  /***
+   * 设置且或符高亮
+   * @param $logicList
+   * @param $content
+   */
+  function setLogicHeight($logicList, $content) {
+    var len = $logicList.length;
+    for (var i = 0; i &lt; len; i++) {
+      var start = $($logicList[i]).attr('start');
+      $content.children('[start="' + start + '"]').addClass('bh-color-danger').removeClass('bh-color-grey-3');
+    }
+  }
+  /***
+   * 获取数据
+   * 先将只包含了条件(没有且或符)的括号去掉
+   * 递归依次按层级取出逻辑条件
+   * @param $content
+   */
+  function getData(options) {
+    var $content = options.container.find('.bh-condition-content')
+    var $spans = $content.children('span');
+    var data = cycle($spans);
+    // if (data.length === 1 &amp;&amp; data[0].constructor === Array) {
+    //     data = data[0];
+    // }
+    return JSON.stringify(data);
+
+  }
+
+  function getConditionItem($span, linkopt) {
+    return {
+      name: $span.attr('name'),
+      caption: $span.attr('caption'),
+      builderlist: $span.attr('builderlist'),
+      builder: $span.attr('builder'),
+      value: $span.attr('value'),
+      value_display: $span.attr('value_display') || '',
+      xtype: $span.attr('xtype'),
+      linkOpt: linkopt
+    }
+  }
+
+  function getConditionArray($spans, index, outerLinkOpt) {
+    var arrayData = []
+    var linkopt = getCurLinkOpt($spans, index)
+    var counter = 0
+    for (var i = index, len = $spans.length; i &lt; len; i++) {
+      var $span = $($spans[i])
+      if ($span.hasClass('bh-condition-constructor-bracket')) { // 括号span
+        if ($span.text().indexOf(')') > -1) { // 遇到右括号代表循环结束
+          if (counter === 0) {
+            break
+          } else {
+            counter--
+          }
+        } else if ($span.text().indexOf('(') > -1) {
+          if (counter === 0) {
+            arrayData.push(getConditionArray($spans, i + 1, outerLinkOpt))
+          }
+          counter++
+        }
+      } else if ($span.hasClass('bh-constructor-content')) { // 条件项span
+        if (i === index) {
+          arrayData.push(getConditionItem($spans.eq(i), outerLinkOpt))
+        } else if (counter === 0) {
+          arrayData.push(getConditionItem($spans.eq(i), linkopt))
+        }
+      }
+    }
+    return arrayData
+  }
+
+  // 获取当前数组的linkOpt
+  function getCurLinkOpt($spans, index) {
+    var counter = 0
+    for (var i = index; i &lt; $spans.length; i++) {
+      if ($spans.eq(i).hasClass('bh-condition-constructor-bracket')) { // 括号span
+        if ($spans.eq(i).text().indexOf('(') > -1) {
+          counter++
+        } else if ($spans.eq(i).text().indexOf(')') > -1) {
+          counter--
+        }
+      } else if ($spans.eq(i).hasClass('bh-condition-constructor-logic') &amp;&amp; counter === 0) { // 只有在counter==0的时候，该逻辑连接符才能作为当前数组的逻辑连接符
+        if (WIS_I18N.i18n.locale === 'zh') {
+          return $spans.eq(i).text().indexOf('或') > -1 ? 'OR' : 'AND'
+        } else {
+          return $spans.eq(i).text().indexOf('OR') > -1 ? 'OR' : 'AND'
+        }
+      }
+    }
+  }
+
+  /***
+   * 递归依次按层级取出逻辑条件
+   * @param $spans
+   * @param level
+   * @returns {Array}
+   */
+  function cycle($spans) {
+    var data = [];
+    var templData = [];
+    var nowBracketFlag = false;
+    var start = 0;
+    var linkOpt = getCurLinkOpt($spans, 0)
+    return getConditionArray($spans, 0, linkOpt)
+      /*
+      for (var i = 0, len = $spans.length; i &lt; len; i++) {
+        var $span = $($spans[i])
+        if ($span.hasClass('bh-condition-constructor-bracket')) {
+          data.push([])
+        }
+      }
+
+
+
+      for (var i = 0, len = $spans.length; i &lt; len; i++) {
+        var $span = $($spans[i]);
+        if ($span.hasClass('bh-condition-constructor-bracket') &amp;&amp; $span.attr('level') == level) {
+          if ($span.text() === '(') {
+            nowBracketFlag = true;
+            start = $span.attr('start');
+          } else {
+            nowBracketFlag = false;
+            data.push(cycle(templData, level + 1, $content));
+            templData = [];
+          }
+        } else {
+          if (nowBracketFlag) {
+            templData.push($span);
+          } else {
+            if ($span.hasClass('bh-constructor-content')) {
+              var conditionData = getConditionData($span, $content);
+              data.push(conditionData);
+            }
+          }
+        }
+      }
+      return data;
+      */
+  }
+  //获取条件的数据
+  function getConditionData($span, $content) {
+    var name = $span.attr('name');
+    var caption = $span.attr('caption');
+    var builderlist = $span.attr('builderlist');
+    var builder = $span.attr('builder');
+    var value = $span.attr('value');
+    var linkOpt = getLogicData($span, $content);
+    var value_display = $span.attr('value_display');
+    return {
+      name: name,
+      caption: caption,
+      builderlist: builderlist,
+      builder: builder,
+      value: value,
+      linkOpt: linkOpt,
+      value_display: value_display
+    }
+  }
+  //获取数据的linkOpt字段值
+  function getLogicData($span, $content) {
+    var logicText = '';
+    var $prev = $span.prev();
+    var $next = $span.next();
+    if ($prev.hasClass('bh-condition-constructor-logic')) {
+      logicText = $prev.text();
+    } else {
+      if ($prev.hasClass("bh-condition-constructor-bracket") &amp;&amp; $prev.text() === "(") {
+        if ($prev.prev()) {
+          logicText = $prev.prev().text();
+        }
+      }
+      var start = $prev.attr('start');
+      var nextText = $content.children('[end="' + start + '"]').next().text();
+      if (nextText) {
+        logicText = nextText;
+      } else {
+        if ($next.hasClass('bh-condition-constructor-logic')) {
+          logicText = $next.text();
+        } else {
+          if ($prev.hasClass("bh-condition-constructor-bracket") &amp;&amp; $prev.text() === ")") {
+            if ($next.next()) {
+              logicText = $next.next().text();
+            }
+          }
+        }
+      }
+    }
+    if (WIS_I18N.i18n.locale === 'zh') {
+      if (logicText === '或') {
+        return 'OR'
+      } else if (logicText === '且') {
+        return 'AND'
+      }
+    } else {
+      if (logicText === 'OR') {
+        return 'OR'
+      } else if (logicText === 'AND') {
+        return 'AND'
+      }
+    }
+    return logicText;
+  }
+}).call(this);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:10:02 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

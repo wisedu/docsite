@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapFile/emapFileUpload.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapFile/emapFileUpload.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function() {
+    var EmapFileUpload, _eventBind;
+    var fileReader = 'FileReader' in window;
+    var _init, _getLimitInfo;
+    /**
+     * @module emapFileUpload
+     * @alias 文件上传
+     * @description 文件上传组件
+     */
+    EmapFileUpload = (function() {
+        function EmapFileUpload(element, options) {
+            this.options = $.extend({}, $.fn.emapFileUpload.defaults, options);
+            this.$element = $(element);
+
+            if (this.options.token &amp;&amp; this.options.token != '') {
+                this.options.newToken = options.newToken = false;
+            } else {
+                this.options.newToken = options.newToken = true;
+            }
+
+            _init(this.$element, this.options);
+            _eventBind(this.$element, this.options);
+        }
+
+        /**
+         * @method getFileToken
+         * @description 获取token
+         * @return {String} token,若无上传文件返回""
+         */
+        EmapFileUpload.prototype.getFileToken = function() {
+            if (this.$element.emapFileUpload('getFileNum') == 0) {
+                return "";
+            }
+            return this.options.fileInput.emapUploadCore('getFileToken');
+        };
+
+        /**
+         * @method getFileUrl
+         * @description 返回token下已有的正式文件的url数组
+         * @return {Array} url数组
+         */
+        EmapFileUpload.prototype.getFileUrl = function() {
+            return this.options.fileInput.emapUploadCore('getFileUrl');
+        };
+
+        /**
+         * @method getFileData
+         * @description 返回token下已有的正式文件的信息
+         * @return {Array} 文件信息对象数组
+         */
+        EmapFileUpload.prototype.getFileData = function() {
+            return this.options.fileInput.emapUploadCore('getFileData');
+        };
+
+        /**
+         * @method saveTempFile
+         * @param {Object} params - 保存请求附带参数
+         * @description 保存token, 不建议使用, 用saveUpload方法替代
+         */
+        EmapFileUpload.prototype.saveTempFile = function(params) {
+            // 先判断没有没正在上传的文件, 如果有弹出提示框
+            var options = this.options;
+            var result;
+            var save_param = params || {};
+            !save_param.attachmentParam &amp;&amp; (save_param.attachmentParam = {});
+            save_param.attachmentParam.orderMap =  getOrderMap(options);
+            result = saveAction(options, save_param);
+            return result;
+
+            function saveAction(options, params) {
+                var result = options.fileInput.emapUploadCore('saveTempFile', params);
+                // 将临时文件下载地址替换为正式文件下载地址
+                $('.bh-file-upload-download', options.loadedCon).each(function() {
+                    var href = $(this).attr('href');
+                    if (new RegExp('getTempFile').test(href)) {
+                        var fileBlock = $(this).closest('.bh-file-upload-file').data('save', true);
+                        var fileId = fileBlock.data('fileid');
+                        $(this).attr('href', options.contextPath + '/sys/emapcomponent/file/getAttachmentFile/' + fileId + '.do');
+                    }
+                });
+                return result;
+            }
+        };
+
+        /**
+         * @method saveUpload
+         * @description 该方法为异步的 保存方法, 会在 有文件正在上传时弹出确认框, 该方法返回一个defer对象
+         * @param {Object} params - 保存请求附带参数
+         * @return {Object} 异步方法的Defer对象，resolve带参格式 为
+         * {
+         *   success: true,
+         *   token: "xxx",
+         * }
+         */
+        EmapFileUpload.prototype.saveUpload = function(params) {
+            var deferred = $.Deferred();
+            // 先判断没有没正在上传的文件, 如果有弹出提示框
+            var options = this.options;
+            var save_param = params || {};
+            !save_param.attachmentParam &amp;&amp; (save_param.attachmentParam = {});
+            save_param.attachmentParam.orderMap =  getOrderMap(options);
+            if ($('.bh-file-upload-file:not(.bh-error)', this.options.loadingCon).length > 0) {
+                BH_UTILS.bhDialogWarning({
+                    title: $.i18n('bh-fu-warning'),
+                    content: $.i18n('bh-fu-warningContent'),
+                    buttons: [{
+                        text: $.i18n('bh-fu-conFirmUpload'),
+                        className: 'bh-btn-warning',
+                        callback: function() {
+                            saveAction(options, deferred, save_param);
+                        }
+                    }, {
+                        text: $.i18n('bh-fu-cancelUpload'),
+                        className: 'bh-btn-default',
+                        callback: function() {
+                            deferred.reject();
+                        }
+                    }]
+                })
+            } else {
+                saveAction(options, deferred, save_param);
+            }
+            return deferred;
+
+            function saveAction(options, defer, params) {
+                var resultObj = {};
+                options.fileInput.emapUploadCore('saveUpload', params).done(function(res) {
+                    resultObj.success = true;
+                    resultObj.token = res.token;
+                    defer.resolve(resultObj);
+                    // 将临时文件下载地址替换为正式文件下载地址
+                    $('.bh-file-upload-download', options.loadedCon).each(function() {
+                        var href = $(this).attr('href');
+                        if (new RegExp('getTempFile').test(href)) {
+                            var fileBlock = $(this).closest('.bh-file-upload-file').data('save', true);
+                            var fileId = fileBlock.data('fileid');
+                            $(this).attr('href', options.contextPath + '/sys/emapcomponent/file/getAttachmentFile/' + fileId + '.do');
+                        }
+                    });
+                }).fail(function(error) {
+                    resultObj.success = false;
+                    resultObj.msg = error.msg || '保存失败';
+                    defer.resolve(resultObj);
+                });
+            }
+        };
+
+        /**
+         * @method getFileNum
+         * @description 获取已上传的文件数量
+         * @return {Int} 文件数量
+         */
+        EmapFileUpload.prototype.getFileNum = function() {
+            return this.options.loadedCon.getFileNum();
+        };
+
+        /**
+         * @method destroy
+         * @description 销毁组件实例
+         */
+        EmapFileUpload.prototype.destroy = function() {
+            this.options = null;
+            $(this.$element).data('plugin', false).empty();
+        };
+
+        // 私有方法
+        _init = function(element, options) {
+            // contextPath 兼容
+            if (!options.contextPath) {
+                options.contextPath = WIS_EMAP_SERV.getContextPath();
+            }
+
+            // 未限制上传数量为1时,若传了fileName参数  则删除
+            if (options.fileName &amp;&amp; options.limit != 1) {
+                delete options.fileName;
+            }
+
+            $(element).css('line-height', '28px').append('&lt;a class="bh-file-upload" href="javascript:void(0)">' +
+                '&lt;input style="cursor: pointer;" name="bhFile" type="file" ' + (options.multiple ? 'multiple' : '') + ' />上传' +
+                '&lt;/a>' +
+                '&lt;span class="bh-text-caption bh-color-caption bh-mh-8 bh-file-upload-info">(' + _getLimitInfo(options) + ')&lt;/span>' +
+                '&lt;div class="bh-file-upload-loading-wrap bh-clearfix">&lt;/div>' +
+                '&lt;div class="bh-file-upload-loaded-wrap bh-clearfix">&lt;/div>' +
+                '&lt;input type="hidden" class="file-array" value="" />');
+
+            options.fileInput = $('input[type=file]', element).parent();
+            options.loadingCon = $(element).find('.bh-file-upload-loading-wrap').bhFileUploadingList({
+                onDelete: function(item) {
+                    if (item.hasClass('bh-error')) {
+                        // 删除上传失败的文件
+                        item.remove();
+                    } else {
+                        // 删除正在上传的文件
+                        item.data('xhr').abort();
+                        item.remove();
+                    }
+                    element.trigger('bh-file-upload-validate');
+                }
+            });
+            options.loadedCon = $(element).find('.bh-file-upload-loaded-wrap').bhFileUploadedList({
+                // 删除已上传文件
+                onDelete: function(item) {
+                    var fileBlock = $(item).closest('.bh-file-upload-file');
+
+                    if (fileBlock.data('save')) {
+                        // 删除正式文件
+                        options.fileInput.emapUploadCore('deleteArrAdd', fileBlock.data('fileid'));
+                        fileBlock.remove();
+                        element.trigger('bh-file-upload-validate');
+                    } else {
+                        // 删除临时文件
+                        options.fileInput.emapUploadCore('deleteTempFile', fileBlock.data('fileid'))
+                            .done(function(res) {
+                                if (res.success) {
+                                    fileBlock.remove();
+                                    element.trigger('bh-file-upload-validate');
+                                }
+                            });
+                    }
+                    element.trigger('bh.file.upload.delete', fileBlock);
+                },
+                canPreviewPDF: options.canPreviewPDF
+            });
+
+
+            options.fileInput.emapUploadCore($.extend({}, options, {
+                add: function(e, data) {
+                    var files = data.files;
+                    var tmp = new Date().getTime();
+                    $(files).each(function(i) {
+                        data.files[i].bhId = tmp + i;
+                        options.loadingCon.add(this.name, tmp + i);
+                    });
+
+                    if (options.add) {
+                        options.add(e, data);
+                    }
+                },
+                submit: function(e, data) {
+                    var file = data.files[0];
+
+                    // 文件数量限制的校验
+                    if (options.limit) {
+                        var currentCount = options.loadingCon.getFileNum() + options.loadedCon.getFileNum();
+                        if (currentCount > options.limit) {
+                            options.loadingCon.error('文件数量超出限制', file.bhId);
+                            WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+                            return false;
+                        }
+                    }
+
+                    // 文件的大小 和类型校验
+                    if (options.type &amp;&amp; options.type.length > 0) {
+                        if (!new RegExp((options.type.join('|') + '$').toUpperCase()).test(file.name.toUpperCase())) {
+                            options.loadingCon.error('文件类型不正确', file.bhId);
+                            WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+                            return false;
+                        }
+                    }
+
+                    if (fileReader &amp;&amp; options.size) {
+                        if (file.size / 1024 > options.size) {
+                            options.loadingCon.error('文件大小超出限制', file.bhId);
+                            WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+                            return false;
+                        }
+                    }
+
+                    options.loadingCon._findFile(file.bhId).data('xhr', data);
+                    if (options.submit) {
+                        options.submit(e, data);
+                    }
+                },
+                done: function(e, data) {
+                    var file = data.files[0];
+                    // 上传成功
+                    options.loadingCon.remove(file.bhId);
+                    if (options.storeId == 'image') {
+                        options.loadedCon.addImage(data.result.name, file.bhId, data.result.id, data.result.tempFileUrl, function(item) {
+                            item.data('deleteurl', data.result.deleteUrl);
+                        });
+                    } else {
+                        options.loadedCon.add(data.result.name, file.bhId, data.result.id, data.result.tempFileUrl, function(item) {
+                            item.data('deleteurl', data.result.deleteUrl);
+                        });
+                    }
+                    if (options.done) {
+                        options.done(e, data);
+                    }
+
+                    WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+                },
+                fail: function(e, data) {
+                    // 上传失败
+                    var file = data.files[0];
+                    var errorMsg = '上传失败';
+                    if (data.result &amp;&amp; data.result.error) {
+                        errorMsg = data.result.error;
+                    }
+                    options.loadingCon.error(errorMsg, file.bhId);
+                    if (options.fail) {
+                        options.fail(e, data)
+                    }
+
+                    WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+                }
+            }));
+
+            // 获取token下已有的文件
+            if (!options.newToken) {
+                $.ajax({
+                    type: "post",
+                    url: options.contextPath + '/sys/emapcomponent/file/getUploadedAttachment/' + options.token + '.do',
+                    dataType: "json",
+                    success: function(res) {
+                        if (res.success) {
+                            if (!res.items || res.items.length == 0) return;
+                            if (options.storeId == 'image') {
+                                $(res.items).each(function() {
+                                    options.loadedCon.addImage(this.name, '', this.id, this.fileUrl, function(item) {
+                                        item.data('save', true);
+                                    });
+                                });
+                            } else {
+                                $(res.items).each(function() {
+                                    options.loadedCon.add(this.name, '', this.id, this.fileUrl, function(item) {
+                                        item.data('save', true);
+                                    });
+                                });
+                            }
+                            element.trigger('bh.file.upload.done', res);
+                        }
+                    }
+                });
+            }
+        };
+
+        function getOrderMap (options) {
+            var list = $('.bh-file-upload-file', options.loadedCon);
+            var orderMap = {};
+            if (list.length) {  
+                list.each(function (index) {
+                    orderMap[$(this).attr('data-fileid')] = index + 1;
+                });
+            }
+            return orderMap;
+        }
+
+
+        // 生成描述信息
+        _getLimitInfo = function(options) {
+            var infoHtml = '请上传附件';
+            if (options.size) {
+                infoHtml += ',文件最大为' + (options.size &lt; 1024 ? options.size + 'K' : options.size / 1024 + 'M');
+            }
+            if (options.type &amp;&amp; options.type.length > 0) {
+                infoHtml += ',格式限制为' + options.type.join(",").toUpperCase();
+            }
+            return infoHtml;
+        };
+
+        _eventBind = function(element, options) {};
+
+        // 定义插件
+        $.fn.emapFileUpload = function(options, params) {
+            var instance;
+            instance = this.data('plugin');
+
+            // 判断是否已经实例化
+            if (!instance) {
+                return this.each(function() {
+                    if (options == 'destroy') {
+                        return this;
+                    }
+                    return $(this).data('plugin', new EmapFileUpload(this, options));
+                });
+            }
+            if (options === true) {
+                return instance;
+            }
+            if ($.type(options) === 'string') {
+                return instance[options](params);
+            }
+        };
+
+        /**
+         * @memberof module:emapFileUpload
+         * @prop {String} [contextPath] - 根路径
+         * @prop {String} [token] - 文件token,不传则组件生成随机的新token， 传token则组件自动请求token下已有的文件信息并渲染到页面上
+         * @prop {Boolean} [multiple=false] - 上传控件是否支持一次性选择多个
+         * @prop {String} [storeId=file] - emap文件类型
+         * @prop {Array} [type=[]] - 上传文件的格式要求
+         * @prop {Int} [size=0] - 上传文件的大小要求，单位为KB
+         * @prop {Int} [limit] - 上传文件的数量限制
+         * @prop {Function} [add] - 添加文件的回调
+         * @prop {Function} [submit] - 开始上传文件的回调
+         * @prop {Function} [done] - 文件上传成功的回调
+         * @prop {Function} [fail] - 文件上传失败的回调
+         */
+        $.fn.emapFileUpload.defaults = {
+            multiple: false,
+            storeId: 'file',
+            type: [],
+            size: 0,
+            canPreviewPDF: true
+        };
+
+
+    })();
+
+}).call(this);
+
+// 上传中列表
+$.fn.bhFileUploadingList = function(opt) {
+    // 删除按钮的点击事件
+    $(this).on("click", "a.bh-file-upload-delete", function() {
+        if (opt.onDelete) {
+            opt.onDelete($(this).closest('.bh-file-upload-file'));
+        }
+    });
+    this.add = function(fileName, bhId, fileId) {
+        $(this).append('&lt;div class="bh-pull-left bh-file-upload-file" data-bhid="' + bhId + '" data-fileid="' + (fileId ? fileId : 0) + '">' +
+            '&lt;span class="bh-file-upload-filename" title="' + fileName + '">' + fileName + '&lt;/span>' +
+            '&lt;span class="bh-file-upload-error-msg">&lt;/span>' +
+            '&lt;i class="icon icon-spinner icon-pulse bh-file-uploading-icon">' +
+            '&lt;img style="vertical-align: top;width: 100%;" src="data:image/gif;base64,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">' +
+            '&lt;/i>' +
+            '&lt;a class="bh-file-upload-delete" href="javascript:void(0)">删除&lt;/a>' +
+            '&lt;/div>');
+        $(this).trigger('bh-file-upload-validate');
+    };
+
+    this._findFile = function(bhId, fileId) {
+        var id = fileId ? fileId : bhId;
+        var selector = fileId ? 'fileid' : 'bhid';
+        return $(this).find(".bh-file-upload-file[data-" + selector + "=" + id + "]");
+
+    };
+
+    this.error = function(errorMsg, bhId, fileId) {
+        var block = this._findFile(bhId, fileId);
+        if (block.length > 0) {
+            block.addClass('bh-error').find('.bh-file-upload-error-msg').text(errorMsg);
+            $(this).trigger('bh-file-upload-validate');
+        }
+    };
+
+    this.remove = function(bhId, fileId) {
+        var block = this._findFile(bhId, fileId);
+        if (block.length > 0) {
+            block.remove();
+            $(this).trigger('bh-file-upload-validate');
+        }
+    };
+
+    // 获取文件个数
+    this.getFileNum = function() {
+        return $(this).find(".bh-file-upload-file:not(.bh-error)").length;
+    };
+
+    return this;
+};
+
+//已上传列表
+/**
+ *
+ *  delete
+ * 点击删除 的回调
+ * func
+ */
+$.fn.bhFileUploadedList = function(opt) {
+    //删除按钮的点击事件
+    $(this).on("click", "a.bh-file-upload-delete", function() {
+        if (opt.onDelete) {
+            opt.onDelete($(this).closest('.bh-file-upload-file'));
+        }
+    });
+
+    // 点击文件名预览图片 或者下载文件
+    $(this).on('click', 'a.bh-file-upload-name-a, .bh-file-upload-file-icon', function() {
+        var block = $(this).closest('.bh-file-upload-file');
+        var fileName = $('.bh-file-upload-filename', block).attr('title');
+        var fileUrl = $('.bh-file-upload-download', block).attr('href');
+
+        if (new RegExp(/\.jpg|\.png|\.jpeg/g).test(fileName.toLowerCase())) {
+            // 预览图片
+            if (!$.bhGallery) {
+                console &amp;&amp; console.warn('图片轮播插件Gallery未引入');
+                return;
+            }
+            var imgUrlArr = [];
+            var imgSource = [];
+            var show = 0;
+            $(this).closest('.bh-file-upload-loaded-wrap').find('.bh-file-upload-file').each(function() {
+                var name = $('.bh-file-upload-filename', $(this)).attr('title');
+                if (new RegExp(/\.jpg|\.png|\.jpeg/g).test(name.toLowerCase())) {
+                    var Url = $('.bh-file-upload-download', $(this)).attr('href')
+                    imgUrlArr.push(Url)
+                }
+            });
+
+            $(imgUrlArr).each(function(i) {
+                if (fileUrl == this) {
+                    show = i;
+                }
+                imgSource.push({
+                    image: this
+                })
+            });
+
+            $.bhGallery({
+                dataSource: imgSource,
+                show: show
+            });
+
+        } else {
+            if (/\.pdf$/g.test(fileName.toLowerCase())) {
+                if (opt.canPreviewPDF) {
+                    $.emapPDFViewer({
+                        url: fileUrl
+                    })
+                }
+
+                // block.trigger('bh.file.click.pdf', [fileName, fileUrl]);
+                return;
+            }
+
+            // 下载文件
+            location.href = $('.bh-file-upload-download', block).attr('href');
+        }
+    });
+
+    this.add = function(fileName, bhId, fileId, fileSrc, cb) {
+        var iconClass = WIS_EMAP_SERV._getIconImgClass(fileName);
+        var item = $('&lt;div class="bh-pull-left bh-file-upload-file" data-bhid="' + bhId + '" data-fileId="' + (fileId ? fileId : 0) + '">' +
+            '&lt;div class="bh-file-upload-file-icon bh-pull-left">&lt;i class="iconfont icon-insertdrivefile icon-setstyle ' + iconClass + '">&lt;/i>&lt;/div>' +
+            '&lt;div class="bh-file-upload-file-info bh-pull-left">' +
+            '&lt;a class="bh-file-upload-name-a" href="javascript:void(0)" style="color:#333;">&lt;span class="bh-file-upload-filename" title="' + fileName + '">' + fileName + '&lt;/span>&lt;/a>' +
+            '&lt;p style="white-space: nowrap">' +
+            // '&lt;span class="bh-file-upload-success-info">上传成功&lt;/span> ' +
+            '&lt;a class="bh-file-upload-download bh-mr-8" href="' + fileSrc + '">下载&lt;/a>' +
+            '&lt;a class="bh-file-upload-delete" href="javascript:void(0)">删除&lt;/a>&lt;/p>' +
+            '&lt;/div>' +
+            '&lt;/div>');
+        $(this).append(item);
+        if (cb) {
+            cb(item);
+        }
+    };
+
+    this.addImage = function(fileName, bhId, fileId, fileSrc, cb) {
+        var item = $('&lt;div class="bh-pull-left bh-file-upload-file bh-file-upload-img" data-bhid="' + bhId + '" data-fileId="' + (fileId ? fileId : 0) + '">' +
+            '&lt;div class="bh-file-upload-img-block">&lt;span>&lt;img src="' + fileSrc + '" />&lt;/span>&lt;/div>' +
+            '&lt;div class="bh-file-upload-file-info">' +
+            '&lt;span class="bh-file-upload-filename" title="' + fileName + '">' + fileName + '&lt;/span>' +
+            '&lt;p>&lt;span class="bh-file-upload-success-info">上传成功&lt;/span> &lt;a class="bh-file-upload-delete" href="javascript:void(0)">删除&lt;/a>&lt;/p>' +
+            '&lt;/div>' +
+            '&lt;/div>');
+        $(this).append(item);
+        if (cb) {
+            cb(item)
+        }
+    };
+
+    this._findFile = function(bhId, fileId) {
+        var id = fileId ? fileId : bhId;
+        var selector = fileId ? 'fileid' : 'bhid';
+        return $(this).find(".bh-file-upload-file[data-" + selector + "=" + id + "]");
+
+    };
+
+    this.remove = function(bhId, fileId) {
+        var block = this._findFile(bhId, fileId);
+        if (block.length > 0) {
+            block.remove();
+        }
+    };
+
+    // 获取文件个数
+    this.getFileNum = function() {
+        return $(this).find(".bh-file-upload-file").length;
+    };
+
+    return this;
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapAvatarUpload.html">emapAvatarUpload</a>&nbsp;(头像裁剪上传)</li><li><a href="module-emapCard.html">emapCard</a>&nbsp;(卡片列表)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownTable.html">emapDropdownTable</a>&nbsp;(下拉表格/模糊搜索)</li><li><a href="module-emapDropdownTree.html">emapDropdownTree</a>&nbsp;(下拉树)</li><li><a href="module-emapEditableDataTable.html">emapEditableDataTable</a>&nbsp;(编辑表格)</li><li><a href="module-emapEditor.html">emapEditor</a></li><li><a href="module-emapFileDownload.html">emapFileDownload</a>&nbsp;(文件下载)</li><li><a href="module-emapFileUpload.html">emapFileUpload</a>&nbsp;(文件上传)</li><li><a href="module-emapForm.html">emapForm</a>&nbsp;(表单)</li><li><a href="module-emapgrid.html">emapgrid</a>&nbsp;(grid列表)</li><li><a href="module-emapImageUpload.html">emapImageUpload</a>&nbsp;(多图片上传)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapLinkage.html">emapLinkage</a>&nbsp;(表单联动)</li><li><a href="module-emapPDFViewer.html">emapPDFViewer</a>&nbsp;(PDF文件预览)</li><li><a href="module-emapRulesConstructor.html">emapRulesConstructor</a>&nbsp;(条件构造器)</li><li><a href="module-emapSchema.html">emapSchema</a>&nbsp;(方案模块)</li><li><a href="module-emapSingleImageUpload.html">emapSingleImageUpload</a>&nbsp;(单图片上传)</li><li><a href="module-emapUploadCore.html">emapUploadCore</a>&nbsp;(上传核心模块)</li><li><a href="module-emapValidate.html">emapValidate</a>&nbsp;(表单校验)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_EMAP_SERV.html">WIS_EMAP_SERV</a>&nbsp;(公共方法)</li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:10:03 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

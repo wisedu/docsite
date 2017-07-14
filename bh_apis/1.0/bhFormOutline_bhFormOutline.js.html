@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhFormOutline/bhFormOutline.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhFormOutline/bhFormOutline.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module bhFormOutline
+ * @description 表单大纲
+ * @example
+$.bhFormOutline.show({
+  insertContainer: $container, // 要插入的容器
+  offset: { // 大纲的偏移量 { top, left, right, bottom}
+    right: 16,
+    top: 30
+  },
+  statistics: true, // 是否对表单输入进行统计
+  affix:false // 大纲选中项是否随页面滚动改变
+});
+ */
+(function($) {
+  $.bhFormOutline = {
+    /**
+    * 初始化并显示表单大纲
+    * @method show
+    * @param options {object} 初始化参数
+    * @param options.insertContainer {jQuery} 必选，要插入的容器
+    * @param options.outlineContainer {jQuery} 可选,要读取的大纲容器,默认使用insetContainer的容器
+    * @param options.offset {Objec} 可选，大纲的偏移量 { top, left, right, bottom}
+    * @param options.statistics {boolean} 可选，否对表单输入进行统计
+    * @param options.affix {boolean} 可选，选中项是否随页面滚动改变
+    * @example
+    $.bhFormOutline.show({
+        insertContainer: $container
+    });
+    */
+    show: function(options) {
+      var formOutlineDefaults = {
+        insertContainer: "", //必填，要插入的容器
+        outlineContainer: '', //可选,要读取的大纲容器,默认使用insetContainer的容器
+        width: 0,
+        className: "",
+        offset: {}, //可选，大纲的偏移量{ top, left, right, bottom}，默认是右对齐
+        scrollOffsetTop: $('header[bh-header-role="bhHeader"]').outerHeight(), //可选，锚点定位的位置的top偏移量
+        statistics: true, //可选，是否对表单输入进行统计， true默认进行统计,
+        affix: true,
+        bottom: null,
+        customClass: ''
+      };
+      options = $.extend({}, formOutlineDefaults, options);
+      formOutlineShow(options);
+    },
+
+    /**
+    * 隐藏表单大纲
+    * @method hide
+    * @param options {object} 参数
+    * @param options.insertContainer {jQuery} 可选，要插入的容器
+    * @param options.destroy {boolean} 可选，，隐藏时是否要删除该大纲，默认删除
+    * @example
+    $.bhFormOutline.hide({
+        destroy: true
+    });
+    */
+    hide: function(options) {
+      var formOutlineDefaults = {
+        insertContainer: "", //可选，要插入的容器
+        destroy: true //可选，隐藏时是否要删除该大纲，默认删除
+      };
+      options = $.extend({}, formOutlineDefaults, options);
+      formOutlineHide(options);
+    }
+  };
+
+  function formOutlineShow(options) {
+    var formOutlineGuid = options.insertContainer ? options.insertContainer.attr("bh-form-outline-role-form-guid") : "";
+    if (formOutlineGuid) {
+      $("div[bh-form-outline-role-outline-guid=" + formOutlineGuid + "]")
+        .removeClass("bh-fadeOut").addClass("bh-fadeIn").show();
+      return;
+    }
+
+    //为内容块和大纲创建guid
+    formOutlineGuid = NewGuid();
+    //大纲外框html
+    var formOutlineHtml = getFormOutlineHtml();
+    //大纲子元素html
+    var formOutlineItemHtml = getFormOutlineItemHtml();
+    var outlineList = [];
+    //获取生成大纲的title
+    if(!options.outlineContainer){
+      options.outlineContainer = options.insertContainer;
+    }
+    
+    options.outlineContainer.find("[bh-role-form-outline=title]").each(function() {
+      var guid = NewGuid();
+      var $item = $(this);
+      if(!checkItemIsHidden($item)){
+        var title = $item.text();
+        $item.attr("bh-role-form-outline-item-title-guid", guid);
+        outlineList.push({
+          "title": title,
+          "guid": guid
+        });
+      }
+    });
+
+    //修改内容块的index取值,避免有隐藏项时,数组越界  ghlong--2017/4/28
+    var containerIndex = 0;
+    //获取生成大纲的表单块
+    options.outlineContainer.find("[bh-role-form-outline=container]").each(function(index) {
+      var $item = $(this);
+      if(checkItemIsHidden($item)){
+        return;
+      }
+      var guid = outlineList[containerIndex].guid;
+      $item.attr("bh-role-form-outline-item-guid", guid);
+
+      var statisticsData = {};
+      statisticsData.editBoxCount = 0;
+      statisticsData.enterEditBoxCount = 0;
+      statisticsData = statisticsEditBox($item, "input", statisticsData);
+      statisticsData = statisticsEditBox($item, "textarea", statisticsData);
+      statisticsData = statisticsEditBox($item, "select", statisticsData);
+      statisticsData = statisticsEditBox($item, "tree", statisticsData);
+
+      outlineList[containerIndex].statistics = statisticsData;
+
+      containerIndex++;
+    });
+
+    //生成大纲展示html
+    var formOutlineContent = "";
+    var outlineLength = outlineList.length;
+    if (outlineLength > 0) {
+      for (var i = 0; i &lt; outlineLength; i++) {
+        var outlineItem = outlineList[i];
+        var active = "";
+        if (i === 0) {
+          active = "bh-active";
+        }
+        var statistics = outlineItem.statistics;
+        var count = "";
+        var success = "";
+        if (statistics) {
+          if (statistics.editBoxCount) {
+            if (options.statistics) {
+              count = statistics.enterEditBoxCount + "/" + statistics.editBoxCount;
+              success = statistics.enterEditBoxCount === statistics.editBoxCount ? "bh-success" : "";
+            }
+          }
+        }
+
+        formOutlineContent += formOutlineItemHtml.replace("@active", active).replace("@index", i + 1).replace("@text", outlineItem.title)
+          .replace("@success", success).replace("@count", count).replace("@guid", outlineItem.guid);
+      }
+    }
+
+    //设置大纲位置
+    var _style = "";
+    if (options.offset) {
+      var offset = options.offset;
+      if (offset.left === 0 || offset.left) {
+        _style += "left:" + offset.left + "px;";
+      }
+      if (offset.right === 0 || offset.right) {
+        _style += "right:" + offset.right + "px;";
+      }
+      if (offset.top === 0 || offset.top) {
+        _style += "top:" + offset.top + "px;";
+      }
+      if (offset.bottom === 0 || offset.bottom) {
+        _style += "bottom:" + offset.bottom + "px;";
+      }
+    }
+
+    //将大纲插入页面
+    formOutlineHtml = formOutlineHtml.replace("@content", formOutlineContent).replace("@style", _style)
+      .replace("@outlineGuid", formOutlineGuid).replace("@customClass", options.customClass);
+    var hideBlockId = "bhFormOutline_hide_" + NewGuid();
+    var $formOutline = $(formOutlineHtml);
+    //添加一个隐藏块，用来计算文本是否超出div的宽度，超出则加上title
+    $formOutline.append('&lt;div id="' + hideBlockId + '" style="display: none;" class="bh-form-outline-itemText">&lt;/div>');
+
+    if (options.width) {
+      $formOutline.css({
+        'width': options.width
+      });
+    }
+
+    if (options.className) {
+      $formOutline.addClass(options.className);
+    }
+
+    options.insertContainer.append($formOutline).attr("bh-form-outline-role-form-guid", formOutlineGuid);
+
+    //计算和判断是否要添加title属性
+    var hideBlock = $('#' + hideBlockId);
+    $formOutline.find('.bh-form-outline-itemText').each(function() {
+      var $item = $(this);
+      var itemWidth = $item.width();
+      var itemText = $item.text();
+      hideBlock.html(itemText);
+      var hideWidth = hideBlock.width();
+      if (hideWidth > itemWidth) {
+        $item.attr('title', itemText);
+      }
+    });
+
+    //大纲表单输入事件监听
+    if (options.statistics) {
+      //对输入框进行输入或点击（针对非输入项的，如radio，checkbox）的事件监听
+      options.outlineContainer.on({
+        "keydown": function(e) {
+          setTimeout(function() {
+            getEnterTagObj(e);
+          }, 50);
+        },
+        "click": function(e) {
+          getEnterTagObj(e);
+        }
+      });
+
+      //监听 下拉列表 dropdownlist
+      options.outlineContainer.find(".jqx-dropdownlist-state-normal").each(function() {
+        var $item = $(this);
+        $item.on('select', function(event) {
+          var $parentBlock = $item.closest("[bh-role-form-outline=container]");
+          checkAndRefreshCount($parentBlock);
+        });
+      });
+
+      //监听 时间 datetimeinput
+      options.outlineContainer.find(".jqx-datetimeinput").each(function() {
+        var $item = $(this);
+        $item.on('valueChanged', function(event) {
+          var $parentBlock = $item.closest("[bh-role-form-outline=container]");
+          checkAndRefreshCount($parentBlock);
+        });
+      });
+
+      //监听 combobox
+      options.outlineContainer.find(".jqx-combobox").each(function() {
+        var $item = $(this);
+        $item.on('change', function(event) {
+          setTimeout(function() {
+            var $parentBlock = $item.closest("[bh-role-form-outline=container]");
+            checkAndRefreshCount($parentBlock);
+          }, 50);
+        });
+      });
+
+      //监听 文件上传
+      options.outlineContainer.find("[xtype=uploadfile],[xtype='uploadsingleimage'],[xtype='uploadmuiltimage']").each(function() {
+        var $item = $(this);
+        $item.on('bh.file.upload.done', function(event) {
+          setTimeout(function() {
+            var $parentBlock = $item.closest("[bh-role-form-outline=container]");
+            checkAndRefreshCount($parentBlock);
+          }, 50);
+        });
+
+        $item.on('bh.file.upload.delete', function(event) {
+          setTimeout(function() {
+            var $parentBlock = $item.closest("[bh-role-form-outline=container]");
+            checkAndRefreshCount($parentBlock);
+          }, 50);
+        });
+      });
+
+      //监听表单的change事件
+      options.outlineContainer.on('_formChange', function (event) {
+        var $target = $(event.target);
+        var xtype = $target.attr('xtype');
+        if(xtype === 'tree' || xtype === 'date-local'){
+          setTimeout(function() {
+            var $parentBlock = $target.closest("[bh-role-form-outline=container]");
+            checkAndRefreshCount($parentBlock);
+          }, 50);
+        }
+      });
+    }
+
+    //浮动块的监听
+    $formOutline.on("click", "div.bh-form-outline-item", function() {
+      var $item = $(this);
+      var $formOutline = $item.closest("div[bh-role-form-outline-fixed=bhFormOutline]");
+      var guid = $item.attr("bh-role-form-outline-fixed-item-guid");
+      var $title = options.outlineContainer.find("[bh-role-form-outline-item-title-guid=" + guid + "]");
+      var fixedTop = $title.offset().top;
+      if (options.scrollOffsetTop) {
+        fixedTop = fixedTop - parseInt(options.scrollOffsetTop, 10);
+      }
+
+      $("html, html body").animate({
+        scrollTop: (fixedTop)
+      }, 450);
+
+      $formOutline.find("div.bh-form-outline-item").removeClass("bh-active");
+      $item.addClass("bh-active");
+    });
+
+
+    //添加浮动属性后,监听滚动事件
+    if (options.affix) {
+      $(window).bind('scroll', function () {
+        scrollEvent(options);
+      });
+      setTimeout(function() {
+        $(window).trigger('scroll');
+      }, 30);
+    }
+
+  }
+
+  function scrollEvent(options) {
+    //insertContainer在dom节点中销毁后，在内存中依然存在，如果滚动的时候为隐藏状态，则认为已经销毁
+    if ($(options.insertContainer[0]).css('display') == 'none') {
+      $(window).unbind('scroll', scrollEvent);
+    }
+
+    //设置大纲title高亮
+    setOuterLineTitleHighlight(options);
+
+    //设置大纲可浮动
+    setOutlineToFixed(options);
+
+    //当大纲过长时设置超长部分能始终可见
+    outerLongerHandle(options);
+
+  }
+
+  function outerLongerHandle(options) {
+    var windowHeight = window.innerHeight;
+    var $formOutline = options.insertContainer.find('[bh-role-form-outline-fixed="bhFormOutline"]');
+    if($formOutline.length === 0){
+        return;
+    }
+    var formOuterLineHeight = $formOutline.outerHeight();
+    var formOuterLineOffset = $formOutline.offset();
+    var formOuterLineOffsetTop = formOuterLineOffset.top;
+    var isLongerFlag = $formOutline.attr('bh-outerline-is-longer');
+
+    if(!isLongerFlag){
+      //当浏览器的高度 大于 大纲的内容高度时,不做处理
+      if(windowHeight - formOuterLineOffsetTop > formOuterLineHeight){
+        $formOutline.attr('bh-outerline-is-longer', 'true');
+        return;
+      }
+    }else{
+      return;
+    }
+
+    var $active = $formOutline.find('.bh-active');
+    var activeTop = $active.offset().top;
+
+    var activeToLineTopHeight = activeTop - formOuterLineOffsetTop;
+    //当高亮title距离大纲顶部大于浏览器高度的一半时,设置大纲的位置在浏览器的中间
+    if(activeToLineTopHeight > windowHeight / 2){
+      var fixedTop = -activeToLineTopHeight + parseInt(windowHeight/2, 10);
+      $formOutline.css({top: fixedTop+'px'});
+    }
+  }
+
+  function setOutlineToFixed(options) {
+    var $window = $(window);
+    var scrollTop = $window.scrollTop();
+
+    var hostOffset = options.insertContainer.offset();
+    var $formOutline = options.insertContainer.find('[bh-role-form-outline-fixed="bhFormOutline"]');
+    if($formOutline.length === 0){
+      return;
+    }
+    //父容器的top
+    var hostTop = hostOffset.top;
+    //父容器的left
+    var hostLeft = hostOffset.left;
+    //普通头部的高
+    var headHeight = options.header ? options.header.outerHeight() : 0;
+    var fixedContOffset = $formOutline.offset();
+    //浮动元素的top
+    var fixedContTop = fixedContOffset.top;
+    //浮动元素的left
+    var fixedLeft = fixedContOffset.left;
+    //浮动元素距离父容器的距离
+    var diffHeight = fixedContTop - hostTop;
+    //自定义偏移的top值
+    var offsetTop = options.offset.top ? parseInt(options.offset.top, 10) : 0;
+    //浮动元素距离顶部的距离
+    diffHeight = diffHeight + offsetTop;
+
+    //当滚动高度大于期望高度的处理
+    if(scrollTop >= hostTop - offsetTop - headHeight){
+      //获取之前存放在浮动元素上的style（是已经计算好的style，避免重复计算）
+      var fixedStyleData = $formOutline.data("bhAffixStyleData");
+      if(!fixedStyleData){
+        if(options.offset.left){
+          fixedLeft = fixedLeft + parseInt(options.offset.left, 10);
+        }
+        var toFixedTop = diffHeight;
+        if(options.miniHeader){
+          toFixedTop += options.miniHeader.outerHeight();
+        }else{
+          toFixedTop += headHeight;
+        }
+        //计算后的浮动style
+        fixedStyleData = {"left": fixedLeft+"px", "position":"fixed", "top": toFixedTop};
+        //浮动元素初始的style（用户自己设定的style，将其缓存起来，避免清除浮动style时将用户的style清掉）
+        var _style = $formOutline.attr("style");
+        //将计算的和元素的style存入浮动元素中
+        $formOutline.data("beforeBhAffixStyle", _style).data("bhAffixStyleData", fixedStyleData);
+      }
+
+      $formOutline.css(fixedStyleData).data("bhOuterAffixFlag",true).addClass('bh-affix-fixedFlag');
+    }else{
+      //取消元素浮动的处理，替换style为用户自己设定的style
+      var _style = $formOutline.data("beforeBhAffixStyle");
+      var fixedFlag = $formOutline.data("bhOuterAffixFlag");
+      if(!_style){
+        _style = "";
+      }
+      if(fixedFlag){
+        $formOutline.attr("style", _style);
+        $formOutline.data("bhOuterAffixFlag", false).removeClass('bh-affix-fixedFlag');
+      }
+    }
+
+  }
+
+  function setOuterLineTitleHighlight(options) {
+    var scrollTop = document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop;
+    var nowTitleGuid = '';
+    options.insertContainer.find('[bh-role-form-outline-item-title-guid]').each(function (_index) {
+      var $title = $(this);
+      var titleTop = $title.offset().top;
+      var guid = $title.attr('bh-role-form-outline-item-title-guid');
+      if(_index === 0){
+        nowTitleGuid = guid;
+      }
+      //100是为了在title不是非得在浏览器边缘时才调整高亮
+      if(titleTop > scrollTop + 100){
+        return false;
+      }
+      nowTitleGuid = guid;
+    });
+
+    var $outerLine = options.insertContainer.find('[bh-role-form-outline-fixed="bhFormOutline"]');
+    $outerLine.find('[bh-role-form-outline-fixed-item-guid]').removeClass('bh-active');
+    $outerLine.find('[bh-role-form-outline-fixed-item-guid="'+nowTitleGuid+'"]').addClass('bh-active');
+  }
+
+  function formOutlineHide(options) {
+    var $formOutline = "";
+    var guid = "";
+    if (options.insertContainer) {
+      guid = options.insertContainer.attr("bh-form-outline-role-form-guid");
+      $formOutline = options.insertContainer.find("div[bh-form-outline-role-outline-guid=" + guid + "]");
+    } else {
+      $formOutline = $("[bh-role-form-outline-fixed=bhFormOutline]");
+      guid = $formOutline.attr("bh-form-outline-role-outline-guid");
+    }
+    $formOutline.removeClass("bh-fadeIn").addClass("bh-fadeOut");
+    if (options.destroy) {
+      //当大纲被销毁时，将绑定的guid也一并销毁
+      var $insertContainer = options.insertContainer ? options.insertContainer : $("[bh-form-outline-role-form-guid=" + guid + "]");
+      $insertContainer.removeAttr("bh-form-outline-role-form-guid");
+      $formOutline.remove();
+    }
+  }
+
+  function getFormOutlineHtml() {
+    var _html = '&lt;div class="bh-form-outline bh-animated-doubleTime bh-fadeIn @customClass" bh-role-form-outline-fixed="bhFormOutline" bh-form-outline-role-outline-guid="@outlineGuid" style="@style">@content&lt;/div>';
+    return _html;
+  }
+
+  function getFormOutlineItemHtml() {
+    var _html =
+      '&lt;div class="bh-form-outline-item @active" bh-role-form-outline-fixed-item-guid="@guid">' +
+      '&lt;div class="bh-form-outline-itemIndex">@index&lt;/div>' +
+      '&lt;div class="bh-form-outline-itemText bh-str-cut">@text&lt;/div>' +
+      '&lt;div class="bh-form-outline-itemCount @success">@count&lt;/div>' +
+      '&lt;/div>';
+    return _html;
+  }
+
+  function getEnterTagObj(e) {
+    var $target = $(e.target || e.srcElement);
+    var tagName = $target[0].localName;
+    var $parentBlock = $target.closest("[bh-role-form-outline=container]");
+
+    if (e.type === "click") {
+      if (tagName === "input") {
+        if ($target.attr("type") === "radio" || $target.attr("type") === "checkbox") {
+          checkAndRefreshCount($parentBlock);
+        }
+      }
+    } else {
+      if (tagName === "input" || tagName === "textarea" || tagName === "select") {
+        checkAndRefreshCount($parentBlock);
+      }
+    }
+
+  }
+
+  function checkAndRefreshCount($editBox) {
+    var statisticsData = {};
+    statisticsData.editBoxCount = 0;
+    statisticsData.enterEditBoxCount = 0;
+    statisticsData = statisticsEditBox($editBox, "input", statisticsData);
+    statisticsData = statisticsEditBox($editBox, "textarea", statisticsData);
+    statisticsData = statisticsEditBox($editBox, "select", statisticsData);
+    statisticsData = statisticsEditBox($editBox, "tree", statisticsData);
+
+    var $count = $("div[bh-role-form-outline-fixed=bhFormOutline]").find("div[bh-role-form-outline-fixed-item-guid=" + $editBox.attr("bh-role-form-outline-item-guid") + "]")
+      .find(".bh-form-outline-itemCount");
+    var countText = $.trim($count.text());
+    var newCount = statisticsData.enterEditBoxCount + "/" + statisticsData.editBoxCount;
+    if (countText != newCount) {
+      if (statisticsData.enterEditBoxCount === statisticsData.editBoxCount) {
+        $count.addClass("bh-success");
+      } else {
+        $count.removeClass("bh-success");
+      }
+      $count.html(newCount);
+    }
+
+    $editBox.data("formOutlineKeyUpCount", 0);
+  }
+
+  //统计输入框和已编辑的项
+  function statisticsEditBox($container, tagName, statisticsData) {
+    if (tagName === "input") {
+      //存放radio和checkbox，一组radio或checkbox是一个输入项
+      var radioCheckboxGroupData = {};
+      //存放其他的input
+      var inputData = [];
+      $container.find(tagName).each(function() {
+        var $item = $(this);
+        if (!checkItemIsHidden($item)) {
+          var type = this.type;
+          //radio和checkbox时，将name放入json对象中
+          if (type === "radio" || type === "checkbox") {
+            var name = this.name;
+            radioCheckboxGroupData[name] = name;
+          } else {
+            if (type !== 'hidden') {
+              inputData.push($item);
+            } else {
+              if ($item.parent().attr('xtype') === 'select') {
+                return;
+              }
+              if ($item.closest('.jqx-dropdownlist-state-normal').length > 0) {
+                inputData.push($item);
+              }
+            }
+          }
+        }
+      });
+
+      //统计其他input的输入项
+      var inputDataLen = inputData.length;
+      if (inputDataLen > 0) {
+        for (var i = 0; i &lt; inputDataLen; i++) {
+          statisticsData.editBoxCount++;
+          var $item = inputData[i];
+          if ($.trim($item.val()).length != 0) {
+            statisticsData.enterEditBoxCount++;
+          } else if ($item.attr('type') === 'file' &amp;&amp; $item.closest('.bh-file-img-container').length > 0) {
+            if ($item.closest('.bh-file-img-container').hasClass('saved') || $item.closest('.bh-file-img-container').hasClass('success')) {
+              statisticsData.enterEditBoxCount++;
+            }
+          } else {
+            //文件上传统计
+            var $uploadFile = $item.closest('[xtype=uploadfile]');
+            if ($uploadFile.length > 0) {
+              if ($uploadFile.find('a.bh-file-upload-name-a').length > 0) {
+                statisticsData.enterEditBoxCount++;
+              }
+            }
+          }
+        }
+      }
+
+      //统计radio和checkbox的输入项
+      for (var key in radioCheckboxGroupData) {
+        statisticsData.editBoxCount++;
+        var value = $container.find("input[name='" + key + "']:checked").val();
+        if (value) {
+          statisticsData.enterEditBoxCount++;
+        }
+      }
+    } else if (tagName == 'select') {
+      // 如果是表单的select的话，没有select标签的
+      $container.find('[xtype=select]').each(function() {
+        var $item = $(this);
+        if (!checkItemIsHidden($item)) {
+          statisticsData.editBoxCount++;
+          var selectValue = $item.jqxDropDownList('getSelectedItem');
+          if (selectValue &amp;&amp; selectValue.value != '') {
+            statisticsData.enterEditBoxCount++;
+          }
+        }
+      });
+    }else if (tagName == 'tree') {
+      //emap tree类型的处理
+      $container.find('[xtype=tree]').each(function() {
+        var $item = $(this);
+        if (!checkItemIsHidden($item)) {
+          statisticsData.editBoxCount++;
+          var value = WIS_EMAP_INPUT.getValue($item, {});
+          if (value &amp;&amp; value != '') {
+            statisticsData.enterEditBoxCount++;
+          }
+        }
+      });
+    } else {
+      $container.find(tagName).each(function() {
+        var $item = $(this);
+        if (!checkItemIsHidden($item)) {
+          statisticsData.editBoxCount++;
+          if ($.trim($item.val()).length != 0) {
+            statisticsData.enterEditBoxCount++;
+          }
+        }
+      });
+    }
+
+    return statisticsData;
+  }
+
+  /***
+   * 判断该节点是否隐藏
+   * @param $item
+   * @returns {boolean}
+     */
+  function checkItemIsHidden($item) {
+    var flag = false;
+    var $row = $item.closest(".bh-row");
+    if($row.length > 0 &amp;&amp; $row.css('display') === 'none'){
+      flag = true;
+    }
+
+    if(!flag){
+      var $container = $item.closest('[bh-form-role="groupContainer"]');
+      if($container.length > 0 &amp;&amp; $container.css('display') === 'none'){
+        flag = true;
+      }
+    }
+
+    return flag;
+  }
+
+
+  function NewGuid() {
+    return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
+  }
+
+  function S4() {
+    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+  }
+
+})(jQuery);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

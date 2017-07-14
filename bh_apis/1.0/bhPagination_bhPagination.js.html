@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhPagination/bhPagination.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhPagination/bhPagination.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
+/**
+ * @module pagination
+ * @description 分页组件
+ * @example
+ $control.pagination({
+        mode: 'advanced', //可选， 分页的模式 advanced或者simple
+        pagesize: pagesize, //可选， 一页展示的数据
+        pageSizeOptions: [5, 10, 50, 100], //可选，下拉框里面的数据
+        selectedIndex: 0, //可选，下拉框的默认显示的index
+        pagenum: pagenum, //可选，当前的页码
+        totalSize: 1000 //必填，总共多少条数据
+    });
+    $control.pagination({
+        mode: 'simple', //可选， 分页的模式
+        pagesize: pagesize, //可选， 一页展示的数据
+        pagenum: pagenum, //可选，当前的页码
+        totalSize: 1000, //必填，总共多少条数据
+        pagerButtonsCount: 3
+    });
+ */
+(function() {
+    var html_advanced = '&lt;div class="bh-pager bh-hide">' +
+        '&lt;div class="bh-pull-left">' +
+        '&lt;a href="javascript:void(0);" class="bh-pager-btn waves-effect" pager-flag="prev">' +
+        '&lt;i class="iconfont icon-keyboardarrowleft bh-pager-left-arrow">&lt;/i>' +
+        '&lt;/a>' +
+        '&lt;a href="javascript:void(0);" class="bh-pager-btn waves-effect" pager-flag="next">' +
+        '&lt;i class="iconfont icon-keyboardarrowright bh-pager-right-arrow">&lt;/i>' +
+        '&lt;/a>' +
+        '&lt;span class="bh-pager-num" pager-flag="pageInfo">&lt;/span>' +
+        '&lt;label class="bh-pager-label">' + $.i18n('bha-pagination-jump') + '&lt;/label>' +
+        '&lt;input type="text" class="bh-form-control bh-pager-input" pager-flag="gotoPage"/>' +
+        '&lt;span>' + $.i18n('bha-pagination-page') + '&lt;/span>' +
+        '&lt;/div>' +
+        '&lt;div class="bh-pull-right">' +
+        '&lt;div pager-flag="pagerOptionSel" class="bh-pull-right">&lt;/div>' +
+        '&lt;label class="bh-pull-right bh-pager-label bh-pager-right-text">' + $.i18n('bha-pagination-perPage') + '&lt;/label>' +
+        '&lt;/div>' +
+        '&lt;/div>';
+
+    var html_simple = '&lt;div class="bh-pager bh-hide">' +
+        '&lt;div class="bh-pull-left">' +
+        '&lt;a href="javascript:void(0);" class="waves-effect bh-pager-simplePrev bh-pager-btn" pager-flag="simplePrev">' +
+        '&lt;i class="iconfont icon-keyboardarrowleft">&lt;/i>' +
+        '&lt;/a>' +
+        '&lt;div class="bh-pageNum-con" pager-flag="pageNumEle">&lt;/div>' +
+        '&lt;a href="javascript:void(0);" class="waves-effect bh-pager-simpleNext bh-pager-btn" pager-flag="simpleNext">' +
+        '&lt;i class="iconfont icon-keyboardarrowright">&lt;/i>' +
+        '&lt;/a>' +
+        '&lt;/div>' +
+        '&lt;div class="bh-pull-right">' +
+        '&lt;label class="bh-pull-right bh-pager-label bh-mh-16">' + $.i18n('bha-pagination-total') + '&lt;span id="bh-pager-simple-total">&lt;/span>' + $.i18n('bha-pagination-tiao') + '&lt;/label>' +
+        '&lt;/div>' +
+        '&lt;/div>';
+    var Plugin;
+    $.fn.pagination = function(options, params) {
+        var instance = new Plugin(this, options);
+        if (options === true) {
+            return instance;
+        }
+        return this;
+    };
+
+    /**
+     * @memberof module:pagination
+     * @description 内置默认值
+     * @prop {string}  mode  advanced或simple
+     * @prop {number}  pagesize的组合 - 每页展示的条数
+     * @prop {Array}  pageSizeOptions - advanced分页的pagesize的组合
+     * @prop {number}  selectedIndex - advanced分页初始化时展示的第几页的数据
+     * @prop {number}  pagenum - 当前的页码 
+     * @prop {number}  totalSize - 数据的总量
+     * @prop {number}  pagerButtonsCount - 简单分页时，除了第一页和最后一页的页码，展示的其他的页码的数量
+     */
+    $.fn.pagination.defaults = {
+        mode: 'advanced',
+        pagesize: 10,
+        pageSizeOptions: [10, 20, 50, 100],
+        selectedIndex: 0,
+        pagenum: 0,
+        totalSize: 0,
+        pagerButtonsCount: 0
+    };
+
+    /**
+     * 这里是一个自运行的单例模式。
+     */
+    Plugin = (function() {
+        function Plugin(element, options) {
+            //将插件的默认参数及用户定义的参数合并到一个新的obj里
+            this.settings = $.extend({}, $.fn.pagination.defaults, options);
+            //定位pageSizeOptions的selectedIndex
+            var pagesize = options.pagesize;
+            var pageSizeOptions = this.settings.pageSizeOptions;
+            for (var i = 0; i &lt; pageSizeOptions.length; i++) {
+                if (pageSizeOptions[i] == pagesize) {
+                    this.settings.selectedIndex = i;
+                }
+            }
+            //将dom jquery对象赋值给插件，方便后续调用
+            this.$element = $(element);
+            _create(this);
+        }
+
+        return Plugin;
+    })();
+
+
+    Plugin.prototype.getPagenum = function() {
+        if (this.settings.mode == 'advanced') {
+            return parseInt(this.$element.find('[pager-flag="gotoPage"]').val());
+        } else if (this.settings.mode == 'simple') {
+            if (this.pageSizeOptions == 0) {
+                return parseInt(this.$element.find('[pager-flag="simpleOnliOne"]')[0].innerText);
+            } else {
+                return parseInt(this.$element.find('.bh-simplePager-active').text());
+            }
+
+        }
+    };
+    Plugin.prototype.getPagesize = function() {
+        if (this.settings.mode == 'advanced') {
+            return this.$element.find('[pager-flag="pagerOptionSel"]').jqxDropDownList('val');
+        } else if (this.settings.mode == 'simple') {
+            return this.settings.pagesize;
+        }
+    };
+
+    Plugin.prototype.getTotal = function() {
+        return this.settings.totalSize;
+    };
+
+    //生成dom
+    function _create(instance) {
+        var $element = instance.$element;
+        var settings = instance.settings;
+        switch (settings.mode) {
+            case 'simple':
+                $element.html(html_simple);
+                _simpleAppend(instance);
+                if (settings.pagerButtonsCount == 0) {
+                    $element.find('[pager-flag="simpleOnliOne"]').text(settings.pagenum + 1);
+                    if (settings.pagenum > 0) {
+                        $element.find('[pager-flag="simplePrev"]').removeClass('bh-btn-disabled');
+                    }
+                }
+                break;
+            case 'advanced':
+                $element.html(html_advanced);
+                _advancedAppend($element, settings);
+
+                break;
+        }
+        //跳转到第几页赋值
+        $element.find('[pager-flag="gotoPage"]').val(settings.pagenum + 1);
+        //当前分页条数及总条数
+        _setCurrentPageRecordInfo(instance);
+        $element.children('.bh-pager').removeClass('bh-hide');
+        _eventListener(instance);
+    }
+
+    //生成具体的页码和填充具体的总数
+    function _simpleAppend(instance) {
+        var settings = instance.settings;
+        var $element = instance.$element;
+        var pagesize = settings.pagesize;
+        var totalNum = instance.getTotal();
+        var pagerButtonsCount = settings.pagerButtonsCount;
+        var pageLen = Math.ceil(totalNum / pagesize);
+        var $fixPageHtml = '';
+        var onlyNumText = 0;
+        var isButtonDis = pageLen == 1 || pageLen == 0;
+        var isLastNum = settings.pagenum + 1 == pageLen;
+        if (pagerButtonsCount == 0 || pageLen == 1 || pageLen == 0) {
+            if (pageLen != 0) {
+                onlyNumText = 1;
+            }
+            $fixPageHtml = '&lt;div class="bh-pager-simple-numHtml" pager-flag="addNumBtn">' +
+                '&lt;a href="javascript:void(0);" class="waves-effect bh-pager-btn bh-pager-simpleBtn bh-simplePager-active" pager-flag="simpleOnliOne">' + onlyNumText + '&lt;/a>' +
+                '&lt;/div>';
+            $element.find('[pager-flag="pageNumEle"]').append($fixPageHtml);
+            $element.find('[pager-flag="simplePrev"]').addClass('bh-btn-disabled');
+            if (isButtonDis || isLastNum) {
+                $element.find('[pager-flag="simpleNext"]').addClass('bh-btn-disabled');
+            }
+
+        } else {
+            $fixPageHtml = '&lt;div class="bh-pager-simple-numHtml" pager-flag="addNumBtn">&lt;/div>';
+            $element.find('[pager-flag="pageNumEle"]').append($fixPageHtml);
+            _addNumBtn(settings, $element, pageLen);
+        }
+        $element.find('#bh-pager-simple-total').text(totalNum);
+    }
+    //添加数字
+    function _addNumBtn(settings, $element, pageLen) {
+        var showEllipsisNum = pageLen - settings.pagerButtonsCount;
+        var $totalElement;
+        var pageNumText = 0;
+        var $pageNumEle = '';
+        if (showEllipsisNum > 2) {
+            $totalElement = _getTotalElement(settings, $element, pageLen);
+            $element.find('[pager-flag="addNumBtn"]').html($totalElement);
+        } else {
+            _addOnlyNumBtnCircle($element, pageLen - 1, pageLen);
+        }
+        var $numEle = $($element.find('[pager-flag=simpleGotoPage]'));
+        var $activeEle = $numEle.filter(function(index) {
+            return parseInt($numEle[index].innerText) == settings.pagenum + 1;
+        });
+        $activeEle.addClass('bh-simplePager-active');
+        var activeNum = parseInt($activeEle.text());
+        if (activeNum == 1) {
+            $element.find('[pager-flag=simplePrev]').addClass('bh-btn-disabled');
+        }
+        if (activeNum == pageLen) {
+            $element.find('[pager-flag=simpleNext]').addClass('bh-btn-disabled');
+        }
+    }
+    // 获取有省略号的元素
+    function _getTotalElement(settings, $element, pageLen) {
+        var totalNumElement = '';
+        var pageNumText = _getCircleFirstPageNum(settings);
+        var pagerButtonsCount = settings.pagerButtonsCount;
+        var currentPageNum = settings.pagenum;
+        var showRightEll = pagerButtonsCount + currentPageNum &lt; pageLen - 1;
+        var showLeftEll = currentPageNum - 1 > 2;
+        var firstNum = '&lt;a href="javascript:void(0);" class="waves-effect bh-pager-btn bh-pager-simpleBtn" pager-flag="simpleGotoPage">1&lt;/a>';
+        var lastNum = '&lt;a href="javascript:void(0);" class="waves-effect bh-pager-btn bh-pager-simpleBtn" pager-flag="simpleGotoPage">' + pageLen + '&lt;/a>';
+        var rightEllipsis = '&lt;a href="javascript:void(0);" class="waves-effect bh-pager-btn bh-pager-simpleBtn ellipsis" pager-flag="changeRightEllipsis">...&lt;/a>';
+        var leftEllipsis = '&lt;a href="javascript:void(0);" class="waves-effect bh-pager-btn bh-pager-simpleBtn ellipsis" pager-flag="changeLeftEllipsis">...&lt;/a>';
+        if (currentPageNum == 0 || currentPageNum &lt;= pagerButtonsCount) {
+            totalNumElement = firstNum + _addNumBtnCircle($element, settings.pagerButtonsCount + 1, pageLen) + rightEllipsis + lastNum;
+        } else {
+            var numberEle = _addNumBtnCircle($element, settings.pagerButtonsCount + 1, pageLen, pageNumText - 1);
+            if (showLeftEll &amp;&amp; showRightEll) {
+                totalNumElement = firstNum + leftEllipsis + numberEle + rightEllipsis + lastNum;
+            } else if (showLeftEll) {
+                totalNumElement = firstNum + leftEllipsis + numberEle + lastNum;
+            } else if (showRightEll) {
+                totalNumElement = firstNum + numberEle + rightEllipsis + lastNum;
+            }
+        }
+        return totalNumElement;
+    }
+    // 获取循环的第一个数字，根据不同的当前页码和pagerButtonCount的余数的不同，循环的第一个数字不一样
+    function _getCircleFirstPageNum(settings) {
+        var circleFirstText = 0;
+        var pagerButtonsCount = settings.pagerButtonsCount;
+        var currentPageNum = settings.pagenum + 1;
+        var remainderNum = currentPageNum % pagerButtonsCount;
+        var timeNum = parseInt(currentPageNum / pagerButtonsCount);
+        if (remainderNum == 0) {
+            circleFirstText = currentPageNum - Math.floor(pagerButtonsCount / 2);
+        } else if (remainderNum == 1) {
+            if (timeNum == 1) {
+                circleFirstText = currentPageNum;
+            } else {
+                circleFirstText = currentPageNum - (pagerButtonsCount - 1);
+            }
+        } else if (remainderNum == 2) {
+            circleFirstText = currentPageNum;
+        } else if (remainderNum > 2) {
+
+            circleFirstText = pagerButtonsCount * timeNum + 2;
+        }
+        return circleFirstText;
+    }
+    // 添加数字
+    function _addNumBtnCircle($element, len, pageLen, pageNumText) {
+        var pageNumber = 1; // 起始页码从0 改为 1， 解决初始化渲染两个第一页按钮的问题
+        var $pageNumEle = '';
+        if (pageNumText) {
+            pageNumber = pageNumText;
+        }
+        for (var i = 1; i &lt; len; i++) {
+            pageNumber = pageNumber + 1;
+            if (pageNumber == pageLen) {
+                break;
+            }
+            $pageNumEle += '&lt;a href="javascript:void(0);" class="waves-effect bh-pager-btn bh-pager-simpleBtn" pager-flag="simpleGotoPage">' + pageNumber + '&lt;/a>';
+        }
+        return $pageNumEle;
+    }
+    // 获取中间展示的数字，只有数字没有省略号
+    function _addOnlyNumBtnCircle($element, len, pageLen) {
+        var pageNumText = 0;
+        var $pageNumEle = '';
+        for (var i = 1; i &lt; len; i++) {
+            pageNumText = i + 1;
+            $pageNumEle += '&lt;a href="javascript:void(0);" class="waves-effect bh-pager-btn bh-pager-simpleBtn" pager-flag="simpleGotoPage">' + pageNumText + '&lt;/a>';
+        }
+        var $totalNumEle = '&lt;a href="javascript:void(0);" class="waves-effect bh-pager-btn bh-pager-simpleBtn" pager-flag="simpleGotoPage">1&lt;/a>' + $pageNumEle + '&lt;a href="javascript:void(0);" class="waves-effect bh-pager-btn bh-pager-simpleBtn" pager-flag="simpleGotoPage">' + pageLen + '&lt;/a>';
+        $element.find('[pager-flag="addNumBtn"]').html($totalNumEle);
+    }
+    //生成每页显示条数下拉选择
+    function _advancedAppend($element, settings) {
+        $element.find('[pager-flag="pagerOptionSel"]').jqxDropDownList({
+            source: settings.pageSizeOptions,
+            selectedIndex: settings.selectedIndex,
+            width: '60',
+            height: '26',
+            dropDownHeight: "100",
+            enableBrowserBoundsDetection: true
+        });
+    }
+
+    //事件监听
+    function _eventListener(instance) {
+        var $element = instance.$element;
+        var settings = instance.settings;
+        var mode = instance.settings.mode;
+        //点击上一页
+        $element.off('click', '[pager-flag="prev"]').on('click', '[pager-flag="prev"]', function() {
+            var pagenum = instance.getPagenum();
+            if (pagenum &lt;= 1) {
+                return;
+            }
+            _setPagenum(pagenum - 1, instance);
+            _setCurrentPageRecordInfo(instance);
+            _triggerEvent(instance, $(this));
+        });
+        //点击下一页
+        $element.off('click', '[pager-flag="next"]').on('click', '[pager-flag="next"]', function() {
+            var pagenum = instance.getPagenum();
+            if (pagenum >= _getLastpagenum(instance)) {
+                return;
+            }
+            _setPagenum(pagenum + 1, instance);
+            _setCurrentPageRecordInfo(instance);
+            _triggerEvent(instance, $(this));
+        });
+        //跳转第几页
+        $element.off('keyup', '[pager-flag="gotoPage"]').on('keyup', '[pager-flag="gotoPage"]', function(e) {
+            if (e.keyCode != 13) {
+                return;
+            }
+            var pagenum = instance.getPagenum();
+            if (pagenum &lt; 1 || pagenum > _getLastpagenum(instance)) {
+                _setPagenum(1, instance);
+                return;
+            }
+            _setPagenum(pagenum, instance);
+            _setCurrentPageRecordInfo(instance);
+            _triggerEvent(instance, $(this));
+
+        });
+        //每页显示条数下拉选择框
+        if (mode == 'advanced') {
+            $element.off('select', '[pager-flag="pagerOptionSel"]').on('select', '[pager-flag="pagerOptionSel"]', function(e) {
+                // var pagenum = instance.getPagenum();
+                // if(pagenum &lt; 1 || pagenum > _getLastpagenum(instance)) return;
+                _setPagenum(0, instance);
+                _setCurrentPageRecordInfo(instance);
+                _triggerEvent(instance, $(this));
+            });
+        }
+        //点击省略号，显示省略号代表的数字
+        if (mode == 'simple') {
+            var pageLen = Math.ceil(instance.getTotal() / settings.pagesize);
+            var isNotOnlyOne = settings.pagerButtonsCount != 0;
+            $element.off('click', '[pager-flag="changeRightEllipsis"]').on('click', '[pager-flag="changeRightEllipsis"]', function() {
+                $element.find('.bh-simplePager-active').removeClass('bh-simplePager-active');
+                var $numEle = $element.find('[pager-flag="changeRightEllipsis"]').prev();
+                settings.pagenum = parseInt($numEle.text());
+                _addNumBtn(settings, $element, pageLen);
+                _triggerEvent(instance, $('[pager-flag="changeRightEllipsis"]', $element));
+            });
+            $element.off('click', '[pager-flag="changeLeftEllipsis"]').on('click', '[pager-flag="changeLeftEllipsis"]', function() {
+                var $numEle = $element.find('[pager-flag="changeLeftEllipsis"]').next();
+                var currentNum = parseInt($numEle.text());
+                settings.pagenum = currentNum - settings.pagerButtonsCount;
+                _addNumBtn(settings, $element, pageLen);
+                $element.find('.bh-simplePager-active').removeClass('bh-simplePager-active');
+                var $nextActiveEle = $element.find('[pager-flag=simpleGotoPage]')[settings.pagerButtonsCount];
+                $($nextActiveEle).addClass('bh-simplePager-active');
+                _triggerEvent(instance, $('[pager-flag="changeLeftEllipsis"]', $element));
+            });
+            //点击上一页
+            $element.off('click', '[pager-flag="simplePrev"]').on('click', '[pager-flag="simplePrev"]', function() {
+                var isRemoveNextDis = $element.find('[pager-flag="simpleNext"]').hasClass('bh-btn-disabled');
+                var isRemovePreDis = $element.find('[pager-flag="simplePrev"]').hasClass('bh-btn-disabled');
+                if (isRemovePreDis) {
+                    return;
+                }
+                if (isRemoveNextDis) {
+                    $element.find('[pager-flag="simpleNext"]').removeClass('bh-btn-disabled');
+                }
+                _clickPrev(settings, $element, pageLen);
+                _triggerEvent(instance, $(this));
+            });
+            //点击下一页
+            $element.off('click', '[pager-flag="simpleNext"]').on('click', '[pager-flag="simpleNext"]', function() {
+                var isRemoveNextDis = $element.find('[pager-flag="simpleNext"]').hasClass('bh-btn-disabled');
+                var isRemovePreDis = $element.find('[pager-flag="simplePrev"]').hasClass('bh-btn-disabled');
+                if (isRemoveNextDis) {
+                    return;
+                }
+                if (isRemovePreDis) {
+                    $element.find('[pager-flag="simplePrev"]').removeClass('bh-btn-disabled');
+                }
+                _clickNext(settings, $element, pageLen);
+                _triggerEvent(instance, $(this));
+            });
+            //点击数字，跳转
+            $element.off('click', 'a[pager-flag="simpleGotoPage"]').on('click', 'a[pager-flag="simpleGotoPage"]', function() {
+                var $pageItem = $(this);
+                var pagenum = parseInt($pageItem.text());
+                settings.pagenum = pagenum - 1;
+                _addNumBtn(settings, $element, pageLen);
+                var $eventEle = $element.find('a[pager-flag="simpleGotoPage"]').filter(function() {
+                    return $(this).text() == pagenum;
+                });
+                _triggerEvent(instance, $eventEle);
+            });
+
+        }
+    }
+    //生成当前页条数信息
+    function _genCurrentPageRecordInfo(instance) {
+        var start = 1;
+        var end = 1;
+        var pagenum = instance.getPagenum();
+        var total = instance.getTotal();
+        var pagesize = instance.getPagesize();
+        if (pagenum * pagesize &lt; total) {
+            end = pagenum * pagesize;
+        } else {
+            end = total;
+        }
+        start = pagesize * (pagenum - 1) + 1;
+        if (total == 0) {
+            start = 0;
+            end = 0;
+        }
+        return start + '-' + end;
+    }
+
+    //设置当前分页条数和总条数信息
+    function _setCurrentPageRecordInfo(instance) {
+        //当前分页条数及总条数
+        var currPageInfo = _genCurrentPageRecordInfo(instance);
+        instance.$element.find('[pager-flag="pageInfo"]').html(currPageInfo + $.i18n('bha-pagination-totalRecord') + instance.settings.totalSize);
+    }
+
+    //设置当前页码
+    function _setPagenum(pagenum, instance) {
+        if (isNaN(pagenum) || pagenum &lt; 1) {
+            pagenum = 1;
+        }
+        var lastPagenum = _getLastpagenum(instance);
+        if (pagenum > lastPagenum) {
+            pagenum = lastPagenum;
+        }
+        instance.$element.find('[pager-flag="gotoPage"]').val(pagenum);
+    }
+
+    //获取最后一页页码
+    function _getLastpagenum(instance) {
+        var total = instance.getTotal();
+        var pagesize = instance.getPagesize();
+        return Math.ceil(total / pagesize);
+    }
+
+    //点击上一页
+    function _clickPrev(settings, $element, pageLen) {
+        if (settings.pagerButtonsCount == 0) {
+            var pagenum = parseInt($element.find('[pager-flag="simpleOnliOne"]')[0].innerText) - 1;
+            $element.find('[pager-flag="simpleOnliOne"]').text(pagenum);
+            if (pagenum == 1) {
+                $element.find('[pager-flag="simplePrev"]').addClass('bh-btn-disabled');
+            }
+        } else {
+            var $nowActiveEle = $element.find('.bh-simplePager-active');
+            if ($nowActiveEle.prev().prev().hasClass('ellipsis')) {
+                settings.pagenum = parseInt($nowActiveEle.text()) - Math.floor(settings.pagerButtonsCount / 2);
+            } else {
+                settings.pagenum = parseInt($nowActiveEle.text()) - settings.pagerButtonsCount + 1;
+            }
+
+            _addNumBtn(settings, $element, pageLen);
+            $element.find('.bh-simplePager-active').removeClass('bh-simplePager-active');
+            var $numEle = $element.find('[pager-flag=simpleGotoPage]');
+            var $activeEle = $numEle.filter(function(index) {
+                return parseInt($numEle[index].innerText) == parseInt($nowActiveEle.text()) - 1;
+            });
+            $activeEle.addClass('bh-simplePager-active');
+            if (parseInt($activeEle.text()) == 1) {
+                $element.find('[pager-flag=simplePrev]').addClass('bh-btn-disabled');
+            }
+        }
+    }
+
+    // 点击下一页
+    function _clickNext(settings, $element, pageLen) {
+        if (settings.pagerButtonsCount == 0) {
+            var pagenum = parseInt($element.find('[pager-flag="simpleOnliOne"]')[0].innerText) + 1;
+            $element.find('[pager-flag="simpleOnliOne"]').text(pagenum);
+            if (pagenum == pageLen) {
+                $element.find('[pager-flag="simpleNext"]').addClass('bh-btn-disabled');
+            }
+        } else {
+            var nowActiveNum = $element.find('.bh-simplePager-active').text();
+            settings.pagenum = parseInt(nowActiveNum);
+            _addNumBtn(settings, $element, pageLen);
+        }
+    }
+
+    /**
+     * @memberof module:pagination
+     * @event pagersearch
+     * @description 页面改变事件
+     * @param {Number} pagenum 页数
+     * @param {Number} pagesize 每页显示多少条
+     * @param {Number} total 总数
+     * @example
+      $el.on('pagersearch',function(e, pagenum, pagesize, total){
+        
+      })
+     */
+    //触发事件
+    function _triggerEvent(instance, $selector) {
+        var pagenum = instance.getPagenum() - 1;
+        var pagesize = instance.getPagesize();
+        var total = instance.getTotal();
+        $selector.trigger('pagersearch', [pagenum, pagesize, total]);
+    }
+}).call(undefined);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

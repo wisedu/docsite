@@ -1,47 +1,52 @@
-# RES - Wisedu FE
 
-金智教育前端团队
+#PC样式和组件
 
-## 前端读物
+### 支持浏览器
 
-请访问：[http://res.wisedu.com/FS/前端入门/](http://res.wisedu.com/FS/前端入门/)  
-文件前面的编号为难度等级
+* IE 9 ~ IE11
+* Microsoft Edge 13及以上版本
+* Chrome 50及以上版本
+* 360极速浏览器 v8.5
+* 360安全浏览器v8.1
+* Safari 9.1 及以上版本
 
-从零学习前端开发：[https://zhuanlan.zhihu.com/p/22099626](https://zhuanlan.zhihu.com/p/22099626)  
-前端入门四弹：[https://zhuanlan.zhihu.com/p/21551062](https://zhuanlan.zhihu.com/p/21551062)
+###简介
 
+PC组件主要包含基础组件和业务组件两部分。
 
-## 团队成员
+基础组件包含原子组件（也叫bh组件）和jQwidget，bh组件是前端团队自主开发的组件库（部分依赖三方插件）。
 
-[elvisqi](https://github.com/elvisqi): Going to bed at night saying we've done something wonderful... that's what matters to me
+业务组件又叫做emap组件，在bh组件和jQwidget基础上封装的组件库。
 
-@qdli: 真正的勇士，敢于直面惨淡的warning，敢于直面淋漓的error！！！
+原子组件和emap组件都会在后面介绍。
 
-张丹   知之为知之，不知为不知，是bug也
+bhVue组件是基于原子组件和emap组件封装的Vue组件
 
-[GilbertSun](https://github.com/GilbertSun) 我们的征途是星辰大海！！！！
+###原子组件
 
-[lordrobert](https://github.com/lordrobert) 怒粘四海代码，笑写八荒业务
+jsdoc帮助文档：[http://res.wisedu.com/examples/components-v1/docs/black_hole/](http://res.wisedu.com/examples/components-v1/docs/black_hole/)
 
-[lkiarest](https://github.com/lkiarest)  觉宇宙之无穷，识盈虚之有数
+###emap组件
 
-zhufeifei:  test
+jsdoc帮助文档：
 
-[lisiur](https://github.com/lisiur) 我牛不牛逼我不知道，但是当别人跟我说：“你死了地球照样转”的时候，我觉得地球是在硬撑着。
+1.1：[http://res.wisedu.com/examples/components-v1/docs/emap/v1.1/](http://res.wisedu.com/examples/components-v1/docs/emap/v1.1/)
 
-[litor](https://github.com/Litor)为API生，为框架死，为debug奋斗一辈子，吃符号亏，上大小写的当，最后死在需求上
+1.2：[http://res.wisedu.com/examples/components-v1/docs/emap/v1.2/](http://res.wisedu.com/examples/components-v1/docs/emap/v1.2/)
 
-[zhroeqqtw](https://github.com/zhroeqqtw) 我这边是好的啊，你清缓存刷新一下试试！
+###jQwidget
 
-[zenda96](https://github.com/zenda96/)
-世界上有10种人，一种是懂二进制的人，一种是不懂二进制的人
+官方帮助文档：[http://www.jqwidgets.com/jquery-widgets-demo/](http://www.jqwidgets.com/jquery-widgets-demo/)
 
-[GongYoo](https://github.com/GongYoo) 此处功能将来必改，不要写死!
+考虑性能，我们对包尺寸有所缩减，我们仅包括了使用频率较高
 
-[liwenjie](https://github.com/liwenjie3421) what's up!
-
-[wengqi](https://github.com/wengqi) 简约至上
-
-[qylin](https://github.com/qylin) 醉生梦死
-
-[xujiabin](https://github.com/js-nj) 插播广告，王者荣耀，微信区，黄金级别，欢迎加好友，一起开黑
+| 组件名 | 组件名 | 组件名 |
+| :--- | :--- | :--- |
+| jqxButtons | jqxCalendar | jqxInput |
+| jqxComboBox | jqxDateTimeInput | jqxDataAdapter |
+| jqxDropDownList | jqxListBox | jqxLoader |
+| jqxMenu | jqxNotification | jqxNumberInput |
+| jqxPanel | jqxPopOver | jqxScrollBar |
+| jqxTabs | jqxTextArea | jqxTooltip |
+| jqxTree | jqxValidator | jqxWindow |
+| jqxProgressBar | jqxNavigationBar | jqxDragDrop |

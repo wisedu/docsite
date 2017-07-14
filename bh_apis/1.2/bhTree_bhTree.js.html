@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhTree/bhTree.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhTree/bhTree.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>;
+(function($) {
+    /**
+     * @module bhTree
+     * @description 树，内部依赖ztree，api文档{@link http://www.treejs.cn/v3/api.php}，可以直接调用ztree的api，如：$('#ztreeAfterIcon').bhTree('getNodeByParam','id','0')
+     * @param {Object} options  
+     * @param {Object} options.setting  ztree的setting参数
+     * @param {Array(Object) | Object} [options.zNodes]   ztree的zNodes参数
+     * @example
+        var setting = {
+            async: {
+                enable: true,
+                url: this.getUrl,
+                type: 'get',
+                dataFilter: function(treeId, treeNode) {}
+            },
+            check: {
+                enable: true
+            },
+            edit: {
+                enable: true
+            },
+            callback: {
+                beforeEditName: function(treeId, treeNode) {
+                    var content = '&lt;input id="editNodeName" type="text" value="' + treeNode.name + '"/>'
+                    BH_UTILS.bhWindow(content, '修改名称', null, {
+                        height: 300
+                    }, function() {
+                        treeNode.name = $('#editNodeName').val();
+                        $('#ztreeAfterIcon').bhTree('updateNode', treeNode);
+                        $('#ztreeAfterIcon').bhTree('cancelEditName');
+                    });
+                    return false;
+                }
+            },
+            view: {
+                isHoverLine: true, //新增方法，用于判断鼠标hover上节点时是否整行改变背景色
+                nodeRendering: function(htmlArray, node, setting) {
+                        if (node.parentTId) {
+                            htmlArray.push('&lt;i class="iconfont icon-yingyong">&lt;/i>');
+                        }
+                    } //新增方法，ztree原生不存在，在节点右侧添加自定义内容
+                    //addDOMNodeAfterName: function(html, setting, node){ //新增方法，ztree原生不存在，在节点名称右侧添加自定义内容
+                    //}
+            }
+        };
+        var zNodes = [{
+            name: '根节点',
+            id: '1',
+            isParent: true
+        }];
+        $('#ztreeAfterIcon').bhTree({
+            setting: setting,
+            zNodes: zNodes
+        });
+     */
+    var init = function(element, options) {
+        var setting = options.setting;
+        var zNodes = options.zNodes;
+        var zTreeObj = {};
+        var $element = $(element);
+        $element.addClass('ztree');
+        if (zNodes) {
+            zTreeObj = $.fn.zTree.init($element, setting, zNodes);
+        } else {
+            zTreeObj = $.fn.zTree.init($element, setting);
+        }
+        return $.extend(zTreeObj, getCustomMethods($element));
+    };
+
+    function getCustomMethods($element) {
+        return {
+            /**
+             * @method getAllDate
+             * @description 获取所有节点数据
+             * @return Array
+             */
+            getAllData: function() {
+                return this.transformToArray(this.getNodes());
+            },
+            /**
+             * @method destroyTree
+             * @description 销毁数实例
+             */
+            destroyTree: function() {
+                this.destroy();
+                $element.removeData('bhTree');
+            }
+        };
+    }
+
+    /**
+     * 这里是关键
+     * 定义一个插件 plugin
+     */
+    $.fn.bhTree = function(options) {
+        var args = arguments;
+        var instance;
+        instance = this.data('bhTree');
+        /**
+         * 判断插件是否已经实例化过，如果已经实例化了则直接返回该实例化对象
+         */
+        if (!instance) {
+            return this.each(function() {
+                //将实例化后的插件缓存在dom结构里（内存里）
+                return $(this).data('bhTree', init(this, options));
+            });
+        }
+        if (options === true) {
+            return instance;
+        }
+        /**
+         * 优雅处： 如果插件的参数是一个字符串，则 调用 插件的 字符串方法。
+         * 如 $('#id').plugin('doSomething') 则实际调用的是 $('#id).plugin.doSomething();
+         * doSomething是刚才定义的接口。
+         * 这种方法 在 juqery ui 的插件里 很常见。
+         */
+        if ($.type(options) === 'string') {
+            var method = instance[options];
+            if (method) {
+                var params = $(args).toArray();
+                params.shift();
+                return method.apply(instance, params);
+            } else {
+                if (console) {
+                    console.log('方法不存在');
+                }
+            }
+        }
+        return this;
+    };
+})(jQuery);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhCalculator.html">bhCalculator</a></li><li><a href="module-bhCustomizeColumn.html">bhCustomizeColumn</a></li><li><a href="module-bhDateAreaPicker.html">bhDateAreaPicker</a></li><li><a href="module-bhDateTimePicker.html">bhDateTimePicker</a></li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhSlider.html">bhSlider</a></li><li><a href="module-bhTree.html">bhTree</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -2,7 +2,11 @@
 
 ### jsdoc文档
 
-http://res.wisedu.com/examples/components-v1/docs/black_hole/
+##### 1.0文档
+http://res.wisedu.com/examples/components-v1/docs/bh_doc/1.0/
+
+##### 1.2文档
+http://res.wisedu.com/examples/components-v1/docs/bh_doc/1.2/
 
 ### 如何获取
 

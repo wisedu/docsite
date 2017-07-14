@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bh_choose/bh_choose.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bh_choose/bh_choose.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module bhChoose
+ * @alias 选人组件
+ * @description 选人组件
+ * @example
+  var win = $.bh_choose({
+    leftSourceUrl: 'http://res.wisedu.com/fe_components/mock/table.json',
+    leftSourceAction: 'TABLE',
+    placeholder: '搜索应用名称',
+    id: 'XSBH',
+    type: 'get',
+    multiSelect: false,//是否支持多选
+    maxSelect:3,//设置最多显示的条数
+    title: '应用列表',//标题
+    rightcellsRenderer: function(row, column, value, rowData) {
+      var html = '&lt;p class="gm-member-row bh-clearfix" >' +
+        '&lt;span class=" bh-col-md-9" row="' + row + '">' + rowData.XM +
+        '&lt;/span>' +
+        '&lt;/p>';
+      return html;
+    },
+    leftcellsRenderer: function(row, column, value, rowData) {
+      var html = '&lt;p class="gm-member-row bh-clearfix" >' +
+        '&lt;span class=" bh-col-md-9" row="' + row + '">' + rowData.XM +
+        '&lt;/span>' +
+        '&lt;/p>';
+      return html;
+    },
+    callback: function(result) {
+      return false;
+    }
+  });
+
+  win.show();
+ */
+(function ($) {
+
+  $.bh_choose = function (options) {
+    return new chooseWidget(options);
+  };
+
+
+ /**
+  * @memberof module:bhChoose
+  * @description 内置默认值
+  * @prop {string}  leftSourceUrl - 左侧表格数据源
+  * @prop {string}  leftSourceAction - 左侧表格动作名称
+  * @prop {string}  id - 左侧表格数据源的主键名称
+  * @prop {Object}  [params] - 左侧表格带入参数
+  * @prop {Object|String}  [querySetting] - 左侧表格带入搜索条件，格式为emap的搜索添加数据格式
+  * @prop {string}  [type=post] - 左侧表格ajax请求类型 post或get
+  * @prop {boolean}  [multiSelect=true] - 是否需要多选 默认为true
+  * @prop {boolean}  [maxSelect] - 支持多选时 最多选中的条数
+  * @prop {string}  [title=添加应用] - 窗口标题
+  * @prop {string}  [height=500px] - 窗口高度
+  * @prop {string}  [width=900px] - 窗口宽度
+  * @prop {Array}  [buttons] - 自定义按钮
+  * @prop {string}  [searchKeyName=SEARCHKEY] - 搜索时传入后台的参数名称 默认值为SEARCHKEY
+  * @prop {boolean}  [showSelectedTip=true] - 是否显示右侧已选中条数的提示
+  * @prop {function}  [callback] - 点击确定按钮执行的回调 参数为选择的结果
+  * @prop {function}  [afterDelete] - 右侧删除后执行的回调
+  * @prop {function}  [afterSelect] - 左侧选中后执行的回调
+  * @prop {function}  [leftcellsBreforeReload] - 左侧表格reload前的回调，默认参数 data - 请求的参数
+  * @prop {boolean}  [searchByQuerySetting=false] - 使用表格上方的搜索框搜索时，使用 querySetting的方式传递搜索条件，而不是SEARCHKEY
+  */
+  $.bh_choose.default = {
+    insertContainer: '',
+    leftSourceUrl: '',
+    leftSourceAction: '',
+    leftLocalData: null,
+    rightSourceUrl: '',
+    rightSourceAction: '',
+    rightLocalData: null,
+    localSearchField: '',
+    id: '',
+    params: {},
+    type: 'post',
+    multiSelect: true,
+    showOrder: false,
+    title: $.i18n('bha-choose-addApp'),
+    showSelectedTip: true,
+    placeholder: $.i18n('bha-choose-searchPlaceholder'),
+    maxSelect: null,
+    height: '500px',
+    width: '900px',
+    topHtml: '',
+    bottomHtml: '',
+    searchKeyName: 'SEARCHKEY',
+    leftDataAdapter: null,
+    /**设置右下角按钮**/
+    buttons: null,
+    // 默认改成不转换 靳亚莉和教务都提了这个需求
+    searchKeyNeedConvert: false,
+    searchByQuerySetting: false,
+    callback: function () {},
+    rightcellsRenderer: function () {},
+    leftcellsRenderer: function () {},
+    leftcellsBreforeReload: null,
+    afterDelete: function () {},
+    afterSelect: function () {}
+  };
+
+  function chooseWidget(options) {
+    this.options = $.extend({}, $.bh_choose.default, options);
+    this.$element = this.getChooseLayout();
+    this.selectedRecords = [];
+  }
+
+  chooseWidget.prototype = {
+    /***
+     * 获取右侧选中的记录
+     * @return {[array]} [选中记录]
+     */
+    getSelectedRecords: function () {
+      return this.$rightGrid.jqxDataTable('getRows');
+    },
+
+    /**
+     * 显示对话框
+     * @method show
+     * @example
+        win.show();
+     */
+    show: function () {
+      if (this.options.insertContainer) {
+        $(this.options.insertContainer).html(this.$element);
+      } else {
+        this.showJqxWindow();
+      }
+      this.$leftGrid = this.$element.find('.leftGrid');
+      this.$rightGrid = this.$element.find('.rightGrid');
+      this.initSelectedRecords(this.options.rightLocalData);
+      this.initLeftTable();
+      this.initRightTable();
+      this.bindSearchEvent();
+      this.resetContentHeight();
+      //fix ie9 input placeholder
+      JPlaceHolder.init(this.$element.find('.gm-add-search input').parent());
+    },
+
+    /**
+     * 关闭对话框
+     * @method close
+     * @example
+        win.close();
+     */
+    close: function () {
+      this.$element.jqxWindow('close');
+    },
+
+    showJqxWindow: function () {
+      var self = this;
+      $('body').append(this.$element);
+
+
+      this.$element.on("open", function () {
+        $('body').css({
+          overflow: 'hidden',
+          'overflow-x': 'hidden',
+          'overflow-y': 'hidden'
+        });
+      });
+
+      var winParams = {
+        resizable: false,
+        isModal: true,
+        draggable: false,
+        modalOpacity: 0.3,
+        maxHeight: 3000,
+        maxWidth: 3000,
+        height: self.options.height || '500px',
+        width: self.options.width || '900px',
+        autoOpen: false
+      };
+      var height = self.options.height || '500px';
+
+      height = parseInt(height.replace('px', '')) / 2 + 'px';
+
+      var iframe_top = 0;
+      if (winParams.inIframe) {
+        var $iframeEle = $(window.frameElement);
+        if ($iframeEle.length > 0) {
+          iframe_top = $iframeEle.offset().top;
+        }
+      }
+
+      var height = 0;
+      var $outWin = null;
+      try {
+        height = top.window.innerHeight;
+        $outWin = $(top.window);
+      } catch (e) {
+        //跨域异常处理
+        height = window.innerHeight;
+        $outWin = $(window);
+      }
+
+      winParams.position = [window.innerWidth / 2 - parseInt(winParams.width, 10) / 2, height / 2 - iframe_top + $outWin.scrollTop() - parseInt(winParams.height, 10) / 2];
+
+      this.$element.jqxWindow(winParams).jqxWindow('open');
+
+      this.$element.on('close', function () {
+        self.$element.jqxWindow('destroy');
+        var unlockcss = {
+          'overflow': 'scroll',
+          'overflow-x': 'hidden',
+          'overflow-y': 'scroll'
+        };
+        $('body').css(unlockcss);
+      });
+    },
+
+    /***
+     * *初始化selectedRecords 
+     * @param  {[type]} data [description]
+     * @return {[type]}      [description]
+     */
+    initSelectedRecords: function (data) {
+      if (!data) {
+        return;
+      }
+
+      this.selectedRecords = data;
+      this.refreshSelectedCount();
+    },
+
+    /***
+     * 绑定左侧搜索事件
+     * @return {[type]} [description]
+     */
+    bindSearchEvent: function () {
+      var self = this;
+      var debounced = window._ &amp;&amp; _.debounce(function () {
+        self.reloadLeftTable();
+      }, 500);
+      this.$element.find('.leftSearch').on('keyup', function (e) {
+        if (e.keyCode == 13) {
+          self.reloadLeftTable();
+          window._ &amp;&amp; debounced.cancel();
+        } else {
+          window._ &amp;&amp; debounced();
+        }
+      });
+    },
+
+    /***
+     * 初始化左侧表格
+     * @return {[type]} [description]
+     */
+    initLeftTable: function () {
+      var self = this;
+      this.leftSource = this.getLeftSource();
+      var dataAdapter = null;
+      if (this.options.searchByQuerySetting === true) {
+        var dataModel = WIS_EMAP_SERV.getModel(this.options.leftSourceUrl.replace(/^\S+(modules\/\w+)\/\w+\.do$/g, '$1.do'), this.options.leftSourceAction, "grid", {});
+        if (dataModel) {
+          this.options.dataModel = dataModel;
+        } else {
+          console &amp;&amp; console.warn('bhChoose组件请求table 数据模型失败！');
+        }
+      }
+      if (this.leftSource.url) {
+        dataAdapter = new $.jqx.dataAdapter(this.leftSource, self.options.leftDataAdapter || {
+          formatData: function (data) {
+            data.pageSize = data.pagesize;
+            data.pageNumber = data.pagenum + 1;
+            $.extend(data, self.options.leftSourceParams);
+            delete data.pagesize;
+            delete data.pagenum;
+            delete data.filterslength;
+            return data;
+          },
+          downloadComplete: function (data) {
+            var action = self.options.leftSourceAction;
+            var sourceDatas = action ? data.datas[action] : data.datas;
+
+            self.leftSource.totalRecords = sourceDatas.totalSize;
+            data.recordsTotal = sourceDatas.totalSize;
+            data.data = sourceDatas.rows;
+            delete data.datas;
+            delete data.code;
+            return data;
+          }
+        });
+      } else if (this.leftSource.localdata) {
+        dataAdapter = new $.jqx.dataAdapter(this.leftSource);
+      }
+
+      var options = $.extend({}, this.getNormalWindowOptions(), {
+        source: dataAdapter,
+        pageable: this.leftSource.localdata ? false : true,
+        height: 308,
+        columns: self.options.leftColumns || [{
+          dataField: 'onlineDate',
+          cellsRenderer: function (row, column, value, rowData) {
+            var html = $(self.options.leftcellsRenderer(row, column, value, rowData));
+            $(html.children()[0]).addClass('gm-member-user');
+            return html.prop('outerHTML');
+          }
+        }],
+        rendered: function () {
+          self.leftRenderEventListener();
+        }
+      });
+
+      self.$element.find('.leftGrid').jqxDataTable(options);
+    },
+
+    /***
+     * 获取左右表格公共配置
+     * @return {[type]} [description]
+     */
+    getNormalWindowOptions: function () {
+      return {
+        showHeader: false,
+        pagerButtonsCount: 3,
+        serverProcessing: true,
+        showStatusbar: false,
+        showToolbar: false,
+        pagerMode: 'advanced',
+        localization: Globalize.culture('zh-CN'),
+        pageSizeOptions: ['10', '20', '50', '100'],
+        width: '100%',
+        pagerHeight: 28
+      };
+    },
+
+    /***
+     * 获取左侧数据源
+     * @return {[type]} [description]
+     */
+    getLeftSource: function () {
+      var leftSource = null;
+      if (this.options.leftLocalData) {
+        leftSource = {
+          localdata: this.options.leftLocalData,
+          datatype: 'array',
+          data: this.options.params
+        };
+      } else {
+        leftSource = {
+          id: 'id',
+          datatype: 'json',
+          url: this.options.leftSourceUrl,
+          type: this.options.type,
+          data: $.extend(true, {}, this.options.params)
+        };
+      }
+
+      return leftSource;
+    },
+
+    /***
+     * 左侧表格新增全选按钮
+     * @return {[type]} [description]
+     */
+    addSelectAllButton: function () {
+      var self = this;
+
+      if (this.options.multiSelect === false || this.options.maxSelect !== null) {
+        return;
+      }
+      var leftPager = this.$element.find('.leftGrid').find('.jqx-grid-pager');
+      if (leftPager.find('.leftgrid-select-all').length > 0) {
+        return;
+      }
+      leftPager.append('&lt;div class="select-all-wrap">&lt;div class="leftgrid-select-all" style="display:inline-block">&lt;/div>&lt;div class="select-all-text">' + $.i18n('bha-choose-selectAll') + '&lt;/div>&lt;/div>');
+      leftPager.find('.leftgrid-select-all').jqxCheckBox().on('change', function (e) {
+        var val = e.args.checked;
+        var obj = self.$element.find('.leftGrid .gm-member-user');
+        if (val) {
+          obj.jqxCheckBox('check');
+        } else if (val === false) {
+          obj.jqxCheckBox('uncheck');
+        }
+      });
+    },
+
+    /***
+     * 左侧渲染结束后添加事件监听
+     * @return {[type]} [description]
+     */
+    leftRenderEventListener: function () {
+      //return;
+      var self = this,
+        id = this.options.id,
+        $leftGrid = this.$leftGrid,
+        $rightGrid = this.$rightGrid,
+        selected = self.selectedRecords,
+        obj = self.$element.find('.leftGrid .gm-member-user');
+
+      $leftGrid.find('tr').removeAttr('data-key');
+
+      this.addSelectAllButton();
+      this.leftGridRows = $leftGrid.jqxDataTable('getRows');
+      this.rightGridRows = $rightGrid.jqxDataTable('getRows');
+
+      if (obj.length > 0) {
+        obj.jqxCheckBox().on('change', function (e) {
+          var selected = self.selectedRecords;
+          var val = e.args.checked,
+            index = e.target.getAttribute('row'),
+            currentId = self.leftGridRows[index][id],
+            hasSelected = false,
+            data = self.leftGridRows[index];
+
+          if (val) {
+            _.each(selected, function (item) {
+              if (item[id] + '' == data[id] + '') {
+                hasSelected = true;
+                return false;
+              }
+            });
+
+            if (hasSelected) {
+              return;
+            }
+
+            if (self.options.multiSelect === false) {
+              self.$element.find('.rightgrid-delete').trigger('click');
+              //selected.pop();
+            }
+            if (self.options.maxSelect !== null &amp;&amp; self.options.maxSelect &lt;= selected.length) {
+              $.bhTip({
+                content: $.i18n('bha-choose-only') + self.options.maxSelect + $.i18n('bha-choose-record')
+              });
+              $(this).jqxCheckBox('uncheck');
+              return;
+            }
+            self.options.afterSelect(data);
+            selected.push(data);
+            $rightGrid.jqxDataTable('addRow', null, data);
+
+          } else {
+
+            _.each(selected, function (item, index) {
+              if (item[id] + '' == currentId + '') {
+                selected.splice(index, 1);
+                return false;
+              }
+            });
+
+            /*_.each($rightGrid.jqxDataTable('getRows'), function(item, index) {
+                if (item[id] == currentId) {
+                    $rightGrid.jqxDataTable('deleteRow', index);
+                    return false;
+                }
+            });*/
+
+            self.refreshTable($rightGrid);
+
+            self.resetSelectALLStatus();
+          }
+          self.refreshSelectedCount();
+        });
+      }
+      for (var j = 0; j &lt; selected.length; j++) {
+        for (var i = 0; i &lt; this.leftGridRows.length; i++) {
+          if (self.selectedRecords[j][id] + '' == this.leftGridRows[i][id] + '') {
+            $(obj[i]).jqxCheckBox("check");
+          }
+        }
+      }
+      self.resetSelectALLStatus();
+    },
+
+    refreshSelectedCount: function () {
+      this.options.showSelectedTip &amp;&amp; this.$rightGrid.prev().html($.i18n('bha-choose-select') + this.selectedRecords.length);
+    },
+
+    getRightSource: function () {
+      var rightSource = null;
+      if (this.options.rightLocalData) {
+        rightSource = {
+          localdata: this.options.rightLocalData,
+          datatype: 'array'
+        };
+      } else if (this.options.rightSourceUrl) {
+        rightSource = {
+          id: 'id',
+          datatype: 'json',
+          url: this.options.rightSourceUrl,
+          type: this.options.type
+        };
+      } else {
+        rightSource = {
+          localdata: this.selectedRecords,
+          datatype: 'array'
+        };
+      }
+
+      return rightSource;
+    },
+
+    initRightTable: function () {
+      var self = this;
+      var id = this.options.id;
+      var rightSource = this.getRightSource();
+
+      var dataAdapter = [];
+      if (rightSource.url) {
+        dataAdapter = new $.jqx.dataAdapter(rightSource, {
+          formatData: function (data) {
+            data.pageSize = data.pagesize;
+            data.pageNumber = data.pagenum + 1;
+            delete data.pagesize;
+            delete data.pagenum;
+            delete data.filterslength;
+            return data;
+          },
+          downloadComplete: function (data) {
+            var action = self.options.rightSourceAction;
+            var sourceData = action ? data.datas[action] : data.datas;
+
+            rightSource.totalRecords = sourceData.totalSize;
+            $.extend(data, self.options.leftSourceParams);
+            data.recordsTotal = sourceData.totalSize;
+            data.data = sourceData.rows;
+            self.initSelectedRecords(sourceData.rows);
+            delete data.datas;
+            delete data.code;
+            return data;
+          }
+        });
+      } else if (rightSource.localdata) {
+        dataAdapter = new $.jqx.dataAdapter(rightSource);
+      }
+
+      var options = $.extend({}, this.getNormalWindowOptions(), {
+        source: dataAdapter,
+        pagerMode: 'advanced',
+        height: 315,
+        pageable: false,
+        columns: self.options.rightColumns || [{
+          dataField: 'onlineDate',
+          cellsRenderer: function (row, column, value, rowData) {
+            var html = $(self.options.rightcellsRenderer(row, column, value, rowData));
+            var orderhtml = self.options.showOrder ? '&lt;i class="iconfont icon-keyboardarrowup rightgrid-up">&lt;/i>&lt;i class="iconfont icon-keyboardarrowdown rightgrid-down">&lt;/i>' : '';
+
+            var deleteHtml = html.append('&lt;a class="gm-member-delete" data-x-id="' + rowData[id] + '" href="javascript:void(0)">' + orderhtml + '&lt;i class="iconfont icon-delete rightgrid-delete">&lt;/i>&lt;/a>');
+            return deleteHtml.prop('outerHTML');
+          }
+        }],
+        rendered: function () {
+          self.rightRenderEventListener();
+        }
+      });
+
+      self.$element.find('.rightGrid').jqxDataTable(options);
+    },
+
+    rightRenderEventListener: function () {
+      var self = this;
+      var id = this.options.id;
+      var $rightGrid = self.$element.find('.rightGrid');
+      $rightGrid.find('tr').removeAttr('data-key');
+      self.$element.find('.rightgrid-down').on('click', function () {
+        var row = $(this).parent();
+        var currentId = row.attr('data-x-id');
+        for (var i = 0; i &lt; self.selectedRecords.length; i++) {
+          if (self.selectedRecords[i][id] + '' == currentId + '') {
+            if (i &lt; self.selectedRecords.length - 1) {
+              var temp = self.selectedRecords[i];
+              self.selectedRecords[i] = self.selectedRecords[i + 1];
+              self.selectedRecords[i + 1] = temp;
+              break;
+            }
+          }
+        }
+        self.refreshTable(self.$element.find('.rightGrid'));
+      });
+      self.$element.find('.rightgrid-up').on('click', function () {
+        var row = $(this).parent();
+        var currentId = row.attr('data-x-id');
+        for (var i = 0; i &lt; self.selectedRecords.length; i++) {
+          if (self.selectedRecords[i][id] + '' == currentId + '') {
+            if (i > 0) {
+              var temp = self.selectedRecords[i];
+              self.selectedRecords[i] = self.selectedRecords[i - 1];
+              self.selectedRecords[i - 1] = temp;
+              break;
+            }
+          }
+        }
+        self.refreshTable(self.$element.find('.rightGrid'));
+      });
+      self.$element.find('.rightgrid-delete').on('click', function () {
+        var $leftGrid = self.$element.find('.leftGrid');
+        var row = $(this).parent();
+        var currentId = row.attr('data-x-id');
+        var memberRows = self.leftGridRows;
+        var existInLeft = false;
+        var selected = self.selectedRecords;
+        var obj = $leftGrid.find('.gm-member-user');
+        for (var i = 0; i &lt; obj.length; i++) {
+          var val = $(obj[i]).jqxCheckBox('val');
+          if (val &amp;&amp; memberRows[i][id] + '' == currentId + '') {
+            self.options.afterDelete(memberRows[i]);
+            for (var j = 0; j &lt; self.selectedRecords.length; j++) {
+              if (self.selectedRecords[j][id] + '' == currentId) {
+                $(obj[i]).jqxCheckBox('uncheck');
+                self.resetSelectALLStatus();
+                existInLeft = true;
+              }
+            }
+          }
+        }
+
+        if (!existInLeft) {
+          _.each(selected, function (item, index) {
+            if (item[id] + '' == currentId + '') {
+              selected.splice(index, 1);
+              return false;
+            }
+          });
+
+          self.refreshTable(self.$rightGrid);
+          self.refreshSelectedCount();
+        }
+      });
+    },
+
+    /**
+     * 清除选择记录
+     * @method clear
+     * @example
+        win.clear();
+     */
+    clear: function () {
+      var self = this;
+      var $leftGrid = self.$element.find('.leftGrid');
+      var memberRows = self.leftGridRows;
+      var selected = self.selectedRecords;
+      var obj = $leftGrid.find('.gm-member-user');
+      for (var i = 0; i &lt; obj.length; i++) {
+        var val = $(obj[i]).jqxCheckBox('val');
+        if (val) {
+          for (var j = 0; j &lt; self.selectedRecords.length; j++) {
+            if (self.selectedRecords[j][id] + '' == memberRows[i][id] + '') {
+              $(obj[i]).jqxCheckBox('uncheck');
+              self.resetSelectALLStatus();
+            }
+          }
+        }
+      }
+
+      selected.splice(0, selected.length);
+
+      self.refreshTable(self.$rightGrid);
+      self.options.showSelectedTip &amp;&amp; $rightGrid.prev().html($.i18n('bha-choose-select') + selected.length);
+    },
+
+    resetSelectALLStatus: function () {
+      if (this.options.multiSelect === false || this.options.maxSelect !== null) {
+        return;
+      }
+      var leftPager = this.$element.find('.leftGrid').find('.jqx-grid-pager');
+      var $leftGrid = this.$element.find('.leftGrid');
+      var obj = $leftGrid.find('.gm-member-user');
+
+      var selectedLength = 0;
+      for (var i = 0; i &lt; obj.length; i++) {
+        if ($(obj[i]).jqxCheckBox("val")) {
+          selectedLength++;
+        }
+      }
+
+      if (selectedLength == 0 &amp;&amp; leftPager.find('.leftgrid-select-all').jqxCheckBox('val') !== false) {
+        leftPager.find('.leftgrid-select-all').jqxCheckBox('uncheck');
+      } else if (selectedLength == obj.length &amp;&amp; selectedLength > 0) {
+        leftPager.find('.leftgrid-select-all').jqxCheckBox('check');
+      } else if (leftPager.find('.leftgrid-select-all').jqxCheckBox('val') === true) {
+        leftPager.find('.leftgrid-select-all').jqxCheckBox('indeterminate');
+      }
+    },
+
+    /**
+    * 刷新左侧表格
+    * @method reload
+    * @param querySetting {object} 可选, 查询条件
+    * @param params {object} 可选, 其他参数
+    * @example
+        win.reload(querySetting, params);
+     */
+    reload: function (querySetting, params) {
+      this.querySetting = querySetting;
+      this.params = params;
+      if (querySetting.querySetting) {
+        this.querySetting = querySetting.querySetting;
+      }
+      if (querySetting.params) {
+        this.params = querySetting.params;
+      }
+      this.reloadLeftTable();
+    },
+
+    resetContentHeight: function () {
+      var $dom = this.$element;
+      var contentHeight = $dom.find('.jqx-window-content.jqx-widget-content.jqx-rc-b').css('height');
+      contentHeight = (parseInt(contentHeight) - 55) + 'px';
+
+      $dom.find('.jqx-window-content>.content').css({
+        'height': contentHeight,
+        'overflow': 'auto'
+      });
+    },
+
+    reloadLeftTable: function () {
+      var self = this;
+      var searchKey = $.trim(self.$element.find('.leftSearch').val());
+
+      var localSearchField = this.options.localSearchField.split(',');
+      var localData = this.options.leftLocalData;
+
+      if (this.options.searchKeyNeedConvert) {
+        searchKey = searchKey.toLowerCase();
+      }
+      if (localData) {
+        var newArray = [];
+        for (var i = 0; i &lt; localData.length; i++) {
+          for (var j = 0; j &lt; localSearchField.length; j++) {
+            var field = localData[i][localSearchField[j]];
+            if (!field) {
+              continue;
+            }
+            field = field.toLowerCase();
+            if (field.indexOf(searchKey) >= 0) {
+              newArray.push(localData[i]);
+              break;
+            }
+          }
+        }
+        self.leftSource.localdata = newArray;
+      } else {
+        if (self.options.searchByQuerySetting &amp;&amp; self.options.dataModel &amp;&amp; self.options.dataModel.length) {
+          var querySetting = [];
+          if (searchKey !== '') {
+            var quickModel = self.options.dataModel.filter(function (item) {
+              var attr = WIS_EMAP_SERV.getAttr(item, 'search');
+              return attr.xtype == 'text' &amp;&amp; attr.quickSearch == true;
+            });
+            if (quickModel.length) {
+              quickModel.map(function (item) {
+                querySetting.push({
+                  name: item.name,
+                  value: searchKey,
+                  caption: item.caption,
+                  builder: 'include',
+                  linkOpt: 'OR'
+                })
+              });
+
+            } else {
+              console &amp;&amp; console.error('数据模型未配置快速搜索的文本字段，搜索无法执行！');
+            }
+          }
+          if (this.querySetting) {
+            var originQuerySetting = typeof (this.querySetting) === 'object' ? JSON.stringify(this.querySetting) : this.querySetting;
+            querySetting = originQuerySetting.concat(querySetting);
+          }
+          self.leftSource.data.querySetting = JSON.stringify(querySetting);
+        } else {
+          if (searchKey) {
+            self.leftSource.data[this.options.searchKeyName] = searchKey;
+          } else {
+            self.leftSource.data &amp;&amp; delete self.leftSource.data[this.options.searchKeyName];
+          }
+          var mergeParams = $.extend({}, self.options.params, self.params, {
+            querySetting: typeof (this.querySetting) === 'object' ? JSON.stringify(this.querySetting) : this.querySetting
+          });
+          _.each(_.keys(mergeParams), function (key) {
+            self.leftSource.data[key] = mergeParams[key];
+          });
+        }
+      }
+      // 搜索前的回调函数， 返回false阻断搜索
+      if (self.options.leftcellsBreforeReload) {
+        if (self.options.leftcellsBreforeReload(self.leftSource.data) === false) {
+          return;
+        }
+      }
+      self.refreshTable(self.$element.find('.leftGrid'));
+    },
+
+    refreshTable: function ($table) {
+      if (!$table.jqxDataTable('goToPage', 0)) {
+        $table.jqxDataTable('updateBoundData');
+      }
+    },
+
+    getChooseLayout: function () {
+      var self = this;
+      var selectedLength = this.options.rightLocalData ? this.options.rightLocalData.length : 0;
+      var $dom = $('&lt;div>' +
+        '&lt;div class="head">&lt;/div>' +
+        '&lt;div>' +
+        '&lt;div class="content">' +
+        '   &lt;div class="content-top">' + this.options.topHtml + '&lt;/div>' +
+        '   &lt;div class="gm-add-block bh-clearfix">' +
+        '        &lt;div class="bh-col-md-6" style="background: #fff;padding-left:0px;padding-right:0px;">' +
+        '            &lt;div class="gm-add-search bh-mb-8" style="margin:7px 8px 0 8px">' +
+        '                &lt;input class="leftSearch" type="text" placeholder="' + this.options.placeholder + '">' +
+        '                 &lt;button style="border:0px;width:0px;height:0px;position: absolute;padding:0;top: 0px;">&lt;/button>' +
+        '              &lt;a href="javascript:void(0)">&lt;i class="iconfont">&amp;#xe895;&lt;/i>&lt;/a>' +
+        '          &lt;/div>' +
+        '         &lt;div class="noBorderGrid leftGrid leftgrid-container">&lt;/div>' +
+        '      &lt;/div>' +
+        '     &lt;div class="bh-col-md-6 rightgrid-container">' +
+        (this.options.showSelectedTip === false ? '&lt;h3>' + $.i18n('bha-choose-selectedField') + '&lt;/h3>' : ('&lt;h3>' + $.i18n('bha-choose-select') + selectedLength + '&lt;/h3>')) +
+        '           &lt;div class="noBorderGrid transparentGrid rightGrid">&lt;/div>' +
+        '      &lt;/div>' +
+        '&lt;/div>' +
+        '&lt;div class="content-bottom">' + this.options.bottomHtml + '&lt;/div>' +
+        '&lt;div id="buttons" style="position: absolute;bottom:32px;width: 100%;left: 0;float: right;padding: 0 24px;">' +
+        '&lt;/div>' +
+        '&lt;/div>' +
+        '&lt;/div>' +
+        '&lt;/div>');
+
+      if (this.options.insertContainer) {
+        return $dom;
+      }
+      $(".head", $dom).append($("&lt;h2>&lt;/h2>").append(this.options.title));
+
+      var btns = [{
+        text: $.i18n('bha-choose-confirm'),
+        className: 'bh-btn-primary',
+        callback: function () {
+          return self.options.callback(self.getSelectedRecords());
+        }
+
+      }, {
+        text: $.i18n('bha-choose-cancel'),
+        className: 'bh-btn-default',
+        callback: function () {
+          $dom.jqxWindow('close');
+        }
+      }];
+
+      btns = this.options.buttons || btns;
+
+      for (var i = btns.length - 1; i >= 0; i--) {
+        var btn = $('&lt;button class="bh-btn ' + btns[i].className + ' bh-pull-right">' + btns[i].text + '&lt;/button>');
+        if (btns[i].callback) {
+          var cb = btns[i].callback;
+          btn.data("callback", cb);
+          btn.click(function () {
+            var cb = $(this).data("callback");
+            var needClose = cb.apply($dom, [$dom]);
+            if (needClose !== false) {
+              $dom.jqxWindow('close');
+            }
+          });
+        }
+        $("#buttons", $dom).append(btn);
+      }
+
+
+      return $dom;
+    }
+  };
+
+})(jQuery);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

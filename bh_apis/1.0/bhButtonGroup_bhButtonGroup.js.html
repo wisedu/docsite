@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhButtonGroup/bhButtonGroup.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhButtonGroup/bhButtonGroup.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function () {
+  var Plugin, _init, _renderItem;
+  /**
+   * 按钮组
+   * @module bhButtonGroup
+   * @alias 按钮组
+   * @example
+   $el.bhButtonGroup({
+    data:[{
+      id:'1',
+      name:'按钮1'
+    },{
+      id:'2',
+      name:'按钮2'
+    }]
+   })
+   */
+  Plugin = (function () {
+    function Plugin(element, options) {
+      this.$element = $(element);
+      if (options !== undefined) {
+        this.options = $.extend({}, $.fn.bhButtonGroup.defaults, options);
+        _init(this.$element, this.options);
+      }
+    }
+
+    /**
+     * @method setValue
+     * @description 赋值
+     * @param {String} val
+     */
+    Plugin.prototype.setValue = function (val) {
+      var value;
+      if (!val) {
+        value = 'ALL';
+      }
+      $('.bh-label-radio.bh-active', this.$element).removeClass('bh-active');
+      $('.bh-label-radio[data-id=' + value + ']').addClass('bh-active');
+    };
+
+    /**
+     * @method getValue
+     * @description 取值
+     * @return {String} 多值已逗号分隔，全部按钮返回ALL
+     */
+    Plugin.prototype.getValue = function () {
+      var activeItem = $.makeArray($('.bh-label-radio.bh-active', this.$element));
+      var value;
+      if (activeItem.length) {
+        value = activeItem.map(function (item) {
+          return $(item).data('id');
+        }).join(',');
+      }
+      return (value == 'ALL' ? '' : value);
+    };
+    return Plugin;
+  })();
+
+  _init = function (element, options) {
+    if (options.multiple) {
+      element.attr('multiple', true);
+    }
+
+    if (options.data &amp;&amp; options.data != null &amp;&amp; options.data.length > 0) {
+      _renderItem(options.data, element, options);
+    } else if (options.url) {
+      var source = {
+        datatype: "json",
+        root: "datas>code>rows",
+        datafields: [{
+            name: 'id'
+          },
+          {
+            name: 'name'
+          }
+        ],
+        id: 'id',
+        url: options.url
+      };
+      var dataAdapter = new $.jqx.dataAdapter(source, {
+        loadComplete: function (Array) {
+          //qiyu 2016-12-26 转换异常，终止程序
+          // var buttonGroupData = Array.datas.code.rows;
+          var buttonGroupData = [];
+          if (Array.datas === undefined) {
+            BH_UTILS.bhDialogDanger({
+              title: $.i18n('bha-buttons-wrongData'),
+              content: $.i18n('bha-buttons-consoleDetail'),
+              buttons: [{
+                text: $.i18n('bha-buttons-close'),
+                className: 'bh-btn-default'
+              }]
+            });
+            var name = element.data("name");
+            var caption = element.data("caption");
+            console &amp;&amp; console.error("数据格式有误，bhButtonGroup[字段:" + name + ",中文:" + caption + "]期望从后台返回的结构包含：datas.code.rows,请求url：" + options.url + "，实际内容如下");
+            throw Array;
+          } else {
+            buttonGroupData = Array.datas.code.rows;
+          }
+
+          _renderItem(buttonGroupData, element, options);
+          element.trigger('bhInputInitComplete', element);
+        }
+      });
+      dataAdapter.dataBind();
+    }
+
+  };
+
+  _renderItem = function (arr, element, options) {
+    //qiyu 2016-12-20 解决XSS问题 XG-2681
+    element.empty();
+
+    // var itemHtml = '';
+    if (options.allOption &amp;&amp; !options.multiple) {
+      // itemHtml = '&lt;div class="bh-active bh-label-radio" data-id="ALL">全部&lt;/div>';  
+      element.append($('&lt;div class="bh-active bh-label-radio" data-id="ALL">' + $.i18n('bha-buttons-all') + '&lt;/div>'));
+    }
+    $(arr).each(function () {
+      // itemHtml += '&lt;div class="bh-label-radio" data-id="' + this.id + '" data-name="' + this.name + '" title="' + this.name + '">' + this.name + '&lt;/div>';
+      var itemHtml = $('&lt;div class="bh-label-radio">&lt;/div>');
+      itemHtml.attr("data-id", this.id).attr("data-name", this.name).attr("title", this.name);
+      itemHtml.text(this.name);
+      element.append($(itemHtml));
+    });
+    //qiyu 2016-12-20 解决XSS问题
+    // element.html(itemHtml);
+  };
+
+  $.fn.bhButtonGroup = function (options) {
+    var instance;
+    instance = this.data('plugin');
+    if (!instance) {
+      return this.each(function () {
+        return $(this).data('plugin', new Plugin(this, options));
+      });
+    }
+    if (options === true) {
+      return instance;
+    }
+    if ($.type(options) === 'string') {
+      // 兼容拼出来的 html data-plugin=1
+      if (instance == 1) {
+        instance = new Plugin(this)
+      }
+      return instance[options]();
+    }
+    return this;
+  };
+  /**
+   * @memberof module:bhButtonGroup
+   * @property {Boolean} [allOption=true] 是否有全部
+   * @property {Boolean} [multiple=false] 是否多选
+   * @property {Array} [data] 初始化数据，data与url二选一，优先data
+   * @property {String} [url] 数据接口
+   */
+  $.fn.bhButtonGroup.defaults = {
+    allOption: true,
+    multiple: false
+  };
+}).call(this);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

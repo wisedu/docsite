@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapUpload/directUpload.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapUpload/directUpload.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*
+    直接上传组件： 不存在token和临时文件的概念等、不需要保存操作
+    需要指定：
+        上传地址 uploadUrl
+        上传参数 uploadParam
+        上传成功的回调 （用于处理请求参数）  options.done
+            返回参数格式必须处理为 
+                {
+                    fileUrl: "",//上传成功后的图片地址
+                    id: "465084e9ed85449fa717d661ae82722d",
+                    success: true/false,
+                    name: "file.png"
+                }
+
+        删除文件请求地址 deleteUrl   (删除谓词POST)
+        删除文件请求参数 deleteParam (json类型)
+        删除请求之前的回调（用于处理请求参数） --
+        删除请求成功的回调（用于处理请求参数） --
+            要求返回格式 
+                {
+                    success: true
+                }
+
+        已有文件的数据（要求格式， 包含文件id和文件url）
+            要求格式
+                [
+                    {
+                        id: "zzxczxczxc",
+                        fileUrl: "asdasdasdsad"
+                    },
+                    {
+                        id: "zzxczxczxc",
+                        fileUrl: "asdasdasdsad"
+                    }
+                ]
+
+*/
+
+/**
+ * @module directUpload
+ * @alias 直接上传
+ * @description 直接上传组件，公有云使用，emap环境不能使用
+ */
+(function () {
+	var Plugin;
+	var fileReader = 'FileReader' in window;
+	var upload_block;
+
+	Plugin = (function () {
+		function Plugin(element, options) {
+			this.options = $.extend({}, $.fn.directUpload.defaults, options);
+			this.$element = $(element);
+			_init(this);
+		}
+
+
+		/**
+		 * @method destroy
+		 * @description 销毁上传实例
+		 */
+		Plugin.prototype.destroy = function () {
+			this.options = null;
+			$(this.$element).data('directupload', false)
+				.off('_uploadDelete').off('_uploadSuccess')
+				.empty();
+		};
+
+		return Plugin;
+	})();
+
+	function _init(instance) {
+		var element = instance.$element;
+		var options = instance.options;
+		options.config = options.config || {};
+		//检查uploadUrl，如果没有，则报错
+		//options.uploadUrl = WIS_EMAP_SERV.getContextPath() + '/sys/emapcomponent/file/uploadTempFile.do';
+		if(!options.uploadUrl || typeof options.uploadUrl !== 'string'){
+			console &amp;&amp; console.error('directupload error: uploadUrl must be given!');
+			return;
+		}
+		if(!options.deleteUrl || typeof options.deleteUrl !== 'string'){
+			console &amp;&amp; console.error('directupload error: deleteUrl must be given!');
+			return;
+		}
+
+		_initActions(options);
+
+		options.view = new WIS_UPLOAD_VIEW(instance);
+
+		_uploadCoreInit(instance);
+		_eventBind(instance);
+	}
+
+
+	function _initActions(options) {
+		options.actions = {
+			// 删除文件
+			deleteFile: function (id) {
+				var defer = $.Deferred();
+				var params = $.extend({}, options.deleteParam, {id: id}, true);
+				$.ajax({
+					type: "post",
+					url: options.deleteUrl,
+					dataType: "json",
+					//async: false,
+					data: params
+				}).done(function (res) {
+					if (res.success) {
+						defer.resolve(res);
+					} else {
+						defer.reject(res);
+					}
+				}).fail(function (error) {
+					defer.reject(error);
+				});
+				return defer;
+			}
+		}
+	}
+
+	// 初始化上传核心模块
+	function _uploadCoreInit(instance) {
+		var element = instance.$element;
+		var options = instance.options;
+
+		WIS_EMAP_UPLOAD.directCore.init(element, options, {
+			init: function () { //
+				//渲染原有图片
+				if(options.imagesUrl instanceof Array &amp;&amp; options.imagesUrl.length > 0) {
+					var _items = [];
+					// if(!options.imagesUrl instanceof Array) {
+					// 	options.imagesUrl = [options.imagesUrl];
+					// }
+
+					$(options.imagesUrl).each(function (i, v) {
+						if(v){
+							var _data = {};
+							_data.bhId = new Date().getTime() + i;
+							_data.name = v.replace(/(.*\/)*(.*)([\?\!#]+.*)/ig, "$2");
+							_data.fileUrl = v;
+							_data.state = 'saved';
+							_items.push(_data);
+						}
+					});
+
+					options.view.renderItemsBlock(_items, options);
+				}
+				//绑定删除方法
+				options.deleteFileCallback = _deleteFile;
+			},
+			add: function (e, data) {
+				var files = data.files;
+				var tmp = new Date().getTime();
+				$(files).each(function (i) {
+					data.files[i].bhId = tmp + i;
+					if (options.limit == 1 &amp;&amp; options.view.getFileNum(options, true) > 0) {// 单文件上传模式下的重新上传
+						options.view.reloadBlock(this, options);
+					} else if (options.reloadBlock) { // 多文件模式下的重新上传
+						options.view.loadingBlock(this, options);
+					} else {
+						this.state = 'loading';
+						options.view.renderItemsBlock(this, options)
+					}
+				});
+
+				if (options.add) {
+					if (options.add(e, data) === false) { // 若add回调 返回false则终止上传
+						return false;
+					}
+				}
+			},
+			submit: function (e, data) {
+				var file = data.files[0];
+				// 文件数量限制的校验
+				if (options.limit) {
+					var currentCount = options.view.getFileNum(options);
+					if (currentCount > options.limit) {
+						data.result = {
+							"error": "文件数量超出限制"
+						};
+						options.view.errorBlock(data, options);
+						// WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+						return false;
+					}
+				}
+
+				// 文件的大小 和类型校验
+				if (options.type &amp;&amp; options.type.length > 0) {
+					if (!new RegExp((options.type.join('|') + '$').toUpperCase()).test(file.name.toUpperCase())) {
+						data.result = {
+							"error": "文件类型不正确"
+						};
+						options.view.errorBlock(data, options);
+						// WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+						return false;
+					}
+				}
+
+				if (fileReader &amp;&amp; options.size) {
+					if (file.size / 1024 > options.size) {
+						data.result = {
+							"error": "文件大小超出限制"
+						};
+						options.view.errorBlock(data, options);
+						// WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+						return false;
+					}
+				}
+
+				$('[data-bhid=' + file.bhId + ']', options.list).data('xhr', data);
+				if (options.submit) {
+					if (options.submit(e, data) === false) {
+						return false;
+					}
+				}
+			},
+			done: function (e, data) {
+				//兼容swagger返回格式
+				if(data.result.success == undefined) {
+					data.result = data.result.datas;
+				}
+
+				if (data.result.success) {
+
+					// 上传成功
+					if (!data.result.tempFileUrl) {  // 由于直接上传不存在临时文件的概念，所以此处将tempFileUrl设置为文件的fileUrl
+						data.result.tempFileUrl = data.result.fileUrl;
+					}
+
+					options.view.successBlock(data, options);
+					if (options.done) {
+						options.done(e, data);
+					}
+
+				} else {
+					console &amp;&amp; console.error('文件上传失败');
+					options.view.errorBlock(data, options);
+					if (options.fail) {
+						options.fail(e, data)
+					}
+				}
+
+				// WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+			},
+			fail: function (e, data) {
+				$.bhTip &amp;&amp; $.bhTip({
+					content: '文件上传失败',
+					state: 'danger',
+					iconClass: 'icon-close'
+				});
+			}
+		});
+
+	}
+
+	// 删除文件 参数： 文件id  文件状态  options
+	function _deleteFile(fileId, state, isReload, options) {
+		var dtd = $.Deferred();
+		//  删除临时文件 
+		if (state == 'success' || state == 'saved' || state == 'normal') {
+			options.actions.deleteFile(fileId).done(function (res) {
+				//删除后再显示出原来上传按钮
+				!isReload &amp;&amp; options.view.removeBlock(fileId, options);
+				dtd.resolve();
+			}).fail(function (e, data) {
+				dtd.reject();
+			})
+		} else if (state == 'error') {
+			//删除后再显示出原来上传按钮
+			!isReload &amp;&amp; options.view.removeBlock(fileId, options);
+			dtd.resolve();
+		}
+
+		return dtd.promise();
+	}
+
+
+	function _eventBind(instance) {
+		var element = instance.$element;
+		var options = instance.options;
+		// 删除事件绑定
+		/*
+			e       事件对象
+			fileId  文件id
+			state   文件状态
+			isReload  是否为重新上传
+		*/
+		element.on('_uploadDelete', function (e, fileId, state, isReload) {
+			_deleteFile(fileId, state, isReload, options);
+		});
+
+		// 重新上传事件
+		element.on('_uploadSuccess', function (e, data) {
+			var input = e.target;
+			var oldData = data;
+			WIS_EMAP_UPLOAD.directCore.inputInit(input, options, {
+				add: function (e, data) {
+					var files = data.files;
+					var input = e.target;
+					var tmp = new Date().getTime();
+					data.files[0].bhId = tmp + 'R';
+					options.view.loadingBlock(files[0], options, input);
+					if (options.add) {
+						if (options.add(e, data) === false) { // 若add回调 返回false则终止上传
+							return false;
+						}
+					}
+				},
+				submit: function (e, data) {
+					var file = data.files[0];
+					// 文件数量限制的校验
+					if (options.limit) {
+						var currentCount = options.view.getFileNum(options);
+						if (currentCount > options.limit) {
+							data.result = {
+								"error": "文件数量超出限制"
+							};
+							options.view.errorBlock(data, options);
+							return false;
+						}
+					}
+
+					// 文件的大小 和类型校验 upload
+					if (options.type &amp;&amp; options.type.length > 0) {
+						if (!new RegExp((options.type.join('|') + '$').toUpperCase()).test(file.name.toUpperCase())) {
+							data.result = {
+								"error": "文件类型不正确"
+							};
+							options.view.errorBlock(data, options);
+							return false;
+						}
+					}
+
+					if (fileReader &amp;&amp; options.size) {
+						if (file.size / 1024 > options.size) {
+							data.result = {
+								"error": "文件大小超出限制"
+							};
+							options.view.errorBlock(data, options);
+							return false;
+						}
+					}
+					$('[data-bhid=' + file.bhId + ']', options.list).data('xhr', data);
+					if (options.submit) {
+						if (options.submit(e, data) === false) {
+							return false;
+						}
+					}
+				},
+				done: function (e, data) {
+					var input = e.target;
+					var oldFileData = $(input).data('oldfiledata');
+					if (oldFileData) {
+						_deleteFile(oldFileData.fileId, oldFileData.state, true, options).done(function () {
+							element.trigger('bh.file.upload.delete');
+						});
+					}
+					// 上传成功
+					//兼容swagger返回格式
+					if(data.result.success == undefined) {
+						data.result = data.result.datas;
+					}
+					//直接上传，使用tmpUrl代替fileUrl
+					data.result.tempFileUrl = data.result.fileUrl
+					
+					if (options.autoSave) {
+						options.view.saveBlock(data, options);
+					} else {
+						options.view.successBlock(data, options);
+					}
+					if (options.done) {
+						options.done(e, data);
+					}
+					element.trigger('bh.file.upload.done', data);
+					WIS_EMAP_SERV &amp;&amp; WIS_EMAP_SERV._resetPageFooter();
+				},
+				fail: function (e, data) {
+					options.view.errorBlock(data, options);
+				}
+			})
+		})
+	}
+
+	$.fn.directUpload = function (options, param) {
+		var instance;
+		instance = this.data('directupload');
+		if (!instance) {
+			return this.each(function () {
+				return $(this).data('directupload', new Plugin(this, options));
+			});
+		}
+		if (options === true) return instance;
+		if ($.type(options) === 'string') return instance[options](param);
+		return this;
+	};
+
+	/**
+	 * @memberof module:directUpload
+	 * @prop {String} storeId - 定义的文件类型
+	 * @prop {String} [buttonType=button] - 上传按钮样式 button 或者block
+	 * @prop {String} [displayType=image] - 上传文件展示类型 image 或者 file
+	 * @prop {Int} [width=168] - image 模式下文件展示的宽度
+	 * @prop {Int} [height=108] - image 模式下文件展示的高度
+	 * @prop {Int} [limit=] - 文件上传个数限制
+	 * @prop {Array} [type=] -  文件格式限制
+	 * @prop {Int} [size=] - 文件大小限制,单位KB
+	 * @prop {Boolean} [canPreviewPDF=true] - 是否可以预览pdf文件
+     * @property {String} uploadUrl - 上传url
+     * @property {Object} uploadParam - 上传附件参数
+     * @property {String} deleteUrl - 上传url
+     * @property {Object} deleteParam - 上传附件参数
+	 */
+
+	$.fn.directUpload.defaults = {
+		storeId: "file",
+		buttonType: "button",
+		displayType: "image",
+		width: 168,
+		height: 108,
+		limit: null,
+		type: [],
+		size: 0,
+		token: undefined,
+		canPreviewPDF: true
+	};
+}).call(this);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:10:02 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

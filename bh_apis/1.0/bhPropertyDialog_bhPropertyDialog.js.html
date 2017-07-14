@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhPropertyDialog/bhPropertyDialog.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhPropertyDialog/bhPropertyDialog.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module bhPropertyDialog
+ * @description 侧边栏弹框
+ * @example
+ $.bhPropertyDialog.show({
+    content: '' //html内容
+ });
+ */
+(function($) {
+
+    /***
+     * 通过绑定属性的方式打开弹框
+     * 需要的属性是bh-role="openBhPropertyDialog"
+     * 打开指定的弹框内容需要添加属性bh-property-dialog-active,其值是要指定的id
+     * 可通过监听ready回调进行初始化,回调中返回$dialogHeader, $dialogBody, $dialogFooter节点
+     */
+    $(document).on('click', '[bh-property-dialog]', function () {
+        var $item = $(this);
+        var active_id = $.trim($item.attr('bh-property-dialog'));
+
+        var data = {
+            openDialogDom: $item
+        };
+
+        if(active_id){
+            data.selector = '#'+active_id;
+        }
+
+        $.bhPropertyDialog.show(data);
+    });
+
+    /**
+     * 纸质弹框。
+     */
+    $.bhPropertyDialog = {
+        /**
+         * 初始化并显示弹框
+         * @method show
+         * @param data {object} 初始化参数
+         * @param data.insertContainer {jQuery} 可选，想要将弹框插入的容器
+         * @param data.title {string} 可选，弹出框的title
+         * @param data.content {string} 可选，在弹出框中显示的内容
+         * @param data.footer {string} 可选，在弹出框页脚
+         * @param data.selector {string} 可选，预置弹框的选择器
+         * @param data.hideCover {Boolean} 可选，是否隐藏遮罩层,默认false不隐藏
+         * @param data.ready {callback} 可选，初始化且动画执行完成的回调
+         * @example
+         $.bhPropertyDialog.show();
+         */
+        show: function(data) {
+            var dialogDefaults = {
+                openDialogDom: "", //隐藏属性,保存通过属性按钮打开弹框的节点
+                insertContainer: "", //必填，弹出框要插入的容器
+                title: "", //必填，弹出框的title
+                content: "", //必填，弹出框的内容html
+                footer: "", //可选，弹出框的页脚按钮html，可传入html片段，或default（使用默认的页脚），或空（无页脚）
+                selector: "",
+                hideCover: false, //可选，是否隐藏遮罩层，默认不隐藏
+                autoDestroy: true, //可选, 隐藏时自动销毁，默认销毁
+                ok: null,
+                cancel: null,
+                open: null, //可选，每次打开弹出框后的回调，不包括第一次的初始化
+                hide: null, //可选，每次隐藏弹出框后的回调
+                ready: null //可选，初始化并渲染完成的回调
+            };
+            var options = $.extend({}, dialogDefaults, data);
+            showDialog(options);
+        },
+
+        /**
+         * 关闭弹框
+         * @method hide
+         * @param data {object} 初始化参数
+         * @param data.close {callback} 可选，关闭弹框的回调
+         * @example
+         $.bhPropertyDialog.hide();
+         */
+        hide: function(data) {
+            var dialogDefaults = {
+                close: null, //可选，当关闭的回调
+                destroy: true //可选，值为true或false； true则在隐藏的同时将弹出框remove
+            };
+            var options = $.extend({}, dialogDefaults, data);
+            dialogHide(options);
+        },
+
+        /**
+         * 隐藏弹框页脚
+         * @method footerHide
+         * @example
+         $.bhPropertyDialog.footerHide();
+         */
+        footerHide: function() {
+            dialogFooterHide();
+        },
+
+        /**
+         * 显示弹框页脚
+         * @method footerShow
+         * @example
+         $.bhPropertyDialog.footerShow();
+         */
+        footerShow: function() {
+            dialogFooterShow();
+        },
+        destroy: function() {
+            dialogDestroy();
+        },
+        /**
+         * 显示滚动条    ghlong  2017-3-7
+         */
+        showScrollBar: function () {
+            showScrollBar();
+        }
+    };
+
+    /***
+     * 动画的执行的基础时间
+     * @returns {number}
+     */
+    function getAnimateTime() {
+        return 450;
+    }
+
+    /***
+     * 弹出侧边框
+     * @param insertContainer 弹出框要插入的容器
+     * @param title 弹出框的title
+     * @param content 弹出框的内容html
+     * @param footer 弹出框的按钮html
+     */
+    function showDialog(data) {
+        //当输入的插入容器不存在时，会导致死循环
+        if (data.insertContainer) {
+            if (data.insertContainer.length === 0) {
+                if (typeof window.console !== 'undefined') {
+                    window.console.error('insertContainer 要插入的容器不存在');
+                }
+                return;
+            }
+        }
+        var $dialog = $("div[bh-property-dialog-role=bhPropertyDialog]");
+        data = resetOptionContainer(data);
+        //给传入的title，content，footer添加标签
+        data = addTagToOption(data);
+        //若不存在则新建一个
+        if ($dialog.length === 0) {
+            //获取弹框框架
+            var dialogHtml = getDialogHtml();
+            //获取页脚html
+            var footerHtml = "";
+            if (data.footer) {
+                if (data.footer === "default") {
+                    //使用默认页脚
+                    footerHtml = getDefaultFooterHtml();
+                } else {
+                    //使用传入的页脚
+                    footerHtml = data.footer;
+                }
+            }
+            dialogHtml = dialogHtml.replace("@title", data.title).replace("@content", data.content).replace("@footer", data.footer);
+            $dialog = $(dialogHtml);
+            //无页脚时，隐藏页脚
+            if (!footerHtml) {
+                $dialog.find("[bh-property-dialog-role=footer]").hide();
+            }
+
+            data.insertContainer.append($dialog);
+            //给弹框的body设置高度,当内容过多时使其能出滚动条
+            setDialogBodyHeight();
+            //弹框事件监听
+            dialogEventListen($dialog, data);
+
+            //获取该弹框的header，section，footer的jquery对象
+            var $_head = $dialog.find("[bh-property-dialog-role=header]");
+            var $_body = $dialog.find("[bh-property-dialog-role=body]");
+            var $_footer = $dialog.find("[bh-property-dialog-role=footer]");
+
+            var $dialogHeader = $_head.children();
+            var $dialogBody = $_body.children();
+            var $dialogFooter = $_footer.children();
+            
+            data.compile &amp;&amp; data.compile($dialogHeader, $dialogBody, $dialogFooter);
+
+            var guid = BH_UTILS.NewGuid();
+            $dialog.attr('bh-property-dialog-guid', guid);
+
+            setTimeout(function() {
+                if(data.openDialogDom.length > 0){
+                    data.openDialogDom.attr('bh-property-dialog-bind-btn',guid);
+                    data.openDialogDom.trigger("ready", [$_head, $_body, $_footer]);
+                }
+
+                //初始化结束后的回调
+                if (typeof data.ready != 'undefined' &amp;&amp; data.ready instanceof Function) {
+                    data.ready($dialogHeader, $dialogBody, $dialogFooter);
+                }
+
+                //给按钮添加水波纹效果
+                BH_UTILS &amp;&amp; BH_UTILS.wavesInit();
+                $dialog.find("[bh-property-dialog-role=body]").niceScroll({
+                    zindex: 99999,
+                    horizrailenabled: false
+                });
+            }, getAnimateTime());
+        } else {
+            setTimeout(function() {
+                //每次打开的回调
+                if (typeof data.open != 'undefined' &amp;&amp; data.open instanceof Function) {
+                    data.open();
+                }
+            }, getAnimateTime());
+        }
+
+        //当hideCover为false时显示遮罩层
+        if (!data.hideCover) {
+            $dialog.find(".bh-property-dialog-cover").show()
+                .removeClass("bh-property-dialog-cover-fadeOut").addClass("bh-property-dialog-cover-fadeIn");
+        }
+
+        setDialogPosition($dialog, data);
+
+        $dialog.show();
+        //移除动画
+        $dialog.find("div.bh-property-dialog-container").removeClass("bh-outRight").addClass("bh-intoRight");
+
+        //当弹框出现时，将页面的滚动条隐藏
+        setTimeout(function() {
+            $("body").addClass('sc-overflow-hide');
+            // $("body").addClass('sc-overflow-hide').getNiceScroll().remove();
+        }, getAnimateTime() + 50);
+    }
+
+    //给传入的title，content，footer添加标签
+    function addTagToOption(options) {
+        var $asideContent = null;
+        if (options.content) {
+            var contentObj = $(options.content)[0];
+            if (contentObj &amp;&amp; contentObj.localName !== "section") {
+                $asideContent = $('&lt;section>' + options.content + '&lt;/section>');
+            }
+        } else {
+            var $aside = options.insertContainer;
+            if ($aside &amp;&amp; $aside[0] &amp;&amp; $aside[0].localName === "aside") {
+                //当传入要显示的内容的选择器时则使用传入的，不传入则默认使用第一个script标签的
+                if (options.selector) {
+                    $asideContent = $('&lt;div>' + $aside.find(options.selector).html() + '&lt;/div>');
+                } else {
+                    $asideContent = $('&lt;div>' + $aside.find('script').html() + '&lt;/div>');
+                }
+            }
+        }
+
+
+        if (!options.title) {
+            if($asideContent){
+                var $asideHeader = $asideContent.children("h3");
+                if ($asideHeader.length > 0) {
+                    options.title = $asideHeader[0].outerHTML;
+                }
+            }
+        } else {
+            var $title = $('&lt;h3>' + options.title + '&lt;/h3>');
+            var $titleChild = $title.children();
+            if ($titleChild.length === 0 || $titleChild.length > 1) {
+                options.title = $title[0].outerHTML;
+            } else if ($titleChild.length === 1 &amp;&amp; $titleChild[0].localName !== "h3") {
+                options.title = $title[0].outerHTML;
+            }
+            //if($titleChild.length === 0 || ($titleChild.length === 0 &amp;&amp; $title[0] &amp;&amp; $title[0].localName !== "h3")){
+            //    options.title = '&lt;h3>'+options.title+'&lt;/h3>';
+            //}
+        }
+
+        var $asideSection = $asideContent ? $asideContent.children("section") : '';
+        if ($asideSection.length > 0) {
+            options.content = $asideSection[0].outerHTML;
+        }
+
+        if (!options.footer) {
+            var $asideFooter = $asideContent ? $asideContent.children("footer") : '';
+            if ($asideFooter.length > 0) {
+                //当footer有内容时使用传入的，有footer标签但是没有内容则使用默认页脚
+                if ($asideFooter.children().length > 0) {
+                    options.footer = $asideFooter[0].outerHTML;
+                } else {
+                    options.footer = getDefaultFooterHtml();
+                }
+            }
+        } else {
+            if (options.footer === "default") {
+                options.footer = getDefaultFooterHtml();
+            }
+        }
+
+        return options;
+    }
+
+    function getDefaultFooterHtml() {
+        var _html =
+            '&lt;footer>' +
+            '&lt;a class="bh-btn bh-btn-primary bh-btn-large" bh-property-dialog-role="okBtn">' + $.i18n('bha-property-confirm') + '&lt;/a>' +
+            '&lt;a class="bh-btn bh-btn-default bh-btn-large" bh-property-dialog-role="cancelBtn">' + $.i18n('bha-property-cancel') + '&lt;/a>' +
+            '&lt;/footer>';
+        return _html;
+    }
+
+    function getDialogHtml() {
+        var _html =
+            '&lt;div class="bh-property-dialog" bh-property-dialog-role="bhPropertyDialog">' +
+            '&lt;div class="bh-property-dialog-container bh-animated bh-outRight bh-card bh-card-lv2">' +
+            '&lt;i class="iconfont icon-close bh-pull-right bh-cursor-point" bh-property-dialog-role="closeIcon">&lt;/i>' +
+            '&lt;div class="bh-mb-16" bh-property-dialog-role="header">' +
+            '@title' +
+            '&lt;/div>' +
+            '&lt;div bh-property-dialog-role="body">' +
+            '@content' +
+            '&lt;/div>' +
+            '&lt;div class="bh-property-dialog-footer bh-animated bh-outDown" bh-property-dialog-role="footer">' +
+            '@footer' +
+            '&lt;/div>' +
+            '&lt;/div>' +
+            '&lt;div class="bh-property-dialog-cover bh-animated bh-property-dialog-cover-fadeIn">&lt;/div>' +
+            '&lt;/div>';
+        return _html;
+    }
+
+
+    /***
+     * 隐藏侧边框
+     * @param flag 默认弹框不销毁，"destroy"将弹框销毁
+     */
+    function dialogHide(options) {
+        // if(data.openDialogDom.length > 0){
+        //     data.openDialogDom.attr('bh-property-dialog-bind-btn',guid);
+        //     data.openDialogDom.trigger("ready", [$_head, $_body, $_footer]);
+        // }
+
+        if (typeof options.close != 'undefined' &amp;&amp; options.close instanceof Function) {
+            //当关闭回调返回false时，阻止弹框关闭
+            var optionFlag = options.close();
+            if (typeof optionFlag === "boolean" &amp;&amp; !optionFlag) {
+                return;
+            }
+        }
+        var $dialog = $("div[bh-property-dialog-role=bhPropertyDialog]");
+        if ($dialog.length > 0) {
+            //获取绑定按钮,若存在则发送beforeClose事件,若返回值是false则阻止弹框关闭
+            var $bindBtn = getBindBtn($dialog);
+            if($bindBtn.length > 0){
+                var flag = $bindBtn.triggerHandler('beforeClose');
+                if(typeof flag === 'boolean' &amp;&amp; !flag){
+                    return;
+                }
+            }
+
+            $dialog.find("div.bh-property-dialog-container").removeClass("bh-intoRight").addClass("bh-outRight");
+            $dialog.find("div.bh-property-dialog-cover").removeClass("bh-property-dialog-cover-fadeIn")
+                .addClass("bh-property-dialog-cover-fadeOut");
+
+            setTimeout(function() {
+                //发送close事件
+                if($bindBtn.length > 0){
+                    $bindBtn.removeAttr('bh-property-dialog-bind-btn').trigger('close');
+                }
+
+                $dialog.hide();
+                $dialog.find("div.bh-property-dialog-footer").hide().removeClass("bh-intoUp").addClass("bh-outDown");
+                if (options.destroy || options.autoDestroy) {
+                    $dialog.remove();
+                }
+
+                setTimeout(function() {
+                    $("body").removeClass('sc-overflow-hide');
+                    // $("body").removeClass('sc-overflow-hide').niceScroll({
+                    //     zindex: 99999,
+                    //     horizrailenabled: false
+                    // });
+                }, 50);
+            }, getAnimateTime());
+        }
+    }
+
+    function getBindBtn($dialog) {
+        var guid = $dialog.attr('bh-property-dialog-guid');
+        var $btn = $('[bh-property-dialog-bind-btn="'+guid+'"]');
+        return $btn;
+    }
+
+
+    /***
+     * 显示侧边框页脚
+     * @param insertContainer 弹出框插入的容器
+     */
+    function dialogFooterHide() {
+        $("div[bh-property-dialog-role=bhPropertyDialog]").find("div.bh-property-dialog-footer")
+            .removeClass("bh-intoUp").addClass("bh-outDown");
+        setDialogBodyHeight();
+    }
+
+    /***
+     * 隐藏侧边框页脚
+     * @param insertContainer 弹出框插入的容器
+     */
+    function dialogFooterShow() {
+        var $dialogFooter = $("div[bh-property-dialog-role=bhPropertyDialog]").find("div.bh-property-dialog-footer");
+        $dialogFooter.removeClass("bh-outDown").addClass("bh-intoUp").show();
+        setDialogBodyHeight(true);
+    }
+
+    /***
+     * 给弹框的body设置高度,当内容过多时使其能出滚动条
+     * @param isFooterShow 页脚是否有显示
+     */
+    function setDialogBodyHeight(isFooterShow) {
+        var heightStr = '100% - 56px';
+        if (isFooterShow) {
+            heightStr = '100% - 56px - 52px';
+        }
+        $("div[bh-property-dialog-role=bhPropertyDialog]").find("[bh-property-dialog-role=body]")
+            .attr('style', 'height: -moz-calc(' + heightStr + ');height: -webkit-calc(' + heightStr + ');height: calc(' + heightStr + ');overflow: hidden;');
+
+        setTimeout(function() {
+            $("body").addClass('sc-overflow-hide');
+            // $("body").addClass('sc-overflow-hide').getNiceScroll().remove();
+        }, getAnimateTime() + 50);
+    }
+
+    /***
+     * 将弹框销毁
+     */
+    function dialogDestroy() {
+        var $dialog = $("div[bh-property-dialog-role=bhPropertyDialog]");
+        if ($dialog.length > 0) {
+            dialogEventOff($dialog);
+            $dialog.remove();
+        }
+    }
+
+    function dialogEventListen($dialog, data) {
+        $dialog.on("click", "i[bh-property-dialog-role=closeIcon]", function() {
+            data.close = data.hide;
+            $.bhPropertyDialog.hide(data);
+        });
+
+        $dialog.on("click", "[bh-property-dialog-role=okBtn]", function() {
+            data.close = data.ok;
+            $.bhPropertyDialog.hide(data);
+        });
+
+        $dialog.on("click", "[bh-property-dialog-role=cancelBtn]", function() {
+            data.close = data.cancel;
+            $.bhPropertyDialog.hide(data);
+        });
+    }
+
+    function dialogEventOff($dialog) {
+        $dialog.off("click");
+    }
+
+    //当没有传入insertContainer，title等字段时，从固定结构中查找元素
+    function resetOptionContainer(data) {
+        var $body = $("body");
+        //当不传入insertContainer时，去查找固定结构并设置
+        if (!data.insertContainer) {
+            var $paperDialogs = $body.find("[bh-paper-pile-dialog-role=bhPaperPileDialog]");
+            if ($paperDialogs.length > 0) {
+                //当存在paper弹出框是的处理
+                var $insertToDialog = "";
+                var insertToDialogIndex = 0;
+                var hasOpenDialogs = $body.find("div[bh-paper-pile-dialog-role=bhPaperPileDialog]");
+                if (hasOpenDialogs.length > 0) {
+                    hasOpenDialogs.each(function() {
+                        var $itemDialog = $(this);
+                        var dialogIndex = parseInt($itemDialog.attr("bh-paper-pile-dialog-role-index"), 10);
+                        if (dialogIndex > insertToDialogIndex) {
+                            $insertToDialog = $itemDialog;
+                        }
+                    });
+                }
+                if ($insertToDialog.length > 0) {
+                    data.insertContainer = $insertToDialog.children().children("aside");
+                }
+            } else {
+                //当没有paper弹出框的处理
+                if ($body.children("main").length > 0) {
+                    var tempFixedArticle = $body.children("main").children("article");
+                    if (tempFixedArticle.length > 0) {
+                        var $aside = tempFixedArticle.children("aside");
+                        if ($aside.length > 0) {
+                            data.insertContainer = $aside;
+                        } else {
+                            data.insertContainer = $('&lt;aside>&lt;/aside>');
+                            tempFixedArticle.append(data.insertContainer);
+                        }
+                    }
+                }
+            }
+        }
+
+        return data;
+    }
+
+    //设置弹框的位置
+    function setDialogPosition($dialog, options) {
+        var $window = $(window);
+        var windowHeight = $window.height();
+        var scrollTop = $window.scrollTop();
+        var insertContData = getInsertContainerTop(options.insertContainer);
+        var $normalHeader = $('header[bh-header-role="bhHeader"]');
+        var normalHeaderHeight = $normalHeader.outerHeight();
+        var $miniHeader = $('header[bh-header-role="bhHeaderMini"]');
+        var miniHeaderHeight = $miniHeader.outerHeight();
+        var isMiniHeaderShow = $normalHeader.hasClass("bh-normalHeader-hide") ? true : false;
+        var headerHeight = isMiniHeaderShow ? miniHeaderHeight : normalHeaderHeight;
+        var bodyHeight = $('body').get(0).scrollHeight;
+        var $footer = $('[bh-footer-role="footer"]');
+        var footerTop = $footer.offset().top;
+        var footerHeight = $footer.outerHeight();
+        var dialogTop = 0;
+        var topDiff = 4; //高度偏移量
+        var headerDiff = normalHeaderHeight - miniHeaderHeight; //大小头部高度差
+        if (scrollTop > insertContData.top) {
+            dialogTop = scrollTop - insertContData.top + headerHeight;
+        }
+        var dialogHeight = insertContData.height;
+        //出现小头部的处理
+        if (isMiniHeaderShow) {
+            //滚动条滚到页脚的处理
+            if (windowHeight + scrollTop + footerHeight >= bodyHeight) {
+                dialogHeight = bodyHeight - scrollTop - footerHeight - topDiff - headerDiff;
+            } else {
+                //滚动条没有滚到页脚的处理
+                dialogHeight = windowHeight - miniHeaderHeight;
+            }
+        } else {
+            //当页面内容大于屏幕高度的处理
+            if (footerTop > windowHeight) {
+                dialogHeight = windowHeight - insertContData.top;
+            }
+        }
+
+        $dialog.css({
+            top: dialogTop,
+            height: dialogHeight
+        });
+    }
+
+    //获取弹框插入节点的高度和top值
+    function getInsertContainerTop($dom) {
+        var height = $dom.outerHeight();
+        if (height) {
+            return {
+                top: $dom.offset().top,
+                height: height
+            };
+        } else {
+            return getInsertContainerTop($dom.parent());
+        }
+    }
+    
+    function showScrollBar() {
+        $('body').removeClass('sc-overflow-hide');
+    }
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

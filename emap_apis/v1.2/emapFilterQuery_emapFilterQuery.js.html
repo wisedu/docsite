@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapFilterQuery/emapFilterQuery.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapFilterQuery/emapFilterQuery.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @fileOverview EMAP条件筛选组件
+ * @example
+ $('#container').emapFilterQuery({
+	        contextPath: "/emap"
+	    })
+ */
+(function () {
+  var Plugin;
+  /**
+   * @module emapFilterQuery
+   * @alias 条件搜索
+   * @fires search - 搜索事件
+   * @example
+   $('#container').emapFilterQuery({
+          contextPath: "/emap"
+      })
+   */
+  Plugin = (function () {
+    function Plugin(element, options) {
+      this.options = $.extend({}, $.fn.emapFilterQuery.defaults, options);
+      this.$element = $(element);
+      _init(this.$element, this.options);
+
+    }
+
+    /**
+     * @method setValue
+     * @description 赋值
+     * @param {String|Array} val - 搜索条件
+     */
+    Plugin.prototype.setValue = function (val) {
+      var filter_block = this.options.filter_block;
+      if (typeof val == 'string') {
+        try {
+          val = JSON.parse(val);
+        } catch (e) {
+          console &amp;&amp; console.error('filterQuery setValue 传入参数有误');
+        }
+
+      }
+      if (val.length) {
+        var form_date = {};
+        val.map(function (item) {
+          if (item instanceof Array) {
+            // common filter 关键字字段
+            form_date['_commonFilter'] = item[0].value;
+          } else {
+            form_date[item.name] = item.value;
+          }
+        });
+        WIS_EMAP_INPUT.formSetValue(filter_block, form_date, {});
+      } else {
+        console &amp;&amp; console.error('filterQuery setValue 传入参数不能为空');
+      }
+    };
+
+    /**
+     * 取值
+     * @method getValue
+     * @returns {String} 格式化的搜索条件
+     * @example
+     $("#container").emapFilterQuery('getValue');
+     */
+    Plugin.prototype.getValue = function () {
+      return JSON.stringify(_getSearchConditions(this.options));
+    };
+
+    /**
+     * 清空
+     * @method clear
+     */
+    Plugin.prototype.clear = function () {
+      _clear(this.$element, this.options);
+    };
+
+    /**
+     * @method destroy
+     * @description 销毁
+     * @returns {*}
+     */
+    Plugin.prototype.destroy = function () {
+      return this.$element.removeClass('emap-FQ-container').empty().data('emapfilterquery', undefined);
+    };
+
+    return Plugin;
+  })();
+
+  function _init(element, options) {
+    if (options.showBlankOption === undefined) {
+      options.showBlankOption = WIS_EMAP_CONFIG.showBlankOptionInSearch;
+    }
+    options.model = options.data.controls.map(function (item) {
+      if (item['search.hidden'] === true || item['search.hidden'] === false) {
+        item['hidden'] = item['search.hidden'];
+      }
+      return item;
+    });
+
+    if (options.beforeRender) {
+      options.model = options.beforeRender(options.model);
+    }
+
+    element.addClass('emap-FQ-container').append(
+      '&lt;div class="emap-FQ-filters bh-clearfix" emap-role="FQ-filters" style="display: none;">&lt;/div>' +
+      '&lt;div class="emap-FQ-footer" emap-role="FQ-footer">' +
+      '&lt;div class="bh-clearfix emap-FQ-footer-top">' +
+      '&lt;h4 class="bh-pull-left emap-FQ-title bh-ph-16" >'+ $.i18n('bh_fq_conditionFilter') +'&lt;/h4>' +
+      '&lt;a href="javascript:void(0)" class="bh-pull-right bh-ph-16" emap-role="FQ-switch-btn__expand">'+ $.i18n('bh_fq_expend') +'  >&lt;/a>' +
+      '&lt;p class="emap-FQ-text-wrap" emap-role="FQ-text-wrap">' +
+      '&lt;span class="emap-FQ-text" emap-role="FQ-text">&lt;/span>' +
+      '&lt;a href="javascript:void(0)" emap-role="FQ-clear-btn" class="emap-FQ-clear-btn">'+ $.i18n('bh_fq_clearCondition') +'&lt;/a>' +
+      '&lt;/p>' +
+      '&lt;/div>' +
+      '&lt;div class="emap-FQ-footer-bottom bh-text-center">' +
+      '&lt;a class="bh-btn bh-btn-primary" emap-role="FQ-search-btn">'+ $.i18n('bh_fq_search') +'&lt;/a>' +
+      '&lt;p class="emap-FQ-footer-btn-wrap bh-ph-16">' +
+      '&lt;a href="javascript:void(0)" emap-role="FQ-clear-btn" style="width: 120px;">'+ $.i18n('bh_fq_clearCondition') +'&lt;/a> | ' +
+      '&lt;a emap-role="FQ-more" href="javascript:void(0)" class="bh-mr-16">'+ $.i18n('bh_fq_moreCondition') +'&lt;/a>' +
+      '&lt;a href="javascript:void(0)" emap-role="FQ-switch-btn__collapse">'+ $.i18n('bh_fq_collapse') +'  >&lt;/a>' +
+      '&lt;/p>' +
+      '&lt;/div>' +
+      '&lt;/div>'
+    );
+
+    options.filter_block = $('[emap-role="FQ-filters"]', element);
+
+    // 初始化时 ,只显示quickSearch 的字段
+    // 现关键字字段 匹配 所有快速搜索的文本字段，若文本字段 配置了快速搜索且隐藏，则不再初始化的表单中展示
+    var quick_array = [];
+    options.model.map(function (item) {
+      var attr = WIS_EMAP_SERV.getAttr(item, 'search');
+      quick_array.push({
+        name: item.name,
+        hidden: !(item.quickSearch &amp;&amp; !attr.hidden)
+      });
+    });
+
+    if (options.expanded) {
+      element.addClass('emap-expand');
+      options.filter_block.show();
+    }
+    _renderFilterForm(quick_array, options);
+
+    _eventBind(element, options);
+  }
+
+  // 渲染filter 表单
+  function _renderFilterForm(nameArray, options) {
+    var form_array = [];
+    var cur_names = options.filter_block.data('names');
+    var is_new_form = cur_names ? true : false;
+    if (!is_new_form) {
+      cur_names = options.model.map(function (item) {
+        item.hidden = true;
+        return item;
+      });
+      var quick_text_field = options.model.filter(function (item) {
+        var attr = WIS_EMAP_SERV.getAttr(item);
+        return attr.xtype == 'text' &amp;&amp; attr.quickSearch == true;
+      });
+      options.quick_text_field = quick_text_field;
+      if (quick_text_field.length > 0) {
+        form_array.push(_renderFilterFormItem({
+          name: '_commonFilter',
+          caption: '关键字',
+          get: function (field) {
+            if (this["search." + field] !== undefined)
+              return this["search." + field];
+            else
+              return this[field];
+          }
+        }));
+      } else {
+        console &amp;&amp; console.warn('条件搜索组件数据模型中未配置快速搜素的文本字段，所以关键词字段未显示！');
+      }
+    }
+
+    nameArray.map(function (nameItem, i) {
+      var name_hidden = nameItem['hidden'];
+      var model_item = cur_names.filter(function (item) {
+        return item.name == nameItem.name;
+      })[0];
+      if (name_hidden !== model_item['hidden']) {
+        if (name_hidden) {
+          // 需要移除的字段
+          $('[data-field=' + nameItem.name + ']', options.filter_block).remove();
+        } else {
+          // 需要添加的字段
+          form_array.push(_renderFilterFormItem(options.model[i]));
+        }
+      }
+    });
+
+    options.filter_block.data('names', nameArray).append(form_array);
+    var defaultOptions = $.extend({}, {
+      "date-range": {
+        defaultType: 'all'
+      },
+      "tree2": {
+        unblind: '/',
+        search: true
+      },
+      "multi-tree2": {
+        unblind: '/',
+        search: true
+      },
+      "number-range": {
+        width: 154
+      }
+    }, options.defaultOptions);
+    form_array.map(function (item) {
+      WIS_EMAP_INPUT.init(item, {
+        defaultOptions: defaultOptions,
+        showBlankOption: options.showBlankOption
+      });
+    });
+    // 添加 关键词字段的placeholder
+    if (!is_new_form) {
+      var common_filters = $('input[data-name="_commonFilter"]', options.filter_block);
+      if (common_filters.length) {
+        var pText = quick_text_field.map(function (item) {
+          return item.caption;
+        }).join('/')
+        common_filters.attr('placeholder', pText).attr('title', pText);
+        WIS_EMAP_INPUT.placeHolder(common_filters);
+      }
+    }
+
+    // 添加字段后重置页脚
+    WIS_EMAP_SERV._resetPageFooter();
+  }
+
+  // 构造表单项的html
+  function _renderFilterFormItem(item) {
+    var model_item = _adaptModelItem(_cloneObj(item));
+    var item_html = '';
+    var attr = WIS_EMAP_SERV.getAttr(model_item);
+    item_html += '&lt;div class="emap-FQ-filter-group bh-mb-8 ' + (isDoubleWidth(attr.xtype) ? 'double' : '') + '" data-field="' + attr.name + '">' +
+      '&lt;div class="emap-FQ-label" title="' + attr.caption + '">' + attr.caption + '&lt;/div>' +
+      '&lt;div class="emap-FQ-input-warp"   emap-role="input-wrap">' +
+      '&lt;/div>' +
+      '&lt;/div>';
+    item_html = $(item_html);
+    $('[emap-role="input-wrap"]', item_html).append(WIS_EMAP_INPUT.renderPlaceHolder(model_item));
+    return item_html;
+  }
+
+  function isDoubleWidth(xtype) {
+    return $.inArray(xtype, ['date-range']) > -1;
+  }
+
+  function _cloneObj(obj) {
+    var clone = {};
+    for (var k in obj) {
+      if (typeof obj[k] == 'Object') {
+        clone[k] = _cloneObj(obj[k]);
+      } else {
+        clone[k] = obj[k];
+      }
+    }
+    return clone;
+  }
+
+  /**
+   * 控件类型的强制转换
+   * buttonlist => select
+   * multi-buttonlist => multi-select2
+   * radiolist => select
+   * checkboxlist => multi-select2
+   */
+  function _adaptModelItem(item) {
+    switch (item.xtype) {
+    case 'buttonlist':
+    case 'radiolist':
+      item.xtype = 'select';
+      break;
+    case 'multi-buttonlist':
+    case 'checkboxlist':
+      item.xtype = 'multi-select2';
+      break;
+    default:
+    }
+    return item;
+  }
+
+  function _getSearchConditions(options) {
+    var filter_block = options.filter_block;
+    var filter_value = WIS_EMAP_INPUT.formGetValue(filter_block, options);
+    return _convertConditions(filter_value, options.model);
+  }
+
+  // 将表单取值转换 为 搜索条件数据结构
+  function _convertConditions(value_obj, model) {
+    var condition = [];
+    var quick_field = model.map(function (item) {
+      var attr = WIS_EMAP_SERV.getAttr(item);
+      if ((!attr.xtype || attr.xtype == 'text') &amp;&amp; attr.quickSearch) {
+        return attr.name;
+      }
+    });
+    condition = WIS_EMAP_INPUT.getConvertCondition(value_obj, model);
+    for (var k in value_obj) {
+      if (value_obj[k] == "") continue;
+      if (k == '_commonFilter') {
+        // 关键字字段  匹配模型中所有的快速搜索文本字段
+        var common_filters = [];
+        quick_field.map(function (field, i) {
+          if (field) {
+            var field_data = {
+              name: field,
+              caption: model.filter(function (item) {
+                return item.name == field
+              })[0].caption,
+              builder: "include",
+              linkOpt: 'OR',
+              value: value_obj[k]
+            };
+            common_filters.push(field_data);
+          }
+        });
+        common_filters[0].linkOpt = 'AND';
+        condition.push(common_filters);
+      }
+    }
+    return _filterConditions(condition);
+
+    /*
+    for (var k in value_obj) {
+    	if (value_obj[k] == "") continue;
+    	if (k == '_commonFilter') {
+    		// 关键字字段  匹配模型中所有的快速搜索文本字段
+    		var common_filters = [];
+    		quick_field.map(function (field, i) {
+    			if (field) {
+    				var field_data = {
+    					name: field,
+    					caption: model.filter(function (item) {
+    						return item.name == field
+    					})[0].caption,
+    					builder: "include",
+    					linkOpt: 'OR',
+    					value: value_obj[k]
+    				};
+    				if (i == 0) field_data.linkOpt = 'AND';
+    				common_filters.push(field_data);
+    			}
+    		});
+    		condition.push(common_filters);
+    	} else {
+    		if (/_DISPLAY$/.test(k)) continue;
+    		var modelItem = model.filter(function (item) {
+    			return item.name == k
+    		})[0];
+    		var item_filter = {
+    			name: k,
+    			caption: modelItem.caption,
+    			linkOpt: "AND",
+    			builderList: modelItem.builderList,
+    			builder: modelItem.defaultBuilder,
+    			value: value_obj[k],
+    			value_display: value_obj[k + '_DISPLAY'] || ""
+    		};
+    		condition.push(item_filter);
+    	}
+    }
+    return _adaptCondition(condition, model);
+    */
+  }
+
+  // 搜索条件数据适配
+  /*
+  function _adaptCondition(condition, model) {
+  	var resultCondition = [];
+  	for (var i = 0; i &lt; condition.length; i++) {
+  		resultCondition.push(condition[i]);
+  		var condition_item = resultCondition[i];
+  		if (!(condition_item instanceof Array)) {
+  			var model_item = model.filter(function (m_item) {
+  				return m_item.name == condition_item.name;
+  			})[0];
+  			var attr = WIS_EMAP_SERV.getAttr(model_item);
+  			// 文本类型控件包含 , 时  builder转化为多值包含
+  			if ((!attr.xtype || attr.xtype == 'text') &amp;&amp; condition_item.value.indexOf(',') > 0) {
+  				condition_item.builder = 'm_value_include';
+  			}
+  			// 下拉多选、复选框、多选按钮组类型, builder 转化为多值相等
+  			else if (attr.xtype == 'multi-select2' || attr.xtype == 'checkboxlist' || attr.xtype == 'multi-buttonlist') {
+  				condition_item.builder = 'm_value_equal';
+  			}
+  			// 类型为date-range日期范围  num-range数字区间 时, 拆分成 两个条件
+  			else if (attr.xtype == 'date-range' || attr.xtype == 'number-range') {
+  				var date_value = condition_item.value.split(',');
+  				if (date_value[0] !== "") {
+  					resultCondition.splice(i + 1, undefined, {
+  						name: condition_item.name,
+  						caption: condition_item.caption,
+  						builder: 'moreEqual',
+  						linkOpt: 'AND',
+  						builderList: 'cbl_Other',
+  						value: date_value[0]
+  					});
+  				}
+  				if (date_value[1] !== "") {
+  					resultCondition.splice(i, 1, {
+  						name: condition_item.name,
+  						caption: condition_item.caption,
+  						builder: 'lessEqual',
+  						linkOpt: 'AND',
+  						builderList: 'cbl_Other',
+  						value: date_value[1]
+  					});
+  				}
+  			}
+  		}
+  	}
+  	return resultCondition;
+  }
+  */
+
+  function _filterConditions(condition) {
+    return WIS_EMAP_INPUT.filterCondition(condition);
+  }
+
+  // 根据搜索条件 渲染 搜索条件文字
+  function _renderFilterText(element, conditions, builderLists) {
+    var filter_text = '';
+    conditions.map(function (con_item) {
+      if (con_item instanceof Array) {
+        // 研究生线会修改关键词label，此处不再对匹配字段进行遍历拼接，而是直接获取关键词label
+        filter_text += '"' + $('[data-field="_commonFilter"] .emap-FQ-label', element).attr('title') + '"';
+        filter_text += ' 包含 ';
+        filter_text += '"' + con_item[0].value + '"; ';
+
+      } else {
+        filter_text += '"' + con_item.caption + '"';
+        if (builderLists[con_item['builderList']]) {
+          var builder_item = builderLists[con_item['builderList']].filter(function (list_item) {
+            return list_item.name == con_item['builder'];
+          })[0];
+          if (builder_item) {
+            filter_text += builderLists[con_item['builderList']].filter(function (list_item) {
+              return list_item.name == con_item['builder'];
+            })[0].caption;
+          } else {
+            var builder_map = {
+              'moreEqual': '大于等于',
+              'lessEqual': '小于等于'
+            };
+            filter_text += builder_map[con_item['builderList']];
+          }
+        } else {
+          filter_text += '等于'
+        }
+        filter_text += '"' + (con_item['value_display'] || con_item['value']) + '"; ';
+      }
+    });
+    $('[emap-role="FQ-text"]', element).text(filter_text).attr('title', filter_text);
+  }
+
+  function _clear(element, options) {
+    WIS_EMAP_INPUT.formClear(options.filter_block);
+    $('[emap-role="FQ-text"]', element).text('').attr('title', '');
+    $('[emap-role="FQ-text-wrap"]', element).hide();
+    options.onSearch &amp;&amp; options.onSearch('[]');
+    element.trigger('search', ['[]']);
+  }
+
+  // 执行搜索
+  function _doSearch(element, options) {
+    var conditions = _getSearchConditions(options);
+    var conditions_string = JSON.stringify(conditions);
+    _renderFilterText(element, conditions, options.data.builderLists);
+
+    options.onSearch &amp;&amp; options.onSearch(conditions_string);
+    element.trigger('search', [conditions_string]);
+    if (conditions &amp;&amp; conditions.length > 0) {
+      $('[emap-role="FQ-text-wrap"]', element).show();
+    } else {
+      $('[emap-role="FQ-text-wrap"]', element).hide();
+    }
+  }
+  // 事件绑定
+  function _eventBind(element, options) {
+    // 点击展开
+    element.on('click', '[emap-role="FQ-switch-btn__expand"]', function () {
+        element.addClass('emap-expand');
+        options.filter_block.show();
+      })
+      // 点击收起
+      .on('click', '[emap-role="FQ-switch-btn__collapse"]', function () {
+        element.removeClass('emap-expand');
+        options.filter_block.hide();
+      })
+      // 更多条件
+      .on('click', '[emap-role=FQ-more]', function () {
+        var modelArray = options.model;
+        var columns = options.filter_block.data('names');
+        $.bhCustomizeColumn({
+          model: modelArray,
+          columns: columns,
+          title: '添加搜索字段',
+          callback: function (cols) {
+            _renderFilterForm(cols, options);
+          }
+        });
+      })
+      // 搜索
+      .on('click', '[emap-role="FQ-search-btn"]', function () {
+        _doSearch(element, options);
+      })
+      // 文本框回车事件搜索
+      .on('keyup', 'input[xtype=text]', function (e) {
+        if (e.keyCode == 13) {
+          _doSearch(element, options);
+        }
+      })
+      // 清空搜索
+      .on('click', '[emap-role="FQ-clear-btn"]', function () {
+        _clear(element, options);
+      })
+  }
+
+
+  $.fn.emapFilterQuery = function (options, param) {
+    var instance;
+    instance = this.data('emapfilterquery');
+    if (!instance) {
+      return this.each(function () {
+        return $(this).data('emapfilterquery', new Plugin(this, options));
+      });
+    }
+    if (options === true) return instance;
+    if ($.type(options) === 'string') return instance[options](param);
+    return this;
+  };
+
+  /**
+   * @memberof module:emapFilterQuery
+   * @prop {Object} data - 搜索数据模型
+   * @prop {String}  contextPath - emap根路径
+   * @prop {Boolean} [expanded=false] - 是否自动展开
+   * @prop {Object} [defaultOptions] - 字段的额外参数
+   * @prop {Boolean} [showBlankOption=true] - 下拉和下拉树是否添加空值选项
+   * @prop {Function} onSearch - 搜索回调
+   * @prop {Function} beforeRender - 渲染前的回调,需要返回数据模型
+   */
+
+  $.fn.emapFilterQuery.defaults = {
+    data: undefined,
+    expanded: true,
+    onSearch: undefined,
+    beforeRender: undefined,
+    defaultOptions: undefined
+  };
+}).call(this);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:10:02 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapSchema.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapSchema.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function() {
+    var Plugin, _eventBind, _closeEdit, _getPageFlag;
+    /**
+     * @module emapSchema
+     * @alias 方案模块
+     * @description 方案保存模块，对接了emap的保存方案功能，已集成在各搜索组件和表格组件中，也可单独使用&lt;br>
+     * 
+     */
+    Plugin = (function() {
+        function Plugin(element, options) {
+            this.options = $.extend({}, $.fn.emapSchema.defaults, options);
+            this.$element = $(element);
+            _init(this.$element, this.options);
+        }
+
+        /**
+         * @method destroy
+         * @description 销毁
+         */
+        Plugin.prototype.destroy = function() {
+            this.options = null;
+            $(this.$element).data('emapSchema', false).empty();
+        };
+
+        /**
+         * @method saveSchema
+         * @description 保存方案
+         * @param {Array} param - 数组项分别为 0 - 方案名称   1 - 方案内容(String)  2 - 是否固定(可选)  
+         * @example
+         * $dom.emapSchema('saveSchema', ['name', [{name: 'xxx', value: 'xxx', builder: 'equal', linkOpt: 'AND'}], 1])
+         */
+        Plugin.prototype.saveSchema = function() {
+            var result = $.Deferred();
+            var name = arguments[0][0];
+            var conditionData = arguments[0][1];
+            var fixed = arguments[0][2] ? 1 : 0;
+            var options = this.options;
+            var element = this.$element;
+            if (!name) {
+                $.bhTip &amp;&amp; $.bhTip({
+                    content: $.i18n('bh-sm-inputSchemaName'),
+                    state: 'warning',
+                    iconClass: 'icon-erroroutline'
+                });
+                result.reject($.i18n('bh-sm-schemaNameIsNull'));
+                return result.promise();
+            }
+            doRequest(options.contextPath + '/sys/emapcomponent/schema/save.do', {
+                condition: conditionData,
+                schemaName: name,
+                schemaType: options.schemaType,
+                pageFlag: options.pageFlag,
+                fixed: fixed
+            }).done(function(res) {
+                if (res.success) {
+                    $.bhTip &amp;&amp; $.bhTip({
+                        content: $.i18n('bh-sm-successSave'),
+                        state: 'success',
+                        iconClass: 'icon-check'
+                    });
+
+
+                }
+                result.resolve(res);
+            }).fail(function(res) {
+                $.bhTip &amp;&amp; $.bhTip({
+                    content: $.i18n('bh-sm-failSave'),
+                    state: 'danger',
+                    iconClass: 'icon-close'
+                });
+                result.reject(res);
+            });
+            return result.promise();
+        };
+
+        /**
+         * @method getSchemaList
+         * @description  获取方案列表
+         * @returns {*}
+         */
+        Plugin.prototype.getSchemaList = function() {
+            var options = this.options;
+            var pageFlag = this.options.pageFlag;
+            var schemaType = this.options.schemaType;
+            var result;
+            $.ajax({
+                type: 'post',
+                url: options.contextPath + '/sys/emapcomponent/schema/getList.do',
+                async: false,
+                data: {
+                    schemaType: schemaType,
+                    pageFlag: pageFlag
+                }
+            }).done(function(res) {
+                if (res.success) {
+                    result = res.data;
+                }
+            });
+            return result;
+        };
+
+
+        /**
+         * @method deleteSchema
+         * @description 删除方案
+         * @param {String} name - 方案名
+         * @example
+         * $dom.emapSchema('deleteSchema', 'name');
+         */
+        Plugin.prototype.deleteSchema = function(name) {
+            var options = this.options;
+            var result = false;
+            $.ajax({
+                type: 'post',
+                url: options.contextPath + '/sys/emapcomponent/schema/deleteSingle.do',
+                async: false,
+                data: {
+                    schemaName: name,
+                    schemaType: options.schemaType,
+                    pageFlag: options.pageFlag
+                }
+            }).done(function(res) {
+                if (res.success) {
+                    $.bhTip &amp;&amp; $.bhTip({
+                        content: $.i18n('bh-sm-successDelete'),
+                        state: 'success',
+                        iconClass: 'icon-check'
+                    });
+                    result = true;
+                }
+            });
+            return result;
+        };
+        return Plugin;
+    })();
+
+
+    //生成dom
+    function _init(element, options) {
+        // if (options.pageFlag &amp;&amp; options.pageFlag != null) {
+        //     // 已有方案
+        //     options.newFlag = false;
+        // } else {
+        //     // 新上传
+        //     options.pageFlag = new Date().getTime() + "" + parseInt(Math.random() * 100).toString();
+        //     options.newToken = true;
+        // }
+        options.contextPath = options.contextPath || WIS_EMAP_SERV.getContextPath();
+        _getPageFlag(options);
+        _eventBind(element, options);
+
+    }
+
+    _getPageFlag = function(options) {
+        var pageName = location.hash.replace(/\/|#/g, '');
+        var modelName = options.data.modelName || options.customModelName;
+        options.pageFlag = pageName + ',' + modelName;
+    };
+
+    _eventBind = function(element, options) {};
+
+    _closeEdit = function(element, options) {
+        var wrap = $('.bh-schema-btn-wrap', element);
+        $('.bh-schema-name-input', wrap).val();
+        wrap.removeClass('active');
+    };
+
+
+    $.fn.emapSchema = function(options, params) {
+        var instance;
+        instance = $(this).data('emapSchema');
+        if (!instance) {
+            return this.each(function() {
+                if (options == 'destroy') {
+                    return this;
+                }
+                return $(this).data('emapSchema', new Plugin(this, options));
+            });
+        }
+        if (options === true) return instance;
+        if ($.type(options) === 'string') return instance[options](params);
+        return this;
+    };
+
+    $.fn.emapSchema.defaults = {
+
+    };
+
+    function doRequest(url, param) {
+        var result = $.Deferred();
+        $.ajax({
+                type: 'post',
+                data: param,
+                url: url,
+                dataType: 'json'
+            })
+            .done(function(res) {
+                result.resolve(res)
+            }).fail(function(res) {
+                result.reject(res);
+            });
+        return result.promise();
+    }
+
+}).call(undefined);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapAvatarUpload.html">emapAvatarUpload</a>&nbsp;(头像裁剪上传)</li><li><a href="module-emapCard.html">emapCard</a>&nbsp;(卡片列表)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownTable.html">emapDropdownTable</a>&nbsp;(下拉表格/模糊搜索)</li><li><a href="module-emapDropdownTree.html">emapDropdownTree</a>&nbsp;(下拉树)</li><li><a href="module-emapEditableDataTable.html">emapEditableDataTable</a>&nbsp;(编辑表格)</li><li><a href="module-emapEditor.html">emapEditor</a></li><li><a href="module-emapFileDownload.html">emapFileDownload</a>&nbsp;(文件下载)</li><li><a href="module-emapFileUpload.html">emapFileUpload</a>&nbsp;(文件上传)</li><li><a href="module-emapForm.html">emapForm</a>&nbsp;(表单)</li><li><a href="module-emapgrid.html">emapgrid</a>&nbsp;(grid列表)</li><li><a href="module-emapImageUpload.html">emapImageUpload</a>&nbsp;(多图片上传)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapLinkage.html">emapLinkage</a>&nbsp;(表单联动)</li><li><a href="module-emapPDFViewer.html">emapPDFViewer</a>&nbsp;(PDF文件预览)</li><li><a href="module-emapRulesConstructor.html">emapRulesConstructor</a>&nbsp;(条件构造器)</li><li><a href="module-emapSchema.html">emapSchema</a>&nbsp;(方案模块)</li><li><a href="module-emapSingleImageUpload.html">emapSingleImageUpload</a>&nbsp;(单图片上传)</li><li><a href="module-emapUploadCore.html">emapUploadCore</a>&nbsp;(上传核心模块)</li><li><a href="module-emapValidate.html">emapValidate</a>&nbsp;(表单校验)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_EMAP_SERV.html">WIS_EMAP_SERV</a>&nbsp;(公共方法)</li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:10:03 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhDataBar/bhDataBar.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhDataBar/bhDataBar.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>;
+(function($) {
+    /**
+     * @module bhDataBar
+     * @alias 数据巴士
+     * @description http://res.wisedu.com/ID/1.SPEC/PC/4.Test/PC-%E8%A1%A8%E6%A0%BC%E8%B7%A8%E9%A1%B5%E9%80%89%E6%8B%A9%28%E9%AB%98%E4%BF%9D%E7%9C%9F%29-V0.1-17.05.02%40%E8%91%A3%E5%87%A4%E5%96%9C/
+     * @prop {array}  datas - 初始化数据
+     * @prop {string}  displayMember - 显示字段key
+     * @prop {string}  [valueMember] - 数值字段key
+     * @prop {boolean}  [isTop=true] - 是否开启滚动置顶
+     * @prop {DOM | $dom}  [topElement] - 顶部元素
+     * @prop {DOM | $dom}  [containElement] - 内容展示区域
+     * @example
+     $('#bhDataBar').bhDataBar({
+        datas:[{WID:1,XM:'张三'}],
+        displayMember:'XM'
+     });
+    */
+
+    /**
+     * @memberof module:bhDataBar
+     * @event change
+     * @description 数据改变事件
+     * @param {Object} e jquery事件对象
+     * @param {String} e.action 改变时间具体类型，setValue表示赋值，add表示添加，delete表示删除，clear表示清空
+     * @param {Array} e.changeDatas 发生改变的数据
+     * @param {Array} e.currentDatas 变化后当前的数据
+     * @example
+     $('#bhDataBar').on('change',function(e){
+        if(e.action === 'setValue'){
+            console.log(e.currentDatas)
+        }
+     })
+     */
+
+    function Plugin(element, options) {
+        this.options = $.extend(true, $.fn.bhDataBar.defaults, options);
+        if (this.options.isTop) {
+            if (!this.options.topElement.length) {
+                this.options.topElement = $('header[bh-header-role="bhHeaderMini"]');
+            }
+            if (!this.options.containElement) {
+                this.options.containElement = $('main>article');
+            }
+        }
+        this.$element = $(element);
+        init(this);
+    }
+
+    /**
+     * 获取值
+     * @return {Array} [description]
+     */
+    Plugin.prototype.getValue = function() {
+        return this.options.datas;
+    };
+
+    /**
+     * 重新赋值，会清空原来的数据
+     * @param {Array} datas [description]
+     */
+    Plugin.prototype.setValue = function(datas) {
+        this.options.datas = datas;
+        initTags(this);
+        this.$element.trigger({ type: 'change', action: 'setValue', changedDatas: datas, currentDatas: datas });
+    };
+
+    /**
+     * 清空数据
+     */
+    Plugin.prototype.clear = function() {
+        clearData(this.$element);
+    };
+
+    /**
+     * 添加数据
+     * @param {Array} datas [{}]
+     */
+    Plugin.prototype.addDatas = function(datas) {
+        this.options.datas.push.apply(this.options.datas, datas);
+        var tags = getTags(this.options, datas);
+        this.$element.find('.bh-data-bar-container').append(tags);
+        showTip(this, tags.length, 'add');
+        this.$element.trigger({ type: 'change', action: 'add', changedDatas: datas, currentDatas: this.options.datas });
+    };
+
+    /**
+     * [deleteDatas description]
+     * @param  {Array} datas [{}] 或者 ['']
+     */
+    Plugin.prototype.deleteDatas = function(dels) {
+        var valueMember = this.options.valueMember;
+        var datas = this.options.datas;
+        var toDels = datas.filter(function(item) {
+            var isFound = false;
+            $.each(dels, function(i, del) {
+                if (del === item || del === item[valueMember] || del[valueMember] === item[valueMember]) {
+                    isFound = true;
+                    return false;
+                }
+            });
+            return isFound;
+        });
+        deleteDatas(this.$element, toDels);
+    };
+
+    function init(instance) {
+        var $element = instance.$element;
+        var container = '&lt;div class="bh-border bh-bColor-info-3 bh-ph-16 bh-data-bar" style="position:relative">' +
+            '   &lt;div class="bh-data-bar-tip bh-color-white">0&lt;/div>' +
+            '   &lt;div class="bh-mb-8 bh-data-bar-tool">' +
+            '       &lt;span class="bh-mr-32">' + $.i18n('bha-data-choosed') + '&lt;span data-type="number">&lt;/span>' + $.i18n('bha-data-tiao') + '&lt;/span>' +
+            '       &lt;span>' +
+            '           &lt;a href="javascript:void 0" data-type="togglecontent">&lt;i class="iconfont icon-keyboardarrowup">&lt;/i>&lt;span>' + $.i18n('bha-data-fold') + '&lt;/span>&lt;/a>' +
+            '           &lt;span class="bh-ph-4">|&lt;/span>' +
+            '           &lt;a href="javascript:void 0" data-type="clear">&lt;i class="iconfont icon-delete">&lt;/i>' + $.i18n('bha-data-clear') + '&lt;/a>' +
+            '       &lt;/span>' +
+            '   &lt;/div>' +
+            '   &lt;div class="bh-data-bar-container bh-clearfix">&lt;/div>' +
+            '&lt;/div>';
+        $element.html(container);
+
+        initTags(instance);
+
+        bindEvent(instance);
+    }
+
+    function initTags(instance) {
+        var tags = getTags(instance.options, instance.options.datas);
+        instance.$element.find('[data-type="number"]').text(instance.options.datas.length);
+        instance.$element.find('.bh-data-bar-container').html(tags);
+        checkShowToggle(instance);
+    }
+
+    function checkShowToggle(instance) {
+        if (instance.$element.find('.bh-data-bar-tag').length === 0) {
+            instance.$element.find('a[data-type="togglecontent"]').hide().next().hide();
+            return;
+        }
+        var $container = instance.$element.find('.bh-data-bar-container');
+        if ($container.height() === $container.find('.bh-data-bar-tag').outerHeight(true)) {
+            instance.$element.find('a[data-type="togglecontent"]').hide().next().hide();
+        } else {
+            instance.$element.find('a[data-type="togglecontent"]').show().next().show();
+        }
+    }
+
+    function showTip(instance, number, type) {
+        var classNmae = type === 'add' ? 'bh-bg-primary' : 'bh-bg-danger';
+        var icon = type === 'add' ? '+' : '-';
+        var isFixed = instance.$element.find('.bh-data-bar').css('position') === 'fixed';
+        var top = isFixed ? 30 : -16;
+        var originTop = isFixed ? 15 : 0;
+        instance.$element.find('.bh-data-bar-tip').css('top', originTop).addClass(classNmae).text(icon + number).show().stop().animate({
+            top: top
+        }, 500, function() {
+            $(this).animate({
+                top: top
+            }, 1000, function() {
+                $(this).css('top', originTop).hide();
+            });
+        });
+        instance.$element.find('[data-type="number"]').text(instance.options.datas.length);
+        checkShowToggle(instance);
+    }
+
+    function getTags(options, datas) {
+        if (datas.length === 0) {
+            return;
+        }
+        var displayMember = options.displayMember;
+        var valueMember = options.valueMember;
+        var tags = datas.map(function(data) {
+            return '&lt;div class="bh-data-bar-tag">' +
+                '   &lt;span class="content">' +
+                '       &lt;span class="name">' + data[displayMember] + '&lt;/span>' +
+                '       &lt;i class="iconfont icon-clear" data-value="' + data[valueMember] + '">&lt;/i>' +
+                '   &lt;/span>' +
+                '&lt;/div>';
+        }).join('');
+        var $tags = $(tags);
+        $tags.each(function(i) {
+            $(this).data('member', datas[i]);
+        });
+        return $tags;
+    }
+
+    function bindEvent(instance) {
+        var $element = instance.$element.find('.bh-data-bar');
+
+        //展开或者折叠
+        $element.on('click', 'a[data-type="togglecontent"]', function(e) {
+            var $target = $(e.target).closest('a[data-type="togglecontent"]').find('i');
+            var $container = $(e.delegateTarget).find('.bh-data-bar-container');
+            if ($target.hasClass('icon-keyboardarrowup')) {
+                $target.removeClass('icon-keyboardarrowup').addClass('icon-keyboardarrowdown');
+                $target.next().text($.i18n('bha-data-expand'));
+                var height = $container.find('.bh-data-bar-tag').outerHeight(true);
+                $container.animate({ height: height }, 200);
+            } else {
+                $target.removeClass('icon-keyboardarrowdown').addClass('icon-keyboardarrowup');
+                $target.next().text($.i18n('bha-data-fold'));
+                $container.css({ height: 'initial' });
+            }
+        });
+
+        //清空数据
+        $element.on('click', 'a[data-type="clear"]', function(e) {
+            $(e.delegateTarget).find('.bh-data-bar-container').empty();
+            clearData($(e.delegateTarget));
+        });
+
+        //删除标签
+        $element.on('click', '.bh-data-bar-container i.icon-clear', function(e) {
+            var data = $(e.target).closest('.bh-data-bar-tag').data('member');
+            deleteDatas($(e.delegateTarget), [data]);
+        });
+
+        //判断是否需要置顶
+        if (instance.options.isTop &amp;&amp; instance.options.containElement.length) {
+            var topElement = instance.options.topElement;
+            var containElement = instance.options.containElement;
+            $(window).scroll(function() {
+                if ($element &amp;&amp; $element.length) {
+                    var scrollTop = $(this).scrollTop();
+                    var containOffset = containElement.offset();
+                    var topHeight = topElement.height();
+                    if ($element.css('position') === 'fixed') {
+                        var $parent = $element.parent();
+                        if ($parent.length) {
+                            if ($parent.offset().top - scrollTop > topHeight) {
+                                $parent.css('height', 'initial');
+                                $element.removeClass('bh-card bh-card-lv1').css({
+                                    position: 'relative',
+                                    top: 0,
+                                    left: 0,
+                                    width: 'initial',
+                                    'z-index': 0
+                                });
+                            }
+                        }
+                    } else {
+                        $element.parent().height($element.height());
+                        var offset = $element.offset();
+                        //判断元素顶是否在顶部下面
+                        if (offset.top - scrollTop &lt; topHeight) {
+                            $element.addClass('bh-card bh-card-lv1').css({
+                                position: 'fixed',
+                                top: topHeight,
+                                left: containOffset.left,
+                                width: containElement.width(),
+                                'z-index': 9999
+                            });
+                        }
+                    }
+                }
+            });
+            $(window).resize(function() {
+                if ($element &amp;&amp; $element.length) {
+                    if ($element.css('position') === 'fixed') {
+                        $element.css('width', containElement.width());
+                    }
+                }
+            });
+        }
+    }
+
+    function deleteDatas($element, dels) {
+        var instance = $element.bhDataBar(true);
+        var datas = instance.options.datas;
+        var $container = $element.find('.bh-data-bar-container');
+        dels.forEach(function(item) {
+            var index = datas.indexOf(item);
+            if (index > -1) {
+                datas.splice(index, 1);
+                $container.find('.bh-data-bar-tag').eq(index).remove();
+            }
+        });
+        checkShowToggle(instance);
+        showTip(instance, dels.length, 'delete');
+        $element.trigger({ type: 'change', action: 'delete', changedDatas: dels, currentDatas: datas });
+    }
+
+    function clearData($element) {
+        var instance = $element.bhDataBar(true);
+        var length = instance.options.datas.length;
+        var changedDatas = $.extend([], instance.options.datas);
+        instance.options.datas.length = 0;
+        checkShowToggle(instance);
+        showTip(instance, length, 'delete');
+        $element.trigger({ type: 'change', action: 'clear', changedDatas: changedDatas, currentDatas: instance.options.datas });
+    }
+
+    $.fn.bhDataBar = function(options, params) {
+        var instance;
+        instance = this.data('bhDataBar');
+        if (options === true) return instance;
+
+        if (!instance) {
+            return this.each(function() {
+                //将实例化后的插件缓存在dom结构里（内存里）
+                return $(this).data('bhDataBar', new Plugin(this, options));
+            });
+        }
+
+        if ($.type(options) === 'string') return instance[options](params);
+        return this;
+    };
+
+    $.fn.bhDataBar.defaults = {
+        datas: [],
+        displayMember: '',
+        valueMember: '',
+        isTop: true,
+        topElement: '',
+        containElement: ''
+    };
+})(jQuery);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

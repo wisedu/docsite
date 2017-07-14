@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhTxtInput/bhTxtInput.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhTxtInput/bhTxtInput.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module bhTxtInput
+ * @alias 计数文本域
+ * @description 计数文本域
+ * @example 
+ * $DOM.bhTxtInput({
+ *     limit: 1000
+ * })  
+ */
+;
+(function ($) {
+    //区分中英文，中文算3个
+    function _getStrLen(str) {
+        return String(str).replace(/[\u0391-\uFFE5]/g, '***').length;
+    }
+
+    function jqxBridge($elem, data) {
+        $elem.toggleClass('jqx-widget', true);
+        $elem.data('jqxWidget', data);
+    }
+
+    function handleHookValue(val) {
+        return String(val).replace(/&lt;/g, '&amp;lt;').replace(/>/g, '&amp;gt;').replace(/\n|\t/g, '&lt;br>');
+    }
+
+    var TxtInput = function (elem, options) {
+
+        this.$container = $(elem);
+        this.$inner = undefined;
+        this.$txtArea = undefined;
+        this.$curLen = undefined;
+        /**
+         * @memberof module:bhTxtInput
+         * @prop {Int} [limit=140] - 限制字符数
+         * @prop {Boolean} [easyCheck=false] - 是否开启简单校验模式，简单模式下一个汉字算一个字符，非简单模式下一个汉字算三个字符
+         * @prop {Boolean} [autoHeight=false] - 是否自适应高度，不能和height参数同时使用
+         * @prop {Int} [height] - 指定高度
+         * @prop {Boolean} [readonly=false] - 是否只读
+         * @prop {String} [placeholder] - 文本域提示文字
+         */ 
+        this.options = {
+            limit: options.limit || 140,
+            name: options.name,
+            easyCheck: options.textareaEasyCheck || false,
+            autoHeight: options.autoHeight !== undefined ? options.autoHeight : false,
+            height: options.height || undefined,
+            readonly: options.readonly || false,
+            placeholder: options.placeholder || ''
+        };
+
+        // if (this.options.easyCheck) {
+        //     this.options.limit = Math.floor(options.limit / 3);
+        // }
+
+        this.init();
+
+        //val 
+        jqxBridge(this.$container, this);
+
+        return this
+    };
+
+    TxtInput.prototype.render = function () {
+        var $template = $(
+            '&lt;div class="bh-txt-input">' +
+            '&lt;textarea class="bh-txt-input__txtarea" placeholder="' + this.options.placeholder + '" style="max-height: 480px;word-break: break-all;' +
+            (this.options.height !== undefined ? 'height:' + this.options.height + 'px;' : '') + '">&lt;/textarea>' +
+            '&lt;div class="bh-txt-input__foot">' +
+            '&lt;span class="bh-txt-input__cur-len">0&lt;/span>/&lt;span class="bh-txt-input__max-len">' + this.options.limit + '&lt;/span>' +
+            '&lt;/div>' +
+            '&lt;/div>'
+        );
+        if (this.options.readonly === true) {
+            $template.find('.bh-txt-input__foot').hide();
+            $template.find('textarea').attr('readonly', true);
+        }
+
+        $template
+            .find('.bh-txt-input__txtarea').attr({
+                name: this.options.name
+            }).end()
+            .appendTo(this.$container);
+        this.$inner = $template;
+        this.$txtArea = $template.find('.bh-txt-input__txtarea');
+        this.$curLen = $template.find('.bh-txt-input__cur-len');
+
+        this.$heightHook = $('&lt;div style="z-index: -1000;word-break: break-all;padding: 2px;position: fixed;opacity: 0;">&lt;/div>').width(this.$txtArea.width());
+        $('body').append(this.$heightHook);
+    };
+
+    TxtInput.prototype.init = function () {
+        this.render();
+        if (this.options.readonly !== true) {
+            this.bindEvents();
+        }
+    };
+
+    TxtInput.prototype.bindEvents = function () {
+        var self = this;
+        // this.$container[0].addEventListener('input', $.proxy(this.inputHandler, this), false);
+
+        this.$container.on('input', '.bh-txt-input__txtarea', $.proxy(this.inputHandler, this));
+        this.$txtArea
+            .on('focus', function () {
+                self.$inner.toggleClass('bh-txt-input--focus', true);
+            })
+            .on('blur', function () {
+                self.$inner.toggleClass('bh-txt-input--focus', false);
+                self.$inner.trigger('c-blur')
+            });
+        if (document.documentMode == 9) { // ie9 backspace 不出发input事件  兼容
+            this.$txtArea.on('keyup', function (e) {
+                var code = e.keyCode;
+                if (code == '8' || code == 46) {
+                    $(this).trigger('input');
+                }
+            })
+        }
+    };
+
+    TxtInput.prototype.inputHandler = function (e) {
+        var value = e.target.value;
+        // autoHeight 与 height不同时生效 
+        if (this.options.autoHeight &amp;&amp; this.options.height === undefined) {
+            var minHeight = 74;
+            // 动态计算高度
+            this.$heightHook.html(handleHookValue(value));
+            var hookHeight = this.$heightHook.height();
+            if (hookHeight >= 74) {
+                if (this.$txtArea.height() != hookHeight) {
+                    this.$txtArea.height(hookHeight);
+                }
+            } else if (this.$txtArea.height() > minHeight) {
+                this.$txtArea.height(minHeight);
+            }
+        }
+        this.checkLen(value);
+    };
+
+    TxtInput.prototype.checkLen = function (val) {
+        var len;
+        if (this.options.easyCheck || this.options.textareaEasyCheck) {
+            len = val.length;
+        } else {
+            len = _getStrLen(val);
+        }
+        this.$inner.toggleClass('bh-txt-input--outlen', len > this.options.limit);
+        this.$curLen.text(len)
+    };
+
+    //============================ 接口=================================
+    TxtInput.prototype.val = function (value) {
+        if (arguments.length) {
+            return this.setValue(arguments[0])
+        } else {
+            return this.getValue()
+        }
+    };
+    TxtInput.prototype.getValue = function () {
+        return $.trim(this.$txtArea.val())
+    };
+
+    TxtInput.prototype.setValue = function (val) {
+        this.checkLen(val);
+        return this.$txtArea.val(val).trigger('input');
+    };
+
+    TxtInput.prototype.disabled = function (bool) {
+        var self = this;
+        self.$txtArea.prop('disabled', bool);
+        this.$inner.toggleClass('bh-txt-input--disabled', bool);
+    };
+    //============================ end ================================
+
+    TxtInput.prototype.readonly = function (bool) {
+        this.$txtArea.prop('readonly', bool);
+    };
+
+
+    function Plugin(options, params) {
+        var $this = this;
+        var data = $this.data('we.bhTxtInput');
+
+        if (!data) {
+            $this.data('we.bhTxtInput', new TxtInput(this, options));
+            return $this;
+        }
+        if (typeof options === 'string') {
+            return data[options](params);
+        }
+    }
+
+    //
+    $.fn.bhTxtInput = Plugin;
+    $.fn.bhTxtInput.prototype.constructor = TxtInput;
+
+    window.BhTxtInput = TxtInput;
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-{
+{   
     "plugins": [
         "duoshuo","github","anchors","expandable-chapters","baidu-wis","github-buttons","-sharing","tbfed-pagefooter","sectionx"
     ],

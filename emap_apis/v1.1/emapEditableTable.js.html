@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapEditableTable.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapEditableTable.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/***
+ * 废弃组件
+ */
+(function($) {
+	var Plugin;
+	Plugin = (function() {
+		function Plugin(element, options) {
+			this.settings = $.extend({}, $.fn.emapEditableTable.defaults, options);
+			this.$element = $(element);
+			init.call(this, this.settings, this.$element);
+		}
+
+		return Plugin;
+
+	})();
+
+	Plugin.prototype = {
+
+	};
+
+	function init(settings, $element) {
+
+		this.models = getModels.call(this);
+		this.dataPath = getDataPath.call(this);
+		this.dataFields = getDataFields.call(this, this.models);
+		this.source = getSource.call(this);
+		this.columns = getColumns.call(this);
+
+		render.call(this);
+	}
+
+	function render() {
+		var params = $.extend({}, this.settings);
+		params.source = this.source;
+		params.columns = this.columns;
+
+		delete params.pagePath;
+		delete params.action;
+		delete params.checkbox;
+		delete params.editableFields;
+		delete params.filter;
+
+		this.$element.jqxDataTable(params);
+	}
+
+	function getColumns() {
+
+		var columns = [];
+		var checkboxColumn = null;
+		var models = this.models;
+		var self = this;
+
+		if (this.settings.checkbox) {
+			checkboxColumn = getCheckboxColumn.call(this);
+			columns.push(checkboxColumn);
+		}
+
+		for (var i = 0; i &lt; this.models.length; i++) {
+			(function() {
+				var model = self.models[i];
+				var editable = self.settings.editable &amp;&amp; _.contains(self.settings.editableFields, model.name);
+				var column = generateColumnByModel.call(self, model, editable);
+				columns.push(column);
+			})();
+		}
+
+		return columns;
+	}
+
+	function createCombo(model, editor, width, height) {
+		var source = {
+			datatype: "json",
+			datafields: [{
+				name: 'id'
+			}, {
+				name: 'name'
+			}],
+			url: model.url
+		};
+		var dataAdapter = new $.jqx.dataAdapter(source, {
+			async: false,
+			downloadComplete: function(data, status, xhr) {
+				try {
+					var d = [{
+						id: '',
+						name: "请选择..."
+					}];
+					data.data = d.concat(data.datas.code.rows);
+					delete data.datas;
+					delete data.code;
+					return data;
+				} catch (e) {
+					source.totalRecords = data.recordsTotal;
+
+				}
+			}
+		});
+		editor.jqxDropDownList({
+			placeHolder: '请选择...',
+			source: dataAdapter,
+			displayMember: "name",
+			valueMember: "id",
+			width: width - 10,
+			height: 25
+		});
+	}
+
+	function generateColumnByModel(model, editable) {
+
+		var columnWidth = getColumnWidth(model);
+		var self = this;
+
+		var column = {
+			text: model.caption,
+			dataField: model.name,
+			hidden: model.hidden,
+			width: columnWidth,
+			cellsRenderer: function(row, column, value, rowData) {
+				if (model.url) {
+					value = rowData[column + "_DISPLAY"]
+				}
+
+				return '&lt;span title="' + value + '">' + value + '&lt;/span>';
+			}
+		};
+
+		if (editable) {
+			column['createEditor'] = function(row, cellvalue, editor, cellText, width, height) {
+				var newEditor = editor;
+				if (model.url) {
+					var newEditor = $("&lt;div class='dropDownList'>&lt;/div>");
+					editor.after(newEditor);
+					editor.hide();
+				}
+				createField.call(self, model, newEditor, width, height);
+			};
+
+			column['initEditor'] = function(row, cellvalue, editor, celltext, width, height) {
+				var _this = this;
+				if (model.url) {
+					editor = editor.parent().find('.dropDownList');
+					editor.jqxDropDownList({
+						width: width - 10,
+						height: height
+					}).off("select").on("select", function(event) {
+						var args = event.args;
+						if (args) {
+							var item = args.item;
+							var label = item.label;
+							_this.displayValue = {
+								row: row,
+								display: label
+							};
+							var rowData = self.$element.jqxDataTable('getRows')[row];
+							rowData[model.name] = args.item.value;
+							rowData[model.name + '_DISPLAY'] = args.item.label;
+							editor.jqxDropDownList('selectItem', item);
+						}
+					});
+					var items = editor.jqxDropDownList('getItems');
+					editor.jqxDropDownList('clearSelection');
+					var selectedIndex = null;
+					for (var i = 0; i &lt; items.length; i++) {
+						if (items[i].value == cellvalue) {
+							selectedIndex = items[i].index;
+							//editor.jqxDropDownList('selectItem', items[i]);
+							break;
+						}
+					}
+					editor.jqxDropDownList('selectIndex', selectedIndex);
+
+				} else {
+					var inputField = editor.find('input');
+					inputField.val(cellvalue);
+				}
+			};
+			column['getEditorValue'] = function(row, cellvalue, editor) {
+				if (model.url) {
+					editor = editor.parent().find('.dropDownList');
+				}
+				return getEditorValue(model, editor);
+			};
+		} else {
+			column['editable'] = false;
+		}
+
+		return column;
+	}
+
+	function createField(model, editor, width, height) {
+		if (model.url) {
+			createCombo(model, editor, width, height);
+		} else if (model.dataType == "int") {
+			this.createNumber(model, editor, width, height);
+		} else {
+			var inputElement = $("&lt;input style='padding-left: 4px; border: none;'/>").appendTo(editor);
+			inputElement.jqxInput({
+				source: getEditorDataAdapter.call(this, model.name),
+				displayMember: model.name,
+				width: width,
+				height: height
+			});
+		}
+	}
+
+	function getEditorDataAdapter(datafield) {
+		var dataFields = this.dataFields;
+		var source = {
+			localData: this.source.records,
+			dataType: "array",
+			dataFields: dataFields
+		};
+		var dataAdapter = new $.jqx.dataAdapter(source, {
+			uniqueDataFields: [datafield]
+		});
+		return dataAdapter;
+	}
+
+	function getEditorValue(model, editor) {
+		if (model.url) {
+			var selectItem = editor.jqxDropDownList("getSelectedItem");
+			if (selectItem) {
+				return selectItem.value;
+			} else {
+				return "";
+			}
+		} else {
+			return editor.find('input').val();
+		}
+	}
+
+	function getColumnWidth(model) {
+		var url = model.url;
+		var width = model["grid.width"];
+		if (width) {
+			return width;
+		}
+		var size = 1;
+		if (url) { //说明有字典表
+			size = 10;
+		}
+		return null;
+		width = (model.dataSize * size);
+		if (width &lt; 100) {
+			width = 100;
+		} else if (width &lt; 200) {
+			width = 200;
+		} else {
+			width = 300;
+		}
+		return width;
+	}
+
+	function getCheckboxColumn() {
+		var self = this;
+		var checkboxColumn = {
+			text: 'checkbox',
+			width: '32px',
+			cellsAlign: 'center',
+			align: 'center',
+			editable: false,
+			renderer: function(text, align, height) {
+				var checkBox = '&lt;div class="selectAllCheckboxFlag bh-checkbox bh-mh-8">&lt;label>&lt;input type="checkbox" value="">&lt;i class="bh-choice-helper">&lt;/i>&lt;/label>&lt;/div>';
+				return checkBox;
+			},
+			cellsRenderer: function(row, column, value, rowData) {
+				var checkBox = '&lt;div data-sss="" class="bh-checkbox bh-mh-4" style="margin-left:0 !important;">&lt;label>&lt;input type="checkbox" value="">&lt;i class="bh-choice-helper">&lt;/i>&lt;/label>&lt;/div>';
+				return checkBox;
+			},
+			rendered: function(element, align, height) {
+				element.on("click", "input", function(e) {
+					var $table = self.$element;
+					var $tableContent = $table.find("table");
+					var $checkboxList = $tableContent.find("div.bh-checkbox");
+					var $input = $(this);
+					if ($input.hasClass("selectFlag")) {
+						$input.prop("checked", false).removeClass("selectFlag");
+						$checkboxList.each(function() {
+							$(this).find("input").prop("checked", false);
+						});
+					} else {
+						$input.prop("checked", true).addClass("selectFlag");
+						$checkboxList.each(function() {
+							$(this).find("input").prop("checked", true);
+						});
+					}
+					$(this).trigger('checkall');
+					e.stopPropagation();
+				});
+				return true;
+			}
+		};
+		return checkboxColumn;
+	}
+
+	/***
+	 * *
+	 * [获取数据源]
+	 */
+	function getSource() {
+		var self = this;
+		var source = {
+			datatype: "json",
+			datafields: this.dataFields,
+			id: 'WID',
+			url: this.dataPath
+		};
+		var dataAdapter = new $.jqx.dataAdapter(source, {
+			formatData: function(data) {
+				var pageSize = data.pagesize;
+				var pageNumber = data.pagenum + 1;
+				var querySetting = [];
+				if (data.querySetting) {
+					if (data.querySetting.length > 0) {
+						var q = JSON.parse(data.querySetting);
+						if (q.length > 0) {
+							querySetting = querySetting.concat(q);
+						}
+					}
+				}
+				if (querySetting) {
+					querySetting.push(JSON.parse(self.settings.filter.querySetting));
+				}
+				data.querySetting = JSON.stringify(querySetting);
+				data.pageSize = pageSize;
+				data.pageNumber = pageNumber;
+				delete data.pagesize;
+				delete data.pagenum;
+				delete data.filterslength;
+				return data;
+			},
+			downloadComplete: function(data, status, xhr) {
+				var action = self.settings.action;
+				try {
+					source.totalRecords = data.datas[action].totalSize;
+					data.recordsTotal = data.datas[action].totalSize;
+					data.data = data.datas[action].rows;
+					delete data.datas;
+					delete data.code;
+					return data;
+				} catch (e) {
+					source.totalRecords = data.recordsTotal;
+				}
+			}
+		});
+
+		return dataAdapter;
+	}
+
+	function getModels() {
+
+		var models = WIS_EMAP_SERV.getModel(this.settings.pagePath, this.settings.action, "grid");
+
+		return models;
+	}
+
+	function getDataPath() {
+		var pagePath = this.settings.pagePath;
+		var action = this.settings.action;
+
+		var dataPath = pagePath.replace(".do", "/" + action + ".do");
+		var dataPath = 'http://res.wisedu.com/fe_components/mock/table.json'
+
+		return WIS_EMAP_SERV.getAbsPath(dataPath);
+	}
+
+	function getDataFields(models) {
+		var datafields = [];
+		for (var i = 0; i &lt; models.length; i++) {
+			if (models[i].url) {
+				datafields.push({
+					name: models[i].name + '_DISPLAY',
+					type: 'string'
+				});
+			}
+			datafields.push({
+				name: models[i].name,
+				type: 'string'
+			});
+		}
+		return datafields;
+	}
+
+	$.fn.emapEditableTable = function(options, params) {
+		var instance;
+		instance = this.data('emapEditableTable');
+		if (!instance) {
+			return this.each(function() {
+				//将实例化后的插件缓存在dom结构里（内存里）
+				return $(this).data('emapEditableTable', new Plugin(this, options));
+			});
+		}
+		if (options === true) return instance;
+		if ($.type(options) === 'string') instance[options](params);
+		return this;
+	};
+
+	$.fn.emapEditableTable.defaults = {
+
+		/***
+		 * [pagePath 页面模型]
+		 * @type {String}
+		 */
+		pagePath: '',
+
+		/***
+		 * [action 动作]
+		 * @type {String}
+		 */
+		action: '',
+
+		/***
+		 * [editableFields 可编辑的列，未配置在此则表示不可编辑]
+		 * @type {Array}
+		 */
+		editableFields: [],
+
+		/***
+		 * [checkbox 是否显示复选框]
+		 * @type {Boolean}
+		 * @default  true
+		 */
+		checkbox: true,
+
+		/***
+		 * [pageable 是否可分页]
+		 * @type {Boolean}
+		 */
+		pageable: true,
+
+		/**
+		 * [filter 查询条件]
+		 * @type {String}
+		 */
+		filter: '',
+
+		editable: true,
+
+		width: '100%'
+	};
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapAvatarUpload.html">emapAvatarUpload</a>&nbsp;(头像裁剪上传)</li><li><a href="module-emapCard.html">emapCard</a>&nbsp;(卡片列表)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownTable.html">emapDropdownTable</a>&nbsp;(下拉表格/模糊搜索)</li><li><a href="module-emapDropdownTree.html">emapDropdownTree</a>&nbsp;(下拉树)</li><li><a href="module-emapEditableDataTable.html">emapEditableDataTable</a>&nbsp;(编辑表格)</li><li><a href="module-emapEditor.html">emapEditor</a></li><li><a href="module-emapFileDownload.html">emapFileDownload</a>&nbsp;(文件下载)</li><li><a href="module-emapFileUpload.html">emapFileUpload</a>&nbsp;(文件上传)</li><li><a href="module-emapForm.html">emapForm</a>&nbsp;(表单)</li><li><a href="module-emapgrid.html">emapgrid</a>&nbsp;(grid列表)</li><li><a href="module-emapImageUpload.html">emapImageUpload</a>&nbsp;(多图片上传)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapLinkage.html">emapLinkage</a>&nbsp;(表单联动)</li><li><a href="module-emapPDFViewer.html">emapPDFViewer</a>&nbsp;(PDF文件预览)</li><li><a href="module-emapRulesConstructor.html">emapRulesConstructor</a>&nbsp;(条件构造器)</li><li><a href="module-emapSchema.html">emapSchema</a>&nbsp;(方案模块)</li><li><a href="module-emapSingleImageUpload.html">emapSingleImageUpload</a>&nbsp;(单图片上传)</li><li><a href="module-emapUploadCore.html">emapUploadCore</a>&nbsp;(上传核心模块)</li><li><a href="module-emapValidate.html">emapValidate</a>&nbsp;(表单校验)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_EMAP_SERV.html">WIS_EMAP_SERV</a>&nbsp;(公共方法)</li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:10:03 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

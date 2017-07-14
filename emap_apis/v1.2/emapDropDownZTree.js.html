@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapDropDownZTree.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapDropDownZTree.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>;
+(function($) {
+    /**
+     * @module emapDropdownZTree 
+     * @alias 下拉树
+     * @description 内部依赖ztree
+     */
+    var Plugin = (function() {
+        function Plugin(element, options) {
+            if (WIS_EMAP_CONFIG.dropDownOneKeySelect) {
+                this.settings = $.extend({}, $.fn.emapDropdownZTree.defaults, {
+                    oneKeySelect: WIS_EMAP_CONFIG.dropDownOneKeySelect
+                }, options);
+            } else {
+                this.settings = $.extend({}, $.fn.emapDropdownZTree.defaults, options);
+            }
+            this.$element = $(element);
+            _create(this);
+        }
+        /**
+         * @method getValue
+         * @description 取值
+         * @return {String} 当前下拉树选中的值，多值以逗号分隔
+         */
+        Plugin.prototype.getValue = function() {
+            return $(this.$element.data('values')).map(function() {
+                return this.value;
+            }).get().join(',');
+        };
+        /**
+         * @method getText
+         * @description 获取选中文字
+         * @return 当前下拉树选中的值的文字，多值以逗号分隔
+         */
+        Plugin.prototype.getText = function() {
+            return $(this.$element.data('values')).map(function() {
+                return this.label;
+            }).get().join(',');
+        };
+
+        /**
+         * @method setValue
+         * @description 赋值
+         * @param {Array} params - 0 val 1 val_display
+         */
+        Plugin.prototype.setValue = function(params) {
+            var val = params[0];
+            var display_val = params[1];
+            var settings = this.settings;
+            if (val === '') {
+                this.$element.emapDropdownZTree('clearSelect');
+                return this.$element.jqxDropDownButton('setContent', settings.placeholderContent);
+            }
+            if (display_val === undefined &amp;&amp; console) {
+                console.error('下拉树缺少display字段');
+            } else {
+                this.$element.jqxDropDownButton('setContent', display_val);
+                var val_array = val.split(',');
+                var display_array = display_val.split(',');
+                var value_data = [];
+                val_array.map(function(item, i) {
+                    value_data.push({
+                        value: item,
+                        label: display_array[i]
+                    });
+                });
+                this.$element.data('values', value_data);
+                this.settings.$tree.data('values', value_data);
+                this.$element.trigger('change');
+            }
+        };
+
+        /**
+         * @method disable
+         * @description 禁用
+         */
+        Plugin.prototype.disable = function() {
+            this.$element.jqxDropDownButton({
+                disabled: true
+            });
+        };
+        /**
+         * @method enable
+         * @description 启用
+         */
+        Plugin.prototype.enable = function() {
+            this.$element.jqxDropDownButton({
+                disabled: false
+            });
+        };
+
+        /**
+         * @method clearSelect
+         * @description 清空选中
+         */
+        Plugin.prototype.clearSelect = function() {
+            if (this.settings.checkboxes === true) {
+                // 多选清空
+                this.settings.$tree.bhTree('checkAllNodes', false);
+            } else {
+                // 单选清空
+                this.settings.$tree.bhTree('cancelSelectedNode');
+            }
+            this.$element.jqxDropDownButton('setContent', '');
+            this.$element.data('values', []);
+        };
+
+        /**
+         * @method getSource
+         * @description 获取当前下拉树的数据
+         * @return {Array} - 下拉树的数据 
+         */
+        Plugin.prototype.getSource = function() {
+            var items = [];
+            if (this.settings.checkboxes) {
+                items = this.settings.$tree.bhTree('getCheckedNodes');
+            } else {
+                items = this.settings.$tree.bhTree('getSelectedNodes');
+            }
+            var records = [];
+            if (items.length === 0) {
+                return [];
+            }
+            items.forEach(function(n) {
+                if (WIS_I18N.i18n.locale === 'zh') {
+                    if (n.name !== '加载中...') {
+                        n.value = n.id;
+                        records.push(n);
+                    }
+                } else {
+                    if (n.name !== 'Loading...') {
+                        n.value = n.id;
+                        records.push(n);
+                    }
+                }
+
+            });
+            return records;
+        };
+
+        return Plugin;
+
+    })();
+
+    function _create(instance) {
+        var $dom = instance.$element;
+        var setting = instance.settings;
+        setting.placeholderContent = '&lt;span style="color: #ddd;">' + setting.placeholder + '&lt;span>';
+        var num = '';
+        for (var i = 0; i &lt; 6; i++) {
+            num += Math.floor(Math.random() * 10);
+        }
+        var treeHeight = 245;
+        if (setting.search) {
+            treeHeight = treeHeight - 25;
+        }
+        if (setting.oneKeySelect &amp;&amp; setting.checkboxes) {
+            treeHeight = treeHeight - 20;
+        }
+        setting.$treeContainer = $('&lt;div class="ztree-container" style="height:' + treeHeight + 'px;width:100%">&lt;div style="border: none;" class="dropdown-tree" id="' + num + '">&lt;/div>&lt;/div>');
+        $dom.append('&lt;div class="drop" style="overflow:hidden">&lt;/div>').find('div.drop').append(setting.$treeContainer);
+
+
+        setting.$tree = setting.$treeContainer.find('.dropdown-tree');
+        $dom.jqxDropDownButton({
+            enableBrowserBoundsDetection: true,
+            width: setting.width ? setting.width : "100%",
+            dropDownHeight: '245px',
+            dropDownWidth: setting.width ? setting.width : "100%",
+        });
+        $dom.jqxDropDownButton('setContent', setting.placeholderContent);
+
+        $dom.on('close', function() {
+            $(this).trigger('change');
+        }).on('open', function() {
+            //勾选赋值的节点
+            var values = setting.$tree.data('values');
+            if (values &amp;&amp; values.length &amp;&amp; !setting.checkboxes) {
+                var nodes = setting.$tree.bhTree('getNodesByFilter', function(node) {
+                    var isMatch = false;
+                    var name = node.name;
+                    if (setting.unblind) {
+                        name = name.split(setting.unblind).slice(-1)[0];
+                    }
+                    $(values).each(function() {
+                        if (this.value === node.id) {
+                            isMatch = true;
+                            return false;
+                        }
+                    });
+                    return isMatch;
+                });
+                nodes.forEach(function(node) {
+                    setting.$tree.bhTree('selectNode', node);
+                });
+                setting.$tree.removeData('values');
+            }
+        });
+        _renderTree($dom, setting);
+        setting.$treeContainer.niceScroll();
+    }
+
+    function _renderOneKeySelect($dom, setting) {
+        if (setting.oneKeySelect &amp;&amp; setting.checkboxes) {
+            setting.$select = $('&lt;div class="bh-form-group" style="padding-left:2px;margin-bottom:0">' +
+                '&lt;div class="bh-checkbox" style="padding-top:0">' +
+                '&lt;label style="margin-bottom:0">' +
+                '&lt;input type="checkbox" value="">' +
+                '&lt;i class="bh-choice-helper">&lt;/i>' + $.i18n('bh-ddt-allChoose') +
+                '&lt;/label>' +
+                '&lt;/div>' +
+                '&lt;/div>');
+            setting.$treeContainer.before(setting.$select);
+            var $tree = setting.$tree;
+            setting.$select.on('change', 'input', function() {
+                $tree.bhTree('checkAllNodes', $(this).prop('checked'));
+                var blank = $tree.bhTree('getNodeByParam', 'id', '@__blank__value');
+                if (blank) {
+                    $tree.bhTree('checkNode', blank, false);
+                }
+                __setData($dom, setting);
+            });
+        }
+    }
+
+    function _renderTree($dom, setting) {
+        _renderFilter($dom, setting);
+        _renderOneKeySelect($dom, setting);
+        var zSetting = _getZtreeOption($dom, setting);
+        setting.$tree.bhTree(zSetting);
+    }
+
+    function _renderFilter($dom, setting) {
+        if (setting.search) {
+            var $searchInput = $('&lt;input style="height: 21px; top: 3px; left: 3px;  width: calc(100% - 4px); margin: 2px 0 2px 2px; border-radius: 2px;" class="treeSearchInput jqx-widget jqx-listbox-filter-input jqx-input jqx-rc-all" type="text" placeHolder="' + $.i18n("bh-ddt-search") + '..."/>');
+            setting.$treeContainer.parent().prepend($searchInput);
+            WIS_EMAP_INPUT.placeHolder($searchInput);
+            $searchInput.keyup(WIS_EMAP_SERV.debounce(function() {
+                var value = $searchInput.val();
+                _refreshTree(setting, value, $dom);
+            }, 500));
+        }
+    }
+
+    function _getZtreeOption($dom, setting) {
+        var zNodes = null;
+
+        // 若有datas参数，将datas缓存， 后面前端搜索会使用
+        if (!setting.url &amp;&amp; setting.datas) {
+            zNodes = setting.datas;
+            setting.$tree.data('localdata', zNodes);
+        }
+
+        var zSetting = {
+            callback: {},
+            view: {
+                isHoverLine: false,
+                showIcon: false,
+                showLine: false,
+                selectedMulti: false
+            },
+            data: {
+                simpleData: {
+                    enable: true,
+                    idKey: 'id',
+                    pIdKey: 'pId'
+                }
+            }
+        };
+
+        if (setting.url) {
+            var data = $.extend({
+                // 'pId': ''
+            }, setting.params);
+
+            if (setting.params &amp;&amp; setting.params.searchValue) {
+                data = setting.params;
+            }
+            setting.$tree.data('originalParam', data);
+            zSetting.async = {
+                autoParam: ['id=pId'],
+                enable: true,
+                url: setting.url,
+                dataFilter: function() {
+                    return _dataFilter.apply(this, $(arguments).toArray().concat(setting, data));
+                },
+                otherParam: data
+            };
+        }
+
+        if (setting.datas) {
+            if (!setting.parentNodeSelectable) {
+                __disableParentNodeChk(setting.datas);
+            }
+            ____disableNodeChkByLevels(setting.datas, setting);
+            setting.zNodes = __unblindNodes(setting.datas, setting);
+        }
+
+        if (setting.checkboxes) {
+            zSetting.check = {
+                enable: true,
+                chkboxType: {
+                    Y: 's',
+                    N: 'ps'
+                }
+            };
+            zSetting.callback.onCheck = function() {
+                _onCheck.apply(this, $(arguments).toArray().concat(setting, $dom));
+            };
+            zSetting.callback.beforeCheck = function(treeId, treeNode, clickFlag) {
+                _isSelectable.apply(this, [treeId, treeNode, clickFlag, setting]);
+            };
+        } else {
+            zSetting.callback.onClick = function() {
+                _onClick.apply(this, $(arguments).toArray().concat(setting, $dom));
+            };
+            zSetting.callback.beforeClick = function(treeId, treeNode, clickFlag) {
+                _isSelectable.apply(this, [treeId, treeNode, clickFlag, setting]);
+            };
+        }
+        return {
+            setting: zSetting,
+            zNodes: zNodes
+        };
+    }
+
+    function _refreshTree(setting, value, $dom) {
+        var zSetting = _getZtreeOption($dom, setting);
+        var isCheckParent = false;
+        if (setting.url) { // 有url参数时， 为远程搜索
+            var params = null;
+            if (value) {
+                var source = {
+                    '*tree': "1",
+                    searchValue: value,
+                    checkParent: true
+                };
+                params = $.extend({}, setting.params, source);
+                zSetting.setting.async.dataFilter = function() {
+                    return _searchDataFilter.apply(this, $(arguments).toArray().concat(setting, params));
+                };
+            } else {
+                params = setting.$tree.data('originalParam');
+            }
+            isCheckParent = params &amp;&amp; params.checkParent;
+            zSetting.setting.async.otherParam = params;
+        } else { // 没有url时， 为本地搜索
+            var datas = null;
+            if (value) {
+                if (!setting.datas &amp;&amp; console) {
+                    console.error('tree need datas options');
+                }
+                datas = _filterLocalData(setting.$tree.data('localdata'), value, setting);
+            } else {
+                datas = setting.$tree.data('localdata');
+            }
+            zSetting.zNodes = datas;
+        }
+        setting.$tree.bhTree('destroyTree');
+        setting.$tree.bhTree(zSetting);
+    }
+
+    // 前端搜索
+    function _filterLocalData(data, val, setting) {
+        var nodes = [];
+        if (data.length) {
+            data.map(function(item) {
+                if (item.name.indexOf(val) > -1) {
+                    nodes.push(item);
+                }
+            });
+            // 向上遍历父节点加入搜索结果
+            var len = nodes.length;
+            for (var i = 0; i &lt; len; i++) {
+                nodes = nodes.concat(_getFatherNode(data, nodes[i]));
+            }
+        }
+        if (typeof setting.downloadComplete === 'function') {
+            var result = setting.downloadComplete(nodes, val);
+            if (result) {
+                nodes = result;
+            }
+        }
+        return nodes;
+    }
+
+    function _getFatherNode(data, childNode) {
+        if (childNode.pId !== undefined &amp;&amp; childNode.pId !== null &amp;&amp; childNode.pId !== '') {
+            var node_list = [];
+            var father_node = data.filter(function(item) {
+                return item.id === childNode.pId;
+            })[0];
+            if (father_node) {
+                node_list.push(father_node);
+                if (father_node.pId !== undefined &amp;&amp; father_node.pId !== null &amp;&amp; father_node.pId !== '') {
+                    node_list = node_list.concat(_getFatherNode(data, father_node));
+                }
+            }
+            return node_list;
+        } else {
+            return [];
+        }
+    }
+
+    function _dataFilter(treeId, parentNode, childNodes, setting, param) {
+        var placeholder = __getPlaceHolder(parentNode, setting);
+        var nodes = childNodes;
+        if (childNodes.code === '0' &amp;&amp; childNodes.datas.code) {
+            nodes = childNodes.datas.code.rows;
+            __unblindNodes(nodes, setting);
+            if (parentNode) {
+                var level = parentNode.getPath().length + 1;
+                if ($.isNumeric(setting.unselectableLevel)) {
+                    setting.unselectableLevel = setting.unselectableLevel.toString();
+                }
+                if (setting.unselectableLevel) {
+                    var levels = setting.unselectableLevel.split(',');
+                    var isMatch = levels.indexOf(level + '') > -1;
+                    if (isMatch) {
+                        nodes.forEach(function(item) {
+                            if (item.pId === parentNode.id) {
+                                item.chkDisabled = true;
+                            }
+                        });
+                    }
+                }
+            } else {
+                ____disableNodeChkByLevels(nodes, setting);
+            }
+            _checkNodesByValue(nodes, setting);
+            nodes = _sortfyData(nodes);
+        }
+        if ($.isArray(childNodes)) {
+            nodes = $.extend(true, [], childNodes);
+            __unblindNodes(nodes, setting);
+            ____disableNodeChkByLevels(nodes, setting);
+            _checkNodesByValue(nodes, setting);
+            nodes = _sortfyData(childNodes);
+        }
+        if (!setting.parentNodeSelectable) {
+            __disableParentNodeChk(nodes, setting);
+        }
+        if (typeof setting.downloadComplete === 'function') {
+            var result = setting.downloadComplete(nodes, param);
+            if (result) {
+                nodes = result;
+            }
+        }
+        return placeholder.concat(nodes);
+    }
+
+    function __unblindNodes(nodes, setting) {
+        if (setting.unblind) {
+            var unblind = setting.unblind;
+            nodes.forEach(function(node) {
+                if (node.name) {
+                    node.name = node.name.split(unblind).slice(-1)[0];
+                }
+            });
+        }
+    }
+
+    function _checkNodesByValue(nodes, setting) {
+        if (setting.checkboxes) {
+            var values = setting.$tree.data('values');
+            if (values &amp;&amp; values.length) {
+                var map = {};
+                values.forEach(function(val) {
+                    map[val.value] = val.label;
+                });
+                nodes.forEach(function(node) {
+                    if (map[node.id]) {
+                        node.checked = true;
+                    }
+                });
+                setting.$tree.removeData('values');
+            }
+        }
+    }
+
+    function _searchDataFilter(treeId, parentNode, childNodes, setting, param) {
+        var placeholder = __getPlaceHolder(parentNode, setting);
+        var nodes = childNodes;
+        if (childNodes.code === '0' &amp;&amp; childNodes.datas.code) {
+            ____disableNodeChkByLevels(childNodes.datas.code.rows, setting);
+            __unblindNodes(childNodes.datas.code.rows, setting);
+            nodes = _sortfyData(childNodes.datas.code.rows, true);
+        } else {
+            if ($.isArray(nodes)) {
+                nodes = $.extend(true, [], nodes);
+                ____disableNodeChkByLevels(nodes, setting);
+                __unblindNodes(childNodes.datas.code.rows, setting);
+                nodes = _sortfyData(nodes, true);
+            }
+        }
+        if (!setting.parentNodeSelectable) {
+            __disableParentNodeChk(nodes);
+        }
+        if (typeof setting.downloadComplete === 'function') {
+            var result = setting.downloadComplete(nodes, param);
+            if (result) {
+                nodes = result;
+            }
+        }
+        return placeholder.concat(nodes);
+    }
+
+    function __disableParentNodeChk(nodes) {
+        nodes.forEach(function(node) {
+            if (node.isParent) {
+                node.chkDisabled = true;
+            }
+            if (node.children) {
+                __disableParentNodeChk(node.children);
+            }
+        });
+    }
+
+    //allNodes是不含子数组的数组
+    function ____disableNodeChkByLevels(allNodes, setting) {
+        if ($.isNumeric(setting.unselectableLevel)) {
+            setting.unselectableLevel = setting.unselectableLevel.toString();
+        }
+        if (setting.unselectableLevel) {
+            var levels = setting.unselectableLevel.split(',');
+            allNodes.forEach(function(node) {
+                var isDisable = _checkNodeIsSelectableByLevels(node, allNodes, levels);
+                if (isDisable) {
+                    node.chkDisabled = true;
+                }
+            });
+        }
+    }
+
+    function __getPlaceHolder(parentNode, setting) {
+        var placeholder = [];
+        if (!parentNode) {
+            if (!setting.checkboxes) {
+                placeholder = [{
+                    name: $.i18n('bh-ddt-pleaseChoose') + '...',
+                    pId: '...',
+                    id: undefined
+                }]
+            }
+            if (setting.showBlankOption) {
+                placeholder.push({
+                    id: '@__blank__value',
+                    name: '[' + $.i18n('bh-ddt-empty') + ']',
+                    pId: '...'
+                })
+            }
+        }
+        return placeholder;
+    }
+
+    //按照如上格式序列化数据
+    function _sortfyData(nodes, isOpen) {
+        var cNodes = [];
+        var pNodes = nodes.filter(function(node) {
+            if (node.pId) {
+                cNodes.push(node);
+            } else {
+                return true;
+            }
+        });
+        __groupCNodesByPNodes(pNodes, cNodes, isOpen);
+        return nodes;
+    }
+
+    function __groupCNodesByPNodes(pNodes, cNodes, isOpen) {
+        pNodes.forEach(function(pNode) {
+            pNode.isParent = false;
+            $(cNodes).each(function(i) {
+                if (this.pId === pNode.id) {
+                    pNode.isParent = true;
+                    pNode.open = !!isOpen;
+                    cNodes.splice(i, 1);
+                    return false;
+                }
+            });
+        });
+    }
+
+    function __getNodeByPId(pId, nodes) {
+        var node = null;
+        $(nodes).each(function() {
+            if (this.id === pId) {
+                node = this;
+                return false;
+            }
+            if (this.children) {
+                var pNode = __getNodeByPId(pId, this.children);
+                if (pNode) {
+                    node = pNode;
+                    return false;
+                }
+            }
+        });
+        return node;
+    }
+
+    function _isSelectable(treeId, treeNode, clickFlag, setting) {
+        if (treeNode.id === '@__blank__value' || treeNode.id === '') {
+            return true;
+        }
+        if (!setting.parentNodeSelectable &amp;&amp; treeNode.isParent) {
+            return false;
+        }
+        if ($.isNumeric(setting.unselectableLevel)) {
+            setting.unselectableLevel = setting.unselectableLevel.toString();
+        }
+        if (setting.unselectableLevel) {
+            var levels = setting.unselectableLevel.split(',');
+            var level = treeNode.level + 1;
+            return levels.indexOf(level + '') === -1;
+        }
+        return true;
+    }
+
+    function _checkNodeIsSelectableByLevels(node, nodes, levels) {
+        var level = 1;
+        var getNodeLevel = function(zNode) {
+            if (zNode.pId) {
+                var node = __getNodeByPId(zNode.pId, nodes);
+                if (node) {
+                    level++;
+                    return getNodeLevel(node);
+                }
+            }
+            return level;
+        };
+        level = getNodeLevel(node) + '';
+        return levels.indexOf(level) > -1;
+    }
+
+    function _onClick(event, treeId, treeNode, flag, setting, $dom) {
+        var values = [];
+        var items = setting.$tree.bhTree('getSelectedNodes');
+        items.forEach(function(cv) {
+            if (WIS_I18N.i18n.locale === 'zh') {
+                if (cv.name !== "加载中...") {
+                    values.push({
+                        "label": cv.name,
+                        "value": cv.id
+                    });
+                }
+            } else {
+                if (cv.name !== "Loading...") {
+                    values.push({
+                        "label": cv.name,
+                        "value": cv.id
+                    });
+                }
+            }
+        });
+        var isSelectable = $dom.triggerHandler("select", [values, setting.$tree, treeNode]);
+        if (isSelectable === undefined || isSelectable) {
+            __setData($dom, setting);
+            $dom.data({
+                "values": values
+            });
+            $dom.jqxDropDownButton('close');
+        }
+    }
+
+    function _onCheck(event, treeId, treeNode, setting, $dom) {
+        // 多选下拉树选中时获取全路径
+        if (setting.showBlankOption) {
+            var blank = {
+                id: '@__blank__value',
+                name: '[' + $.i18n('bh-ddt-empty') + ']',
+                pId: '...'
+            };
+            var checked = treeNode.checked;
+            if (treeNode.id === blank.id) {
+                if (checked) {
+                    if (setting.$select) {
+                        setting.$select.find('input').prop('checked', false);
+                    }
+                    var treeObj = setting.$tree.bhTree(true);
+                    setting.$tree.bhTree('getCheckedNodes').forEach(function(node) {
+                        if (node.level === 0 &amp;&amp; node.checked &amp;&amp; node.id !== blank.id) {
+                            treeObj.checkNode(node, false, true);
+                        }
+                    });
+                }
+            } else {
+                var blankNode = setting.$tree.bhTree('getNodesByParam', 'id', blank.id);
+                blankNode.forEach(function(node) {
+                    setting.$tree.bhTree('checkNode', node, false);
+                });
+            }
+        }
+
+        var pNode = treeNode.getParentNode();
+        if (pNode) {
+            if (pNode.check_Child_State === 2 &amp;&amp; pNode.checked === false) {
+                setting.$tree.bhTree('checkNode', pNode);
+            }
+        }
+
+        __setData($dom, setting);
+        $dom.trigger('change');
+        if (setting.oneKeySelect) {
+            if (treeNode.checked) {
+                var isSelectedAll = setting.$tree.bhTree('getCheckedNodes').length === setting.$tree.bhTree('getAllData').length;
+                setting.$select.find('input').prop('checked', isSelectedAll);
+            } else {
+                setting.$select.find('input').prop('checked', false);
+            }
+        }
+    }
+
+    //赋值
+    function __setData($dom, setting) {
+        var items = [];
+        if (setting.checkboxes) {
+            //多选下拉树选中时获取全路径
+            items = setting.$tree.bhTree('getCheckedNodes');
+        } else {
+            items = setting.$tree.bhTree('getSelectedNodes');
+        }
+        var values = [];
+        if (setting.checkboxes) {
+            items = items.filter(function(item) {
+                if (item.isParent) {
+                    return item.check_Child_State === 2 || item.check_Child_State === -1;
+                }
+                return true;
+            });
+        }
+
+        var dropDownContent = items.map(function(cv) {
+            if (WIS_I18N.lang == 'zh') {
+                if (cv.name !== "加载中...") {
+                    values.push({
+                        "label": cv.name,
+                        "value": cv.id
+                    });
+                    if (cv.getPath) {
+                        return cv.getPath().map(function(item) {
+                            return item.name;
+                        }).join("/");
+                    }
+                }
+            } else {
+                if (cv.name !== "Loading...") {
+                    values.push({
+                        "label": cv.name,
+                        "value": cv.id
+                    });
+                    if (cv.getPath) {
+                        return cv.getPath().map(function(item) {
+                            return item.name;
+                        }).join("/");
+                    }
+                }
+            }
+        }).join(",");
+        dropDownContent = dropDownContent.replace(/,+/g, ',').replace(/,$/, '') || setting.placeholderContent;
+
+        $dom.jqxDropDownButton('setContent', dropDownContent);
+        $dom.data({
+            "values": values
+        });
+    }
+
+    $.fn.emapDropdownZTree = function(options, params) {
+        var instance;
+        instance = this.data('emapDropdownZTree');
+        if (options === true) {
+            return instance;
+        }
+        if (!instance) {
+            return this.each(function() {
+                return $(this).data('emapDropdownZTree', new Plugin(this, options));
+            });
+        }
+        if ($.type(options) === 'string') {
+            return instance[options](params);
+        }
+        return this;
+    };
+
+
+    /**  
+     * @memberof module:emapDropdownZTree
+     * @prop {Array} datas - 下拉树数据，emap格式，与url二选一必须
+     * @prop {String} url - 下拉树数据请求地址， 与datas二选一必须
+     * @prop {Boolean} [checkboxes=false] - 是否多选
+     * @prop {Boolean} [search=true] - 是否允许搜索
+     * @prop {String} [unblind] - 节点层次关系分隔符
+     * @prop {String} [placeholder=请选择] - 占位符提示文字
+     * @prop {Boolean} [parentNodeSelectable=true] - 父级节点是否允许选中
+     * @prop {String} [unselectableLevel] - 指定层级无法选中如 '1,2', 多层级用 , 分隔
+     * @prop {Function} [downloadComplete] - 数据请求完毕后的回调函数
+     * @prop {Object} [treeParams] - 树组件参数，如配置下拉属于父子节点联动：
+     * $('.tree_multi_linkage').emapDropdownZTree({
+                url: url,
+                checkboxes: true,
+                treeParams: {
+                    hasThreeStates: true
+                }
+            })
+            
+     * @prop {Boolean} [showBlankOption=false] - 是否显示空值选项 
+     */
+    $.fn.emapDropdownZTree.defaults = {
+        // url: 'http://demoapp.wisedu.com/emap/code/c9fe4e9d-5460-4372-87ca-437d373c2531.do',
+        placeholder: $.i18n('bh-ddt-pleaseChoose') + '...',
+        width: "100%",
+        unblind: '',
+        checkboxes: false,
+        showBlankOption: false,
+        search: true,
+        parentNodeSelectable: true,
+        unselectableLevel: "",
+        oneKeySelect: false,
+        downloadComplete: null
+    };
+})(jQuery);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:10:02 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

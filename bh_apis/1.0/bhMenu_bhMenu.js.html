@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhMenu/bhMenu.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhMenu/bhMenu.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * 纵向菜单导航
+ * @module bhMenu
+ * @example
+var _source = [
+    {
+        id:"1",
+        title:"摘要内容",
+        url:"scenes_course_info"
+    },
+    {
+        id:"2",
+        title:"基本信息",
+        url:"#"
+    }
+];
+$(".sc-leftSide-courseMenu").bhMenu({
+    source:_source,//必填, 菜单项的数据 id,title 如果是mode="link"需要传url
+    activeIndex:0, //可选, 选中第几项, 默认为0
+    contentContainer:$("body"), //可选, 内容所在的容器
+    mode:"link" //可选, 支持页面跳转还是tab页切换 支持两个值link/tab 默认值tab
+});
+ */
+(function($) {
+    /**
+     * 定义一个插件
+     */
+    var Plugin;
+
+    var activeId, source, $linkContainer, $contentContainer, mode;
+    /**
+     * 这里是一个自运行的单例模式。
+     */
+    Plugin = (function() {
+
+        /**
+         * 插件实例化部分，初始化时调用的代码可以放这里
+         */
+        function Plugin(element, options) {
+            //将插件的默认参数及用户定义的参数合并到一个新的obj里
+            this.settings = $.extend({}, $.fn.bhMenu.defaults, options);
+            //将dom jquery对象赋值给插件，方便后续调用
+            this.$element = $(element);
+            init(this.settings, this.$element);
+        }
+        /**
+         * enable一项
+         * @method enableItem
+         * @example
+        $control.bhMenu("enableItem",1);
+         */
+        Plugin.prototype.enableItem = function(index) {
+            enableByIndex(index);
+        };
+        /**
+         * disable一项
+         * @method disableItem
+         * @example
+        $control.bhMenu("disableItem",1);
+         */
+        Plugin.prototype.disableItem = function(index) {
+            disableByIndex(index);
+        };
+        return Plugin;
+
+    })();
+
+    function init(options, dom) {
+        //初始化头部
+        source = options.source;
+        $linkContainer = dom;
+        $contentContainer = options.contentContainer;
+        mode = options.mode;
+        var _html = getLinkDom(options.source);
+        $linkContainer.html(_html);
+        initActive(options.activeIndex);
+        addEventListener();
+    }
+
+    function initActive(_index) {
+        var menuId = getIdByIndex(_index);
+        setActive(menuId + '');
+    }
+
+    function setActive(menuId) {
+        if (menuId == null) {
+            return;
+        }
+        var $menuItem = $linkContainer.find(".bh-menu-link-item[menuId='" + menuId + "']");
+        //qiyu 2016-6-22 当activeChange事件返回false时，不要跳转tab页，需求人：吴涛
+        // $menuItem.addClass("bh-active");
+        var text = $menuItem.text();
+        var title = $menuItem.attr("data-title");
+
+        //qiyu 2016-6-22 当activeChange事件返回false时，不要跳转tab页，需求人：吴涛
+        var flag = $linkContainer.triggerHandler("activeChange", [menuId, text, title, $menuItem]);
+        if (flag === false) {
+            return false;
+        }
+
+        if (activeId) {
+            $linkContainer.find(".bh-menu-link-item[menuId='" + activeId + "']").removeClass("bh-active");
+            $contentContainer.find(".bh-menu-content[id='" + activeId + "']").hide();
+        }
+        activeId = menuId;
+
+        $menuItem.addClass("bh-active");
+
+        $contentContainer.find(".bh-menu-content[id='" + activeId + "']").show();
+        //qiyu 2016-6-22 当activeChange事件返回false时，不要跳转tab页，需求人：吴涛
+        //给菜单项绑定激活项改变事件，返回菜单id,text和该节点
+        // $linkContainer.trigger("activeChange", [menuId, text, title, $menuItem]);
+    }
+
+    function getIdByIndex(_index) {
+        var id = null;
+        if (source) {
+            id = source[_index]["id"];
+        }
+        return id;
+    }
+
+    function addEventListener() {
+        $linkContainer.on("click", ".bh-menu-link-item", function() {
+            if ($(this).hasClass("bh-disabled")) {
+                return false;
+            }
+            if (mode == "link") {
+                var _url = $(this).attr("menu-data-url");
+                window.open(_url);
+            } else {
+                var menuId = $(this).attr("menuId");
+                setActive(menuId);
+            }
+        });
+    }
+
+    function disableByIndex(_index) {
+        var _id = getIdByIndex(_index);
+        $linkContainer.find(".bh-menu-link-item[menuId='" + _id + "']").addClass("bh-disabled");
+    }
+
+    function enableByIndex(_index) {
+        var _id = getIdByIndex(_index);
+        $linkContainer.find(".bh-menu-link-item[menuId='" + _id + "']").removeClass("bh-disabled");
+    }
+
+    function getLinkDom(_data) {
+        var _html = '';
+        if (_data) {
+            _html = '&lt;div class="bh-menu-link">';
+            for (var i = 0, len = _data.length; i &lt; len; i++) {
+                _html += getLinkItemDom(_data[i]);
+            }
+            _html += '&lt;/div>';
+        }
+        return _html;
+    }
+
+    function getLinkItemDom(_data) {
+        var _html = '';
+        if (_data) {
+            //qiyu 2016-8-22 url属性在任何状态都应保留，需要作为附加属性使用
+            /*if (mode == "link") {
+                _html = '&lt;div class="bh-menu-link-item" menuId="' + _data.id + '" menu-data-url="' + _data.url + '" data-title="' + _data.title + '">';
+            } else {
+                _html = '&lt;div class="bh-menu-link-item" menuId="' + _data.id + '" data-title="' + _data.title + '">';
+            }*/
+            _html = '&lt;div class="bh-menu-link-item" menuId="' + _data.id + '" menu-data-url="' + _data.url + '" data-title="' + _data.title + '">';
+            _html += _data.title;
+            _html += '&lt;/div>';
+        }
+        return _html;
+    }
+    $.fn.bhMenu = function(options, params) {
+        var instance;
+        instance = this.data('bhMenu');
+        /**
+         * 判断插件是否已经实例化过，如果已经实例化了则直接返回该实例化对象
+         */
+        if (!instance) {
+            return this.each(function() {
+                //将实例化后的插件缓存在dom结构里（内存里）
+                return $(this).data('bhMenu', new Plugin(this, options));
+            });
+        }
+        if (options === true) {
+            return instance;
+        }
+        /**
+         * 优雅处： 如果插件的参数是一个字符串，则 调用 插件的 字符串方法。
+         * 如 $('#id').plugin('doSomething') 则实际调用的是 $('#id).plugin.doSomething();
+         * doSomething是刚才定义的接口。
+         * 这种方法 在 juqery ui 的插件里 很常见。
+         */
+        if ($.type(options) === 'string') {
+            instance[options](params);
+        }
+        return this;
+    };
+
+    /**
+     * @memberof module:bhMenu
+     * @description 内置默认值
+     * @prop {object}  defaults
+     * @prop {Array}  defaults.source - 菜单项的数据
+     * @prop {string}  defaults.activeIndex - 当前 active 项的index值
+     * @prop {$}  defaults.contentContainer - 内容所在的容器
+     * @prop {string}  defaults.mode - 页面跳转还是tab页切换
+     */
+    $.fn.bhMenu.defaults = {
+        source: [], //菜单项的数据 id,title 如果是mode="link"需要传url
+        activeIndex: 0, //默认选中第几项
+        contentContainer: $("body"), //内容所在的容器
+        mode: "tab" //支持页面跳转还是tab页切换 支持两个值link/tab
+    };
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

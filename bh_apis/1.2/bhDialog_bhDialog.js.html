@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhDialog/bhDialog.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhDialog/bhDialog.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * bhDialog插件
+ * @module bhDialog
+ */
+(function() {
+    $.bhDefaults = $.bhDefaults || {};
+    $.bhDefaults.Dialog = {
+        type: '', //可以传三个值，success/warning/danger
+        title: '',
+        content: '',
+        buttons: [],
+        width: "auto",
+        height: "auto"
+    };
+    /**
+     * @memberof module:bhDialog
+     * @description 内置默认值
+     * @param {object} options
+     * @param {String} options.iconType
+     * @param {String} options.title
+     * @param {String} options.content
+     * @param {String} options.subContent
+     * @param {Array}  options.buttons
+     */
+    $.bhDialog = function(options) {
+        var bodyHtml = $("body");
+        var params = $.extend({}, $.bhDefaults.Dialog, options || {});
+        var g = {};
+        var po = {
+            _init: function() {
+                var dialog = $("&lt;div class='bh-bhdialog-container'>&lt;/div>");
+                var dialogId = po.NewGuid();
+                dialog.attr("id", "dialog" + dialogId);
+
+                var dialogModal = $("&lt;div class='bh-modal'>&lt;/div>");
+
+                var dialogWin = $("&lt;div class='bh-pop bh-card bh-card-lv4 bh-dialog-con'>&lt;/div>");
+
+                if (params.className) {
+                    dialogWin.addClass(params.className);
+                }
+
+                //根据iconType添加icon相应的dom
+                po._createDialogIcon(dialogWin);
+
+                //根据内容和按钮，添加对话框正文相应的dom
+                po._createDialogBody(dialogWin, dialogId);
+                // 添加按钮
+                po._createDialogBtn(dialogWin, dialogId);
+
+                dialogModal.append(dialogWin);
+
+                dialog.append(dialogModal);
+
+                //灰色的蒙版层
+                dialog.append($('&lt;div class="bh-modal-backdrop">&lt;/div>'));
+                bodyHtml.append(dialog);
+                po._resetPos(dialogWin);
+                po._checkScrollbar();
+                if(bodyHtml.hasClass("bh-has-modal-body")){
+                    po.isRetainModal = true;
+                }else{
+                    po.isRetainModal = false;
+                    bodyHtml.addClass("bh-has-modal-body");
+                }
+            },
+            _resetPos: function(dialogWin) {
+                //重新计算dialogWin的位置，让其垂直方向居中
+                var _clientHeight = document.documentElement.clientHeight; //可视区域的高度
+                var _contentHeight = dialogWin.height();
+
+                dialogWin.css("margin-top", (_clientHeight - _contentHeight) / 2);
+            },
+            _checkScrollbar: function() {
+                var fullWindowWidth = window.innerWidth;
+                if (!fullWindowWidth) { // workaround for missing window.innerWidth in IE8
+                    var documentElementRect = document.documentElement.getBoundingClientRect();
+                    fullWindowWidth = documentElementRect.right - Math.abs(documentElementRect.left);
+                }
+                var bodyIsOverflowing = document.body.clientWidth &lt; fullWindowWidth;
+                var scrollbarWidth = po._measureScrollbar();
+                po._setScrollbar(bodyIsOverflowing, scrollbarWidth);
+            },
+            _setScrollbar: function(bodyIsOverflowing, scrollbarWidth) {
+                var wpr = $("body").attr('wpr');
+                var bodyPad = parseInt((bodyHtml.css('padding-right') || 0), 10);
+                //qiyu 2017-3-1 解决在弹窗后，再异步调用dailog，会出现padding-right不断增大的问题
+                // g.originalBodyPad = document.body.style.paddingRight || '';
+                $("body").attr('wpr', (wpr !== undefined ? wpr : document.body.style.paddingRight || '') );
+                if (bodyIsOverflowing) {
+                    bodyHtml.css('padding-right', bodyPad + scrollbarWidth);
+                    //qiyu 2016-12-21 隐藏滚动条时头部也需要留白，避免移动
+                    $('[bh-header-role="bhHeaderMini"]').css('padding-right', bodyPad + scrollbarWidth);
+                    $('[bh-header-role="bhHeader"]').css('padding-right', bodyPad + scrollbarWidth);
+                }
+            },
+            _resetScrollbar: function() {
+                // bodyHtml.css('padding-right', g.originalBodyPad);
+                var wpr = $("body").attr('wpr');
+                $("body").css('padding-right', wpr);
+                //qiyu 2016-12-21 隐藏滚动条时头部也需要留白，避免移动
+                $('[bh-header-role="bhHeaderMini"]').css('padding-right', wpr);
+                $('[bh-header-role="bhHeader"]').css('padding-right', wpr);
+            },
+            _measureScrollbar: function() { // thx walsh
+                var scrollDiv = document.createElement('div');
+                scrollDiv.className = 'bh-modal-scrollbar-measure';
+                bodyHtml.append(scrollDiv);
+                var scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+                bodyHtml[0].removeChild(scrollDiv);
+                return scrollbarWidth;
+            },
+            _removeDialog: function(dialogId) {
+                $("#dialog" + dialogId).remove();
+                po._resetScrollbar();
+                if(po.isRetainModal){
+                    po.isRetainModal = false;
+                }else{
+                    bodyHtml.removeClass("bh-has-modal-body");
+                }
+            },
+            _createDialogBody: function(dialogWin, dialogId) {
+                //组装body
+                var dialogBody = $("&lt;div class='bh-dialog-content'>&lt;/div>");
+
+                //设置对话框的正文
+                var dialogContent = $('&lt;div class="content">&lt;/div>');
+                dialogContent.html(po._getContent(params));
+
+                dialogBody.append(dialogContent);
+                // body 元素事件绑定
+                if (params.subContent) {
+                    $('.bh-dialog-expand', dialogBody).on('click', function () {
+                        $(this).hide();
+                        $('.bh-dialog-subContent', dialogBody).show();
+                    });
+                    $('.bh-dialog-collapse', dialogBody).on('click', function(){
+                        $(this).parent().hide();
+                        $('.bh-dialog-expand', dialogBody).show();
+                    })
+                }
+
+                dialogWin.find('#bh-dialog-exceptBtn-chilid').append(dialogBody);
+            },
+             _getContent: function (params) {
+                if (params.subContent) {
+                    var content = params.content;
+                    content += '&lt;a href="javascript:void(0)" class="bh-dialog-expand">' + $.i18n('bha-dialog-detail') + '&lt;/a>';
+                    content += '&lt;div class="bh-dialog-subContent" >' + params.subContent + '&lt;a href="javascript:void(0)" class="bh-dialog-collapse">' + $.i18n('bha-dialog-fold') + '&lt;/a>&lt;/div>';
+                    return content;
+                } else {
+                    return params.content;
+                }
+            },
+            _createDialogBtn: function(dialogWin, dialogId) {
+                var dialogBtnContainer = $('&lt;div class="bh-dialog-center">&lt;/div>');
+                if (params.buttons &amp;&amp; params.buttons.length > 0) {
+                    var btnLen = params.buttons.length;
+                    for (var i = 0; i &lt; btnLen; i++) {
+                        var btn = po._createBtn(params.buttons[i], dialogId);
+                        dialogBtnContainer.append(btn);
+                    }
+                } else {
+                    //页面必须有按钮
+                    po._getDefalutDialog(dialogId, dialogBtnContainer);
+                }
+                po._setDialogClass(dialogBtnContainer);
+                dialogWin.append(dialogBtnContainer);
+            },
+            // 根据btn的个数和type，给btn加载不同的样式
+            _setDialogClass: function(dialogBtnContainer) {
+                var $textColorEle;
+                var dialogBtnCon = dialogBtnContainer.find('.bh-dialog-btn');
+                //qiyu 2016-9-22 一个按钮时，按钮颜色不正确
+                $textColorEle = dialogBtnCon[0];
+
+                if (dialogBtnCon.length == 1) {
+                    dialogBtnCon.css("width","100%");
+                } else {
+                    //qiyu 2016-9-22 一个按钮时，按钮颜色不正确
+                    // $textColorEle = dialogBtnCon[0];
+                    
+                    // if (params.type == "success") {
+                    //     $($textColorEle).addClass('bh-dialog-success-btn');
+                    // } else if (params.type == "warning") {
+                    //     $($textColorEle).addClass('bh-dialog-warning-btn');
+                    // } else if (params.type == "danger") {
+                    //     $($textColorEle).addClass('bh-dialog-danger-btn');
+                    // }
+                }
+                if (params.type == "success") {
+                    $($textColorEle).addClass('bh-dialog-success-btn');
+                } else if (params.type == "warning") {
+                    $($textColorEle).addClass('bh-dialog-warning-btn');
+                } else if (params.type == "danger") {
+                    $($textColorEle).addClass('bh-dialog-danger-btn');
+                }
+            },
+            /**
+             * 单个按钮的创建方法
+             * @param btnInfo
+             * @param dialogId
+             * @returns {*|jQuery|HTMLElement}
+             * @private
+             */
+            _createBtn: function(btnInfo, dialogId) {
+                var btn = $("&lt;a href='javascript:void(0);' class='bh-dialog-btn'>&lt;/a>");
+                if (btnInfo &amp;&amp; btnInfo.text) {
+                    btn.text(btnInfo.text);
+                }
+                if (btnInfo &amp;&amp; btnInfo.className) {
+                    btn.addClass(btnInfo.className);
+                }
+                btn.click(function() {
+                    po._removeDialog(dialogId);
+                    btnInfo.callback &amp;&amp; btnInfo.callback();
+                });
+                return btn;
+            },
+            /**
+             * 根据type,获取不同的默认的dialog
+             * @param 
+             * @private
+             */
+            _getDefalutDialog: function(dialogId, dialogBtnContainer) {
+                var defaultBtn = [];
+                var btnObject = [];
+                if (params.type == 'success') {
+                    defaultBtn = po._createBtn({
+                        text: $.i18n('bha-dialog-close')
+                    }, dialogId);
+                    dialogBtnContainer.append(defaultBtn);
+                } else if (params.type == 'warning') {
+                    btnObject = [{
+                        text: $.i18n('bha-dialog-confirm'),
+                        callback: null
+                    }, {
+                        text: $.i18n('bha-dialog-cancel'),
+                        callback: null
+                    }];
+                    po._appendDefaultDialog(btnObject, dialogBtnContainer, dialogId);
+                } else if (params.type == 'danger') {
+                    btnObject = [{
+                        text: $.i18n('bha-dialog-retry'),
+                        callback: null
+                    }, {
+                        text: $.i18n('bha-dialog-cancel'),
+                        callback: null
+                    }];
+                    po._appendDefaultDialog(btnObject, dialogBtnContainer, dialogId);
+                }
+                return defaultBtn;
+            },
+            _appendDefaultDialog: function(btnObject, dialogBtnContainer, dialogId) {
+                var twoDefalutBtn = [];
+                for (var i = 0; i &lt; btnObject.length; i++) {
+                    twoDefalutBtn = po._createBtn(btnObject[i], dialogId);
+                    dialogBtnContainer.append(twoDefalutBtn);
+                }
+            },
+            /**
+             * 根据iconType，把icon相应的dom加到dialogWin中
+             * @param dialogWin
+             * @private
+             */
+            _createDialogIcon: function(dialogWin) {
+                if (params.type != '') {
+                    var dialogHtml = po._getDialogIconDom(params.type);
+                    dialogWin.append(dialogHtml);
+                }
+            },
+            /**
+             * 根据icon类型，返回构造成icon的dom字符串
+             * @param iconType
+             * @returns {string}
+             * @private
+             */
+            _getDialogIconDom: function(type) {
+                var iconClass = '';
+                if (type == 'success') {
+                    iconClass = 'checkcircle';
+                } else if (type == 'warning') {
+                    iconClass = 'info';
+                } else if (type == 'danger') {
+                    iconClass = 'cancel';
+                }
+                var iconDomString = '&lt;div class="bh-dialog-exceptBtn-con bh-dialog-icon-color' + type + '" id="bh-dialog-exceptBtn-con">' +
+                    '&lt;div class="bh-dialog-exceptBtn-chilid" id="bh-dialog-exceptBtn-chilid">' +
+                    '&lt;div class="bh-dialog-img-con bh-mb-16">' +
+                    '&lt;i class="iconfont icon-setstyle icon-' + iconClass + '">&lt;/i>' +
+                    '&lt;/div>' +
+                    '&lt;h2 class="bh-dialog-title-text bh-mb-16">' + params.title + '&lt;/h2>' +
+                    '&lt;/div>' +
+                    '&lt;/div>';
+
+                return iconDomString;
+            },
+            /**
+             * 生成随机字符串
+             * @returns {string}
+             */
+            NewGuid: function() {
+                return (po.S4() + po.S4() + "-" + po.S4() + "-" + po.S4() + "-" + po.S4() + "-" + po.S4() + po.S4() + po.S4());
+            },
+            S4: function() {
+                return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+            }
+        };
+        if (params.type == "" &amp;&amp; params.iconType) {
+            params.type = params.iconType;
+        }
+
+        // 兼容 content为空的处理
+        if (params.content === '' || params.content === undefined) {
+            params.content = params.title;
+            params.title = $.i18n('bha-dialog-prompt');
+            // if (params.type == 'success') {
+            //     params.title = "提示";
+            // } else if (params.type == 'warning') {
+            //     params.title = "警告";
+            // } else if (params.type == 'danger') {
+            //     params.title = "提示";
+            // }
+        }
+        po._init();
+    };
+}).call(this);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhCalculator.html">bhCalculator</a></li><li><a href="module-bhCustomizeColumn.html">bhCustomizeColumn</a></li><li><a href="module-bhDateAreaPicker.html">bhDateAreaPicker</a></li><li><a href="module-bhDateTimePicker.html">bhDateTimePicker</a></li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhSlider.html">bhSlider</a></li><li><a href="module-bhTree.html">bhTree</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

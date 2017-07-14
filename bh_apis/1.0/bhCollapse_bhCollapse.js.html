@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bhCollapse/bhCollapse.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: bhCollapse/bhCollapse.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function($) {
+	var Plugin;
+	/**
+	 * @module bhCollapse
+	 * @alias 折叠板
+	 * @description 折叠板
+	 * @example
+		$control.bhCollapse({
+		    data: [{
+		        title: '默认只会展示一个面板节点1',
+		        content: [{
+		            title: 'Heading_4',
+		            content: 'Body_Area_Default，12px / 行距20px / Grey_Lv2 简称“金智教育”，（英语全称为 JiangSu Wisedu Information Technology Co., Ltd ）是中国最大的教育信息化服务提供商。金智教育专注于教育信息化领域，致力于成为中国教育信息化服务的领航者，成为业界最具吸引力的事业平台，以通过信息化促进教育公平。'
+		        }, {
+		            title: 'Heading_4',
+		            content: 'Body_Area_Default，12px / 行距20px / Grey_Lv2 简称“金智教育”，（英语全称为 JiangSu Wisedu Information Technology Co., Ltd ）是中国最大的教育信息化服务提供商。金智教育专注于教育信息化领域，致力于成为中国教育信息化服务的领航者，成为业界最具吸引力的事业平台，以通过信息化促进教育公平。'
+		        }],
+		        extend: true,
+		        attrs:{
+		        	id: "test"
+		        }
+		    }, {
+		        title: '默认只会展示一个面板节点2',
+		        content: [{
+		            title: 'Heading_4_1',
+		            content: 'Body_Area_Default，12px / 行距20px / Grey_Lv2 简称“金智教育”，（英语全称为 JiangSu Wisedu Information Technology Co., Ltd ）是中国最大的教育信息化服务提供商。金智教育专注于教育信息化领域，致力于成为中国教育信息化服务的领航者，成为业界最具吸引力的事业平台，以通过信息化促进教育公平。'
+		        }, {
+		            title: 'Heading_4_1',
+		            content: 'Body_Area_Default，12px / 行距20px / Grey_Lv2 简称“金智教育”，（英语全称为 JiangSu Wisedu Information Technology Co., Ltd ）是中国最大的教育信息化服务提供商。金智教育专注于教育信息化领域，致力于成为中国教育信息化服务的领航者，成为业界最具吸引力的事业平台，以通过信息化促进教育公平。'
+		        }]
+		    }],
+		    // 展开节点的回调
+		    // data.node 被展开的节点
+		    nodeExtend: function(data) {},
+		    // 收缩节点的回调
+		    // data.node 被收缩的节点
+		    nodeCollapse: function(data) {},
+		    // 创建完成的回调
+		    ready: function() {}
+		});
+	 */
+	$.fn.bhCollapse = function(options, params) {
+		var instance;
+		instance = this.data('bhCollapse');
+		/***
+		 * 判断插件是否已经实例化过，如果已经实例化了则直接返回该实例化对象
+		 */
+		if (!instance) {
+			return this.each(function() {
+				//将实例化后的插件缓存在dom结构里（内存里）
+				return $(this).data('bhCollapse', new Plugin(this, options));
+			});
+		}
+		if (options === true) {
+			return instance;
+		}
+		/***
+		 * 优雅处： 如果插件的参数是一个字符串，则 调用 插件的 字符串方法。
+		 * 如 $('#id').plugin('doSomething') 则实际调用的是 $('#id).plugin.doSomething();
+		 * doSomething是刚才定义的接口。
+		 * 这种方法 在 juqery ui 的插件里 很常见。
+		 */
+		if ($.type(options) === 'string') {
+			return instance[options](params);
+		}
+		return this;
+	};
+
+	/**
+	 * @memberof module:bhCollapse
+	 * @description 内置默认值
+	 * @prop {object}  defaults
+	 * @prop {string}  defaults.model - 可选，设置展开面板节点的模式，single/multiple：只展示一个面板节点/可同时展开多个面板节点，默认为'single'
+	 * @prop {boolean}  defaults.extend - 可选，初始展开所有面板节点, 仅在multiple模式下生效, 默认false，
+	 * @prop {boolean}  defaults.attrs - 可选，给面板节点添加自定义属性,并在展开回调(nodeExtend)中返回该数据
+	 * @prop {Array}  defaults.data - 必填，面板节点的配置数组
+	 * @prop {string}  defaults.data.title - 必填，面板节点的标题
+	 * @prop {Array}  defaults.data.content - 必填，面板节点展开项的配置数组
+	 * @prop {string}  defaults.data.content.title - 可选，面板节点展开项的标题
+	 * @prop {Array}  defaults.data.content.content - 可选，面板节点展开项的内容文本
+	 * @prop {boolean}  defaults.data.extend - 可选，设置展开该面板节点，默认false
+	 * @prop {boolean}  defaults.data.disabled - 可选，设置该面板节点为disabled状态，此时没有Hover效果、无法点击。
+	 * @prop {function}  defaults.nodeExtend - 可选，展开节点的回调
+	 * @prop {function}  defaults.nodeCollapse - 可选，收缩节点的回调
+	 * @prop {function}  defaults.ready - 可选，创建完成的回调
+	 */
+	$.fn.bhCollapse.defaults = {
+		model: 'single', //一组面板节点的展开模式，single/multiple 只展示一个面板节点/可同时展开多个面板节点
+		extend: false, //默认展开所有面板节点, 仅在multiple模式下生效
+		data: [],
+		nodeExtend: null, // 展开节点的回调
+		nodeCollapse: null, // 收缩节点的回调
+		ready: null // 创建完成的回调
+	};
+
+	Plugin = (function() {
+
+		/***
+		 * 插件实例化部分，初始化时调用的代码可以放这里
+		 */
+		function Plugin(element, options) {
+			//将插件的默认参数及用户定义的参数合并到一个新的obj里
+			this.settings = $.extend({}, $.fn.bhCollapse.defaults, options);
+			//将dom jquery对象赋值给插件，方便后续调用
+			this.$element = $(element);
+			init(this.settings, this.$element);
+		}
+
+		return Plugin;
+
+	})();
+
+	function init(options, dom) {
+		//初始化头部
+		var html = getCollapseHtml(options);
+		dom.html(html);
+		initPanelHeight(dom, options);
+		addEventListener(dom, options);
+	}
+
+	/***
+	 * 获取折叠面板的HTML
+	 * @param {object} options
+	 * @returns {string}
+	 */
+	function getCollapseHtml(options) {
+		var data = options.data;
+		//判断标志位
+		var flag = false;
+		if (data) {
+			var collapseHtml = '';
+			for (var index = 0; index &lt; data.length; index++) {
+				var dataItem = data[index];
+				var collapseClass = "bh-collapse";
+				if (dataItem.disabled) {
+					//disabled优先级最高
+					collapseClass += " bh-collapse-disabled";
+					dataItem.extend = false;
+				}
+				var blockHtml = getItemContentHtml(dataItem.content);
+				var obj = getItemPanelState(options, dataItem.extend, flag);
+				dataItem.extend = obj.extend;
+				if (obj.flag) {
+					//第一次出现extend为true时，将标志位置为true
+					flag = obj.flag;
+				}
+				collapseHtml += getItemPanelHtml(collapseClass, dataItem, blockHtml);
+			}
+			return collapseHtml;
+		}
+	}
+
+	/***
+	 * 获取折叠面板每个节点下的展开项HTML
+	 * @param {Array} contentArr
+	 * @returns {string}
+	 */
+	function getItemContentHtml(contentArr) {
+		var blockHtml = '';
+		if (contentArr) {
+			for (var index = 0; index &lt; contentArr.length; index++) {
+				// 变量缓存
+				var contentItem = contentArr[index];
+				var title = contentItem.title;
+				var content = contentItem.content;
+				var titleHtml = '';
+				var contentHtml = '';
+				if (typeof title !== 'undefined') {
+					titleHtml = '&lt;div class="sc-title-borderLeft bh-mb-16">' + title + '&lt;/div>';
+				}
+				if (typeof content !== 'undefined') {
+					contentHtml = '&lt;div class="bh-collapse-block-item-content">' + content + '&lt;/div>';
+				}
+
+				//给内容节点添加属性设置  ghlong 2017-3-14
+				var className = 'bh-collapse-block-item';
+				var attrs = contentItem.attrs;
+				if(attrs &amp;&amp; attrs['class']){
+					className += ' '+attrs['class'];
+					delete attrs['class'];
+				}
+				var attrs_str = getAttrs(attrs);
+
+				blockHtml += '&lt;div class="'+className+'" '+attrs_str+'>' + titleHtml + contentHtml + '&lt;/div>';
+			}
+		}
+		return blockHtml;
+	}
+
+	/***
+	 * 获取折叠面板每个节点的HTML
+	 * @param {string} className 
+	 * @param {object} item  每个节点
+	 * @param {string} blockHtml  该节点对应的展开项内容
+	 * @returns {string}
+	 */
+	function getItemPanelHtml(className, item, blockHtml) {
+		var attrs = item.attrs;
+		if(attrs &amp;&amp; attrs['class']){
+			className += ' '+attrs['class'];
+			delete attrs['class'];
+		}
+		var attrs_str = getAttrs(attrs);
+		var collapseHtml = '&lt;div class="' + className + '" bh-collapse-extend="' + item.extend + '" '+attrs_str+'>' +
+			'&lt;div class="bh-collapse-header">' +
+			'&lt;h3 class="bh-collapse-title">' + item.title + '&lt;/h3>' +
+			'&lt;div class="bh-collapse-toolbar bh-animate-transform-fast">' +
+			'&lt;i class="iconfont icon-keyboardarrowright bh-collapse-icon">&lt;/i>' +
+			'&lt;/div>' +
+			'&lt;/div>' +
+			'&lt;div class="bh-collapse-block bh-collapse-animate-fast">&lt;div class="bh-collapse-content">' + blockHtml + '&lt;/div>&lt;/div>' +
+			'&lt;/div>';
+		return collapseHtml;
+	}
+
+	function getAttrs(attrs) {
+		var attrs_str = '';
+		if(typeof(attrs) == "object"){
+			for(var key in attrs){
+				var value = attrs[key];
+				if(value){
+					attrs_str += ' '+ key +'='+ value;
+				}
+			}
+		}
+		return attrs_str;
+	}
+
+	/***
+	 * 获取面板节点的显示状态
+	 * @param {object} options
+	 * @param {boolean/undefined} extend  用户传入的extend状态
+	 * @param {boolean} flag   
+	 * @returns {object}
+	 */
+	function getItemPanelState(options, extend, flag) {
+		var isFlag = flag;
+		var isExtend = extend;
+		if (options.model === 'multiple') {
+			if (typeof isExtend === 'undefined') {
+				if (options.extend) {
+					isExtend = true;
+				} else {
+					isExtend = false;
+				}
+			}
+		} else {
+			if (typeof isExtend === 'undefined') {
+				isExtend = false;
+			} else if (isExtend) {
+				//model为single时，但面板下同时有多个节点extend设为true的情况
+				if (!flag) {
+					//只默认展开第一个extend为true的节点
+					isFlag = true;
+				} else {
+					//其余全部置为false
+					isExtend = false;
+				}
+			}
+		}
+		var data = {
+			extend: isExtend,
+			flag: isFlag
+		};
+		return data;
+	}
+
+	/***
+	 * 初始化面板节点的高度	 
+	 * @param {object} dom
+	 * @param {object} options   
+	 */
+	function initPanelHeight(dom, options) {
+		dom.find(".bh-collapse-block").each(function() {
+			var $item = $(this);
+			var height = $item.find('.bh-collapse-content').outerHeight();
+			var $icon = $item.closest('.bh-collapse').find('.bh-collapse-toolbar');
+			var isExtend = $item.closest('.bh-collapse').attr('bh-collapse-extend');
+			if (isExtend === 'true') {
+				//设置展开节点的图标样式
+				$icon.addClass('bh-collapse-rotate-90');
+				$item.css({
+					"height": height
+				}).closest('.bh-collapse').addClass('bh-card bh-card-lv2 active');
+
+			} else {
+				$item.css({
+					"height": 0
+				});
+
+			}
+		});
+
+		if (typeof options.ready !== 'undefined' &amp;&amp; options.ready instanceof Function) {
+			options.ready();
+		}
+	}
+
+	/***
+	 * 点击面板的事件监听	 
+	 * @param {object} dom
+	 * @param {object} options   
+	 */
+	function addEventListener(dom, options) {
+		dom.off("click", '.bh-collapse-header').on("click", '.bh-collapse-header', function(e) {
+			e = e || window.event;
+			var targetNode = e.target || e.srcElement;
+			var $target = $(targetNode);
+			var $block = $target.closest('.bh-collapse').find('.bh-collapse-block');
+			if (!$target.closest('.bh-collapse-disabled').length) {
+				if ($target.closest('.bh-collapse').attr('bh-collapse-extend') !== 'true') {
+					if (options.model === 'single') {
+						doExtendOption(dom, $block, options);
+					} else {
+						extendPanel($block, options);
+					}
+				} else {
+					collapsePanel($block, options);
+				}
+			}
+		});
+	}
+
+	/***
+	 * 展开或收缩的动作判断	 
+	 * @param {object} dom
+	 * @param {object} $block  
+	 * @param {object} options   
+	 */
+	function doExtendOption(dom, $block, options) {
+		var isOpen = isPanelActive(dom);
+		//是否有展开项
+		if (isOpen) {
+			var $activeBlock = getExtendPanel(dom);
+			collapsePanel($activeBlock, options);
+			//等待已有展开项收起之后，再执行当前节点的展开动作
+			setTimeout(function() {
+				extendPanel($block, options);
+			}, getAnimateTime());
+		} else {
+			extendPanel($block, options);
+		}
+	}
+
+	/***
+	 * 判断同一级下是否存在展开项	 
+	 * @param {object} dom  
+	 * @returns {boolean} 
+	 */
+	function isPanelActive(dom) {
+		var result = false;
+		var activeObj = dom.find(".active");
+		if (activeObj.length > 0 &amp;&amp; activeObj.find(".bh-collapse-block").is(':visible')) {
+			result = true;
+		}
+		return result;
+	}
+
+	/***
+	 * 获取已存在的展开项	 
+	 * @param {object} dom  
+	 * @returns {object} 
+	 */
+	function getExtendPanel(dom) {
+		var $block;
+		dom.find(".bh-collapse-block").each(function(index, item) {
+			// 及时阻止循环
+			if ($(item).is(':visible')) {
+				$block = $(item);
+				return false;
+			}
+		});
+		return $block;
+	}
+
+	/***
+	 * 展开面板节点	 
+	 * @param {object} $block 
+	 * @param {object} options 
+	 */
+	function extendPanel($block, options) {
+		var $card = $block.closest(".bh-collapse");
+		$card.addClass("bh-card bh-card-lv2 active").attr("bh-collapse-extend", 'true');
+		$card.find('.bh-collapse-toolbar').removeClass('bh-collapse-rotate-0').addClass('bh-collapse-rotate-90');
+
+		//实时获取高度,避免后加载内容或修改内容导致缓存高度与实际高度不一致造成的问题  ghlong 2017-3-9
+		// var height = $block.data("height");
+		var height = $block.find('.bh-collapse-content').outerHeight();
+		// $block.show();
+		//增加50ms延迟以实现展开的下滑效果
+		setTimeout(function() {
+			$block.css({
+				"height": height
+			});
+		}, 50);
+
+		var data_attrs = {};
+		var attrs = $card[0].attributes;
+		var attrs_len = attrs.length;
+
+		for(var i=0; i&lt;attrs_len; i++){
+			var attr = attrs[i];
+			var key = attr.name;
+			var value = attr.value;
+			if(key &amp;&amp; key != 'bh-collapse-extend'){
+				data_attrs[key] = value;
+			}
+		}
+
+		var data = {
+			node: $card,
+			attrs: data_attrs
+		};
+		if (options &amp;&amp; options.nodeExtend) {
+			setTimeout(function() {
+				options.nodeExtend(data);
+			}, getAnimateTime());
+		}
+	}
+
+	/***
+	 * 收起面板节点	 
+	 * @param {object} $block 
+	 * @param {object} options 
+	 */
+	function collapsePanel($block, options) {
+		var $card = $block.closest(".bh-collapse");
+		$block.css({
+			"height": 0
+		});
+		var data = {
+			node: $card
+		};
+		$card.find('.bh-collapse-toolbar').removeClass('bh-collapse-rotate-90').addClass('bh-collapse-rotate-0');
+		setTimeout(function() {
+			// $block.hide();
+			$card.removeClass("bh-card bh-card-lv2 active").attr('bh-collapse-extend', 'false');
+			if (options &amp;&amp; options.nodeCollapse) {
+				options.nodeCollapse(data);
+			}
+		}, getAnimateTime());
+	}
+
+	/**
+	 * 动画的执行的基础时间
+	 * @returns {number}
+	 */
+	function getAnimateTime() {
+		return 250;
+	}
+
+})(jQuery);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhAffix.html">bhAffix</a></li><li><a href="module-bhAsideNav.html">bhAsideNav</a></li><li><a href="module-bhButtonGroup.html">bhButtonGroup</a>&nbsp;(按钮组)</li><li><a href="module-bhChoose.html">bhChoose</a>&nbsp;(选人组件)</li><li><a href="module-bhCollapse.html">bhCollapse</a>&nbsp;(折叠板)</li><li><a href="module-bhCollapsiblePanel.html">bhCollapsiblePanel</a>&nbsp;(可折叠面板)</li><li><a href="module-bhCutStr.html">bhCutStr</a></li><li><a href="module-bhDataBar.html">bhDataBar</a>&nbsp;(数据巴士)</li><li><a href="module-bhDialog.html">bhDialog</a></li><li><a href="module-bhFooter.html">bhFooter</a></li><li><a href="module-bhFooterAffix.html">bhFooterAffix</a></li><li><a href="module-bhFormOutline.html">bhFormOutline</a></li><li><a href="module-bhGallery.html">bhGallery</a></li><li><a href="module-bhHeader.html">bhHeader</a></li><li><a href="module-bhMenu.html">bhMenu</a></li><li><a href="module-bhNumRange.html">bhNumRange</a></li><li><a href="module-bhPaperPileDialog.html">bhPaperPileDialog</a></li><li><a href="module-bhPopOver.html">bhPopOver</a>&nbsp;(气泡弹窗)</li><li><a href="module-bhProgressBar.html">bhProgressBar</a></li><li><a href="module-bhPropertyDialog.html">bhPropertyDialog</a></li><li><a href="module-bhStar.html">bhStar</a></li><li><a href="module-bhStepWizard.html">bhStepWizard</a></li><li><a href="module-bhTimeLine.html">bhTimeLine</a>&nbsp;(时间轴组件)</li><li><a href="module-bhTimePicker.html">bhTimePicker</a></li><li><a href="module-bhTip.html">bhTip</a></li><li><a href="module-bhTxtInput.html">bhTxtInput</a>&nbsp;(计数文本域)</li><li><a href="module-bhWizard.html">bhWizard</a></li><li><a href="module-flowState.html">flowState</a></li><li><a href="module-pagination.html">pagination</a></li></ul><h3 class="test">Tutorials</h3><ul><li><a href="tutorial-README.html">README</a></li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:05:26 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

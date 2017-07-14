@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: emapUpload/cacheUploadAdaptor.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <style>
+        .jd-api-title {
+            border-left: solid 8px #3e50b4;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="main">
+    <!-- <h1 class="page-title">Source: emapUpload/cacheUploadAdaptor.js </h1> -->
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>(function(UPLOAD) {
+    UPLOAD.cacheAdaptor = {
+        /**
+         * @prop uploadUrl
+         * @description  文件上传地址
+         */
+        uploadUrl: WIS_EMAP_SERV.getContextPath() + '/sys/emapcomponent/file/uploadTempFile.do',
+
+        /**
+         * 
+         */
+        autoSaveUploadUrl: WIS_EMAP_SERV.getContextPath() + '/sys/emapcomponent/file/uploadTempFileAsAttachment.do',
+
+        /**
+         * @prop uploadData
+         * @description 上传文件附加的参数
+         */
+        uploadFormatData: function(data) {
+            return data;
+        },
+
+        /**
+         * @prop uploadCallback
+         * @description 上传请求的回调，用于对请求返回的数据做处理， 将数据修改成组件要求的格式
+         * @example 要求返回数据格式
+           {
+                deleteUrl: "/1470800493693911/1c8cd9aca4e948e99ddb75ab95dd21a8.do",  
+                fileUrl: "/emap/sys/emapcomponent/file/getAttachmentFile/1c8cd9aca4e948e99ddb75ab95dd21a8.do", // 必须
+                hasException: false,
+                id: "1c8cd9aca4e948e99ddb75ab95dd21a8", // 必须 
+                isImage: false,
+                name: "前端静态资源1.6.2_TR3测试版本发布说明书.doc", // 必须
+                size: 56832，
+                success: true, // 必须
+                tempFileUrl: "/emap/sys/emapcomponent/file/getTempFile/147080049369391/1470800493693911/1c8cd9aca4e948e99ddb75ab95dd21a8.do" 
+                ts: "2016-11-11 10:27:21"
+           }
+         */
+        uploadCallback: function(res) {
+            return res;
+        },
+
+        /**
+         * @prop deleteTempFileAction
+         * @description 删除临时文件的动作
+         * @example 要求返回数据格式 
+         * {
+         *  success: true
+         * }
+         */
+        deleteTempFileAction: function(options, id) {
+            var defer = $.Deferred();
+            // var options = this.options;
+            var url = WIS_EMAP_SERV.getContextPath() +
+                '/sys/emapcomponent/file/deleteTempFile.do';
+            var requestData = {
+                scope: options.scope,
+                fileToken: options.token
+            };
+            if (id) {
+                requestData.fileWid = id;
+                requestData.attachmentParam = JSON.stringify({
+                    storeId: options.storeId,
+                    items: [{
+                        id: id,
+                        status: 'Delete'
+                    }]
+                });
+            }
+
+            $.ajax({
+                type: "post",
+                url: url,
+                dataType: "json",
+                async: false,
+                data: requestData
+            }).done(function(res) {
+                if (res.success) {
+                    defer.resolve(res);
+                } else {
+                    console.error(res);
+                    defer.reject(res);
+                }
+            }).fail(function(error) {
+                $.bhTip &amp;&amp; $.bhTip({
+                    content: error.msg || '删除临时文件失败',
+                    state: 'danger',
+                    iconClass: 'icon-close'
+                });
+                defer.reject(error);
+            })
+            return defer;
+        },
+
+        deleteFormalFileAction: function(options, id) {
+            var defer = $.Deferred();
+            var ajaxOpt = {
+                type: "post",
+                url: WIS_EMAP_SERV.getContextPath() + '/sys/emapcomponent/file/deleteFileByWid/' + id + '.do',
+                dataType: "json",
+            };
+            $.ajax(ajaxOpt).done(function(res) {
+                if (res.success &amp;&amp; res.count) {
+                    defer.resolve(res);
+                } else {
+                    if (options.autoSave) return;
+                    $.bhTip &amp;&amp; $.bhTip({
+                        content: res.msg || '删除正式文件失败',
+                        state: 'danger',
+                        iconClass: 'icon-close'
+                    });
+                    defer.reject(res);
+                }
+            }).fail(function(error) {
+                $.bhTip &amp;&amp; $.bhTip({
+                    content: res.msg || '删除正式文件失败',
+                    state: 'danger',
+                    iconClass: 'icon-close'
+                });
+                defer.reject(error);
+            })
+            return defer;
+
+        },
+
+        /**
+         * @prop getTokenDataAction
+         * @description 获取token下已有文件数据的动作，返回一个priomise对象
+         * @example  要求返回数据格式
+            {
+                "success":true, // 必须
+                "items":[  // 必须
+                    {
+                        "id":"1eb9f6c3d41c4ebdb2e9d43424e19b13",  // 必须
+                        "name":"前端框架-组件需求.xlsx",  // 必须
+                        "fileUrl":"/emap/sys/emapcomponent/file/getAttachmentFile/1eb9f6c3d41c4ebdb2e9d43424e19b13.do",  // 必须
+                        "ts":"2016-11-11 16:21:20",
+                        "size":"37862",
+                        "orderNum":1,
+                        "isImage":false
+                    }
+                ]
+            }
+         */
+        getTokenDataAction: function(element, options, token) {
+            return $.ajax({
+                type: "post",
+                url: (options.contextPath || WIS_EMAP_SERV.getContextPath()) + '/sys/emapcomponent/file/getUploadedAttachment.do',
+                data: {
+                    fileToken: token || options.token
+                },
+                dataType: "json"
+            }).fail(function(error) {
+                $.bhTip &amp;&amp; $.bhTip({
+                    content: '请求token数据失败',
+                    state: 'danger',
+                    iconClass: 'icon-close'
+                });
+            });
+        },
+
+        /**
+         * @prop saveAction
+         * @description 保存动作，中间包含删除删除 待删除的正式文件的操作
+         * @example 保存动作返回的数据格式
+           {
+               "success": true, // 必须
+               "content": "保存成功！",
+               "hasException":false
+           }
+         */
+        saveAction: function(element, options, params) {
+            var param_data = params || {};
+            var result = $.Deferred();
+            var saveOpt = {
+                type: "post",
+                url: (options.contextPath || WIS_EMAP_SERV.getContextPath()) +
+                    "/sys/emapcomponent/file/saveAttachment/{scope}/{fileToken}.do".replace('{scope}', options.scope).replace('{fileToken}', options.token),
+                data: param_data,
+                dataType: "json",
+                success: function(data) {
+                    if (data.success) {
+                        result.resolve(data);
+                    } else {
+                        result.reject(data);
+                        $.bhTip &amp;&amp; $.bhTip({
+                            content: data.msg || '保存失败',
+                            state: 'danger',
+                            iconClass: 'icon-close'
+                        });
+                    }
+                },
+                error: function(error) {
+                    result.reject(error);
+                    $.bhTip &amp;&amp; $.bhTip({
+                        content: '保存失败',
+                        state: 'danger',
+                        iconClass: 'icon-close'
+                    });
+                }
+            };
+            param_data.fileToken = options.token;
+            param_data.scope = options.scope;
+
+            if (options.filesToDelete.length) {
+                // 删除 已经删除的正式文件
+                var widArray = [];
+                options.filesToDelete.map(function(item) {
+                    item = item + '';
+                    var wid = item.replace(/_[1|2]$/g, "");
+                    widArray.push(wid);
+                    widArray.push(wid + '_1');
+                    widArray.push(wid + '_2');
+                });
+                saveOpt.data.widsOfAttsToDelete = widArray.join(',');
+            }
+
+            $.ajax(saveOpt);
+            return result;
+        },
+
+        importRownum: function(opt, data) {
+            var dfd = $.Deferred();
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: opt.contextPath + '/sys/emapcomponent/imexport/importRownum.do',
+                data: data,
+                success: function(resp) {
+                    dfd.resolve(resp);
+                },
+                error: function(resp) {
+                    $.bhTip &amp;&amp; $.bhTip({
+                        content: '获取导入数据行数失败',
+                        state: 'danger',
+                        iconClass: 'icon-close'
+                    });
+                    dfd.reject(resp);
+                }
+            });
+            return dfd;
+        },
+
+        downloadImportTpl: function(opt, data) {
+            $.ajax({
+                type: 'post',
+                url: opt.contextPath + '/sys/emapcomponent/imexport/importTemplate.do',
+                data: data,
+                dataType: 'json',
+                success: function(json) {
+                    location.href = (opt.contextPath + '/sys/emapcomponent/file/getAttachmentFile/' + json.attachment + '.do');
+                },
+                error: function(e) {
+                    $.bhTip &amp;&amp; $.bhTip({
+                        content: '获取下载地址失败',
+                        state: 'danger',
+                        iconClass: 'icon-close'
+                    });
+                    console &amp;&amp; console.log(e);
+                }
+            });
+        },
+
+        importFile: function(opt, data) {
+            var dfd = $.Deferred();
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: opt.contextPath + '/sys/emapcomponent/imexport/import.do',
+                data: data,
+                success: function(resp) {
+                    dfd.resolve(resp);
+                },
+                error: function(resp) {
+                    $.bhTip &amp;&amp; $.bhTip({
+                        content: '获取导入数据行数失败',
+                        state: 'danger',
+                        iconClass: 'icon-close'
+                    });
+                    dfd.reject(resp);
+                }
+            });
+            return dfd;
+        },
+
+        getImportProgress: function(opt, data) {
+            var dfd = $.Deferred();
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: opt.contextPath + '/sys/emapcomponent/imexport/importProgress.do',
+                data: data,
+                success: function(resp) {
+                    dfd.resolve(resp);
+                },
+                error: function(resp) {
+                    $.bhTip &amp;&amp; $.bhTip({
+                        content: '获取导入进度失败',
+                        state: 'danger',
+                        iconClass: 'icon-close'
+                    });
+                    dfd.reject(resp);
+                }
+            });
+            return dfd;
+        },
+
+        getDownloadResultUrl: function(opt, result) {
+            return opt.contextPath + '/sys/emapcomponent/file/getAttachmentFile/' + result.attachment + '.do';
+        }
+
+    };
+})(WIS_EMAP_UPLOAD = window.WIS_EMAP_UPLOAD || {});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<!-- <nav>
+    <h2><a href="index.html">Home</a></h2><h3 class="test">Modules</h3><ul><li><a href="module-bhValidate.html">bhValidate</a>&nbsp;(表单校验)</li><li><a href="module-cacheUpload.html">cacheUpload</a>&nbsp;(缓存上传)</li><li><a href="module-directUpload.html">directUpload</a>&nbsp;(直接上传)</li><li><a href="module-emapAdvancedQuery.html">emapAdvancedQuery</a>&nbsp;(高级搜索)</li><li><a href="module-emapBatchEdit.html">emapBatchEdit</a>&nbsp;(批量编辑)</li><li><a href="module-emapConditionConstructor.html">emapConditionConstructor</a>&nbsp;(新的条件构造器)</li><li><a href="module-emapdatatable.html">emapdatatable</a>&nbsp;(表格)</li><li><a href="module-emapDropdownZTree.html">emapDropdownZTree</a>&nbsp;(下拉树)</li><li><a href="module-emapFilterQuery.html">emapFilterQuery</a>&nbsp;(条件搜索)</li><li><a href="module-emapImport.html">emapImport</a>&nbsp;(导入)</li><li><a href="module-emapQuery.html">emapQuery</a>&nbsp;(高级搜索2.0)</li><li><a href="module-emapUpload.html">emapUpload</a>&nbsp;(emap缓存上传)</li><li><a href="module-WIS_EMAP_INPUT.html">WIS_EMAP_INPUT</a>&nbsp;(表单控件公共方法)</li><li><a href="module-WIS_IMPORT_VIEW.html">WIS_IMPORT_VIEW</a>&nbsp;(导入view模块)</li><li><a href="module-WIS_UPLOAD_VIEW.html">WIS_UPLOAD_VIEW</a>&nbsp;(上传视图模块)</li><li><a href="WIS_EMAP_UPLOAD.module_cacheCore.html">cacheCore</a>&nbsp;(缓存上传核心模块)</li><li><a href="WIS_EMAP_UPLOAD.module_directCore.html">directCore</a>&nbsp;(直接上传核心模块)</li></ul>
+</nav> -->
+
+<br class="clear">
+
+<!-- <footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 28 2017 11:10:02 GMT+0800 (CST)
+</footer> -->
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
