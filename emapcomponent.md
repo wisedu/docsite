@@ -5,7 +5,7 @@
 ##### emap1.1文档
 http://res.wisedu.com/examples/components-v1/docs/emap/v1.1/
 
-##### emap1.1文档
+##### emap1.2文档
 http://res.wisedu.com/examples/components-v1/docs/emap/v1.2/
 
 
