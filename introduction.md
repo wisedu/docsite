@@ -21,12 +21,13 @@
 1. 一般情况下，当部署到现场的时候，需要调整RES地址为该学校RES服务器地址，如：南农 res.njau.edu.cn。
 1. 其中，如果有移动端，则移动端功能使用的RES地址为 http://cdnres.campusphere.cn ，正常情况下，现场不用修改该地址。
 
-## 请各位务必注意保证，现场环境 <font color=red>不可以</font> 连接以下地址：
+## 请各位务必注意保证，现场环境 \[_不可以_\] 连接以下地址：
 * http://res.wisedu.com 
 * http://csres.wisedu.com
 
 
-金智教育前端团队
+
+# 金智教育前端团队
 
 ## 前端读物
 
