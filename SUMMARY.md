@@ -1,7 +1,7 @@
 # Summary
 
-* [RES介绍](introduction.md)
-* [PC样式及组件](README.md)
+* [RES介绍](README.md)
+* [PC样式及组件](PC.md)
   * [样式](style.md)
     * [全局样式](style/global.md)
     * [布局](style/layout.md)
