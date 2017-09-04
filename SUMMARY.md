@@ -1,5 +1,6 @@
 # Summary
 
+* [RES介绍](introduction.md)
 * [PC样式及组件](README.md)
   * [样式](style.md)
     * [全局样式](style/global.md)
@@ -68,4 +69,3 @@
   * [垂直居中](practice/aligncenter.md)
   * [旋转图标](practice/rotate.md)
 * [开源项目](opensource.md)
-* [前端组介绍](introduction.md)
