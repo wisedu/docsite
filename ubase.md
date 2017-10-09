@@ -252,7 +252,7 @@ http://res.wisedu.com/FE/HRMS/个人填报单页版/index.html?min=1#/txsbb
 
 * 模块化：requirejs
 * 路由：Director
-* 模板引擎：Hogan [语法参考Mustache](http://blog.csdn.net/p569354158/article/details/8085595)
+* 模板引擎：Hogan.js from Twitter [语法参考Mustache](http://www.jianshu.com/p/7f1cecdc27e1) 
 * 图表：echarts [example](http://echarts.baidu.com/examples.html)
 * 工具库：lodash [API Documentation](https://lodash.com/docs)
 * 滚动条美化：jquery.nicescroll
