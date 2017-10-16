@@ -5,34 +5,52 @@
 ## 前期准备
 * Vue 的基本概念[vue文档](https://cn.vuejs.org/)
 * es6 开发基本知识 [es6 基本文档](http://es6.ruanyifeng.com/)
-* Node 环境(Node >=4.0.0, npm >= 3.0.0)[下载地址](https://nodejs.org/zh-cn/)
 * 移动门户[App](https://www.pgyer.com/VGkN)
 * 示例代码 <a href="assets/newOnlineConsultation.zip" target="_blank">newOnlineConsultation.zip</a>
 
 ## 1、搭建脚手架
 
-### 1.1、安装脚手架工具
+### 1.1、安装node环境
+Node 环境(Node >=4.0.0, npm >= 3.0.0)[下载地址](https://nodejs.org/zh-cn/)
+打开命令行界面，首先检查有没有安装 npm 命令 检查方法
+```
+node -v
 
-打开命令行界面，首先检查有没有 npm 命令 检查方法
+```
+```
+npm -v
+
+```
+出现版本号即为安装成功（如下图所示）。
 
 ![](/assets/Snip20170320_40.png)
+注：执行命令可将npm指向淘宝镜像以提升安装速度(npm -> cnpm)
+```
+npm install -g cnpm --registry=https://registry.npm.taobao.org
 
-如果无法正常出现版本号，请去完成前期准备的第三步，安装 Node 和 NPM 环境
+```
+### 1.2、安装脚手架工具
+
 
 通过 npm 安装 vue 脚手架命令行工具
 
 ```
 npm i -g vue-cli --registry=https://registry.npm.taobao.org
+(cnpm i -g vue-cli)
 
 ```
 
 退出命令行，重新进入，检查有没有安装成功
+```
+vue --version
+
+```
 
 ![](/assets/Snip20170320_41.png)
 
 如果没有正确弹出版本号，请尝试用管理员身份启动命令行
 
-### 1.2、初始化脚手架
+### 1.3、初始化脚手架
 
 ```
 $ vue init wisedu/bh-vue2-mobile ${your_project}
@@ -71,14 +89,18 @@ my-project
 │   └── components //页面级别的公用组件, 例如在某个项目里共同使用的用户信息展示, 某些共用的复杂弹窗等等
 │   └── pages //业务模块文件夹, 按照业务逻辑区分的业务模块文件夹
 │   └── vuex //用于放置 vuex 相关的文件(mutation, store, action, getter)
-│   └── assets //图片资源
 │   └── App.vue
+│   └── api.js //接口地址
 │   └── main.js //入口
 │   └── router.js //路由
 │   └── style.css //一些全局样式
+│   └── utils.js //保存项目公共方法
 ├── build
 │   └── deploy.js //打包脚本
 ├── static //一些样式，和计算root fontsize 的文件
+│   └── assets //图片资源
+│   └── css //css资源
+│   └── js //js资源
 ├── .babelrc //babel配置
 ├── .gitignore
 ├── README.md
@@ -109,27 +131,55 @@ vuex 涉及的概念比较多 (mutation, store, action, getter), 文件和文件
 在需要使用组件的*.vue页面，通过 ES6 的 import 语法，引入组件，并在 component 区域注册需要用到的组件<br>
 具体的使用方法，可以参考附件中的示例代码，原理请参考vue官网 https://cn.vuejs.org
 
-```js
-  import { Header, Button, Toast, Cell, Indicator } from 'mint-ui';
-  import SDK from 'bh-mobile-sdk';
-  import util from '../../util.js';
-  import Api from '../../api';
-  export default {
-    created() {
-    },
-    data () {
-      return {
-          list: []
-      }
-    },
-    methods: {
-    },
-    components: {
-      [Header.name]: Header,
-      [Button.name]: Button,
-      [Cell.name]: Cell,
+```html
+  
+  <template>
+    <div>
+      <mt-cell title="标题文字" to="//github.com" is-link value="带链接"></mt-cell>
+      <mt-button type='primary' size='large' @click="sumbit">提交</mt-button>
+      <mt-field label="密码" placeholder="请输入密码" type="password"></mt-field>
+    </div>
+</template>
+<style scoped>
+    div{
+      font-size: 20px;
+      background: #fff;
     }
-  }
+</style>
+
+<script>
+    import utils from '../../utils'
+    import api from '../../api';
+    import {
+        Toast,
+        Indicator,
+        Cell,
+        Button, 
+        Field
+    } from 'bh-mint-ui2';
+    export default {
+        components: {
+            [Cell.name]: Cell,            
+            [Button.name]: Button,
+            [Field.name]: Field
+        },
+        data() {
+            return {
+                num: 1,
+                str: 'hello world'
+            }
+        },
+        mounted() {
+            SDK.setTitleText('我是标题');          
+            this.load();            
+        },
+        methods: {
+            load() {
+
+            }
+        }
+    }
+</script>
 ```
 
 ### 4.2、组件使用方法
@@ -137,7 +187,10 @@ vuex 涉及的概念比较多 (mutation, store, action, getter), 文件和文件
 * 项目站点 https://github.com/wisedu/bh-mint-ui2
 * 文档地址 https://wisedu.github.io/bh-mint-ui2-doc/#!/zh-cn2
 
-[移动字体图标库](http://res.wisedu.com/fe_components/iconfont_mobile/demo_fontclass.html)
+### 4.3、字体图标使用方法
+* 移动字体图标库(http://res.wisedu.com/fe_components/iconfont_mobile/demo_fontclass.html)
+
+字体图标cdn地址
 ```html
 <link rel="stylesheet" href="http://res.wisedu.com/fe_components/iconfont_mobile/iconfont.css">
 ```
@@ -155,7 +208,7 @@ Hybrid SDK 是前端应用调用客户端原生能力的桥梁，是对原生能
 
 ### 5.2、SDK 引入方法
 
-在应用中可以通过全局变量 BH_MOBILE_SDK 取到Hybrid SDK 的上下文，这个时候，可以通过这个变量调用不同的 Hybrid 接口 比如，希望调用图片预览器就调用 BH_MOBILE_SDK.UI.preViewImages 来唤起原生的图片浏览器
+在脚手架中已经集成了今日校园和部分微信的SDK，项目在实际移动环境中初始化成功之后会自动创建一个全局变量SDK，所以在组件内可直接通过SDK这个变量直接调用控制原生功能的方法即可。
 
 ### 5.3、SDK 文档
 
