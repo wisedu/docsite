@@ -15,11 +15,9 @@ Node 环境(Node >=4.0.0, npm >= 3.0.0)[下载地址](https://nodejs.org/zh-cn/)
 打开命令行界面，首先检查有没有安装 npm 命令 检查方法
 ```
 node -v
-
 ```
 ```
 npm -v
-
 ```
 出现版本号即为安装成功（如下图所示）。
 
@@ -27,7 +25,6 @@ npm -v
 注：执行命令可将npm指向淘宝镜像以提升安装速度(npm -> cnpm)
 ```
 npm install -g cnpm --registry=https://registry.npm.taobao.org
-
 ```
 ### 1.2、安装脚手架工具
 
@@ -36,8 +33,7 @@ npm install -g cnpm --registry=https://registry.npm.taobao.org
 
 ```
 npm i -g vue-cli --registry=https://registry.npm.taobao.org
-(cnpm i -g vue-cli)
-
+(或：cnpm i -g vue-cli)
 ```
 
 退出命令行，重新进入，检查有没有安装成功
@@ -132,7 +128,6 @@ vuex 涉及的概念比较多 (mutation, store, action, getter), 文件和文件
 具体的使用方法，可以参考附件中的示例代码，原理请参考vue官网 https://cn.vuejs.org
 
 ```html
-  
   <template>
     <div>
       <mt-cell title="标题文字" to="//github.com" is-link value="带链接"></mt-cell>
@@ -146,7 +141,6 @@ vuex 涉及的概念比较多 (mutation, store, action, getter), 文件和文件
       background: #fff;
     }
 </style>
-
 <script>
     import utils from '../../utils'
     import api from '../../api';
@@ -195,7 +189,6 @@ vuex 涉及的概念比较多 (mutation, store, action, getter), 文件和文件
 <link rel="stylesheet" href="http://res.wisedu.com/fe_components/iconfont_mobile/iconfont.css">
 ```
 
-
 手机查看请扫码
 
 ![](/assets/1489992182.png)
@@ -209,10 +202,20 @@ Hybrid SDK 是前端应用调用客户端原生能力的桥梁，是对原生能
 ### 5.2、SDK 引入方法
 
 在脚手架中已经集成了今日校园和部分微信的SDK，项目在实际移动环境中初始化成功之后会自动创建一个全局变量SDK，所以在组件内可直接通过SDK这个变量直接调用控制原生功能的方法即可。
+例：设置标题头
+```
+SDK.setTitleText('我是标题')
+```
+获取今日校园登录信息
+```
+SDK.bh.cpdaily.getUserInfo( function(info){
+    console.log(info);
+});
+```
 
 ### 5.3、SDK 文档
 
-如果想了解具体有哪些 SDK 可以调用，需要的参数，请查看[ SDK 文档](https://github.com/wisedu/bh-mobile-sdk/wiki/WEB-%E7%A7%BB%E5%8A%A8%E7%AB%AF-SDK)
+如果想了解具体有哪些 SDK 可以调用，需要的参数，可查看详细api[ SDK 文档](https://github.com/wisedu/bh-mobile-sdk/blob/master/doc/%E7%A7%BB%E5%8A%A8%E5%BC%80%E6%94%BE%E5%B9%B3%E5%8F%B0%E6%8E%A5%E5%8F%A3%E6%96%87%E6%A1%A3.doc)
 
 ## 6、代码调试
 
@@ -229,15 +232,15 @@ chrome 打开开发者工具，点击模拟手机，即可调试应用
 mac: 
 
 ```
-open -a "Google Chrome" --args --disable-web-security --user-data-dir 
+open -n /Applications/Google\ Chrome.app/ --args --disable-web-security  --user-data-dir=/Users/a123/Documents/MyChromeDevUserData 
 ```
-
+注：上述的'/Users/a123/Documents/MyChromeDevUserData'是在本地'文稿'下建的一个空目录
 windows:
 
 ```
-http://stackoverflow.com/a/34779264/1433270
+http://www.cnblogs.com/laden666666/p/5544572.html
 ```
-需要先完全退出浏览器再使用才可生效
+需要先完全退出浏览器再重新打开才能生效
 
 ### 6.2、手机浏览器
 
@@ -253,36 +256,40 @@ Simulator”即可打开一个iOS设备的模拟器，并且模拟器里面Safar
 
 ### 6.3、应用内真机调试
 
-* Android 下载开发版的移动门户可以实现和6.2一样的远程调试 webview [https://www.pgyer.com/lDDL](https://www.pgyer.com/lDDL)
-* 开发者可以让测试人员在应用管理平台建立一个测试 App，在应用管理平台上你将该应用的 ip 指向你本地, 这时候你就可以在 app
-内调试你开发的小应用了
-* [http://www.pgyer.com/cpdaily](http://www.pgyer.com/cpdaily)
-* 微信调试，各种WebView样式调试工具 (https://github.com/wuchangming/spy-debugger)
-
-
+需要的材料（今日校园为例）：
+1. 手机上装有测试版今日校园，[下载地址](http://www.pgyer.com/cpdaily)
+2. 今日校园的服务里有一个自己的可以打开的应用
+3. 电脑上装有抓包调试工具spy-debugger(https://github.com/wuchangming/spy-debugger)
+调试的步骤：
+1. 打开手机连上无线，设置 -> 无线网络 ->http代理 改为手动，设置服务器地址为开发的电脑的IP，端口号设为9888
+2. 打开电脑的命令行窗口，执行 spy-debugger 命令启动调试服务器（自动在浏览器打开一个窗口）
+3. 打开今日校园点进自己的应用即可开始页面调试或者请求抓包
+注：利用spy-debugger,其他类型的调试类似
 ## 7、打包上线
 
-目的通过手机访问今日校园客户端 -> 服务 找到你发布的应用，进行功能自测
-
+目的：
+1. 通过手机访问今日校园客户端 -> 服务 找到你发布的应用，进行功能自测
+2. 应用开发 -> 应用测试 -> 应用上线（发布到现场）
 需要准备如下工作：
 
 1. 注册开发者账号 [campusphere开发者中心](http://www.campusphere.cn/appcenter)
 2. 注册新应用的信息，具体内容见下图
-3. 下载开发文件 app_info.xml 放入项目根目录，通过源代码打包，上传安装包，并通知测试部署赋权
-4. 在今日校园客户端中打开。 amptest环境 = 晓庄学院；ehall.wisedu.com环境 = 金智大学
-
-![](/assets/Snip20170608_3.png)
-
-* 创建新版本，命名要求：swm + 应用名称的拼音缩写 + app，如：swmlxapp = 移动离校
-* 授权地址配置：/sys/funauthapp/qxgl.do?appName=swmsskqapp&appId=4956930460074051&min=1
-
-
-应用开发完成后，需要打包上线，框架层面提供命令打包
-
+![](/assets/campusphere1.png)
+![](/assets/campusphere2.png)
+![](/assets/campusphere3.png)
+新建成功之后产生应用ID，编辑当前版本，配置授权地址
+![](/assets/campusphere4.png)
+* 创建新版本，命名要求：swm + 应用名称的拼音缩写 + app，如：swmlxapp = 移动离校(swm代表学工移动，其他业务线可使用自己的规则)
+* 授权地址配置：/sys/funauthapp/qxgl.do?appName=ydyysl&appId=5082200864155944&min=1
+3. 获取开发文件 app_info.xml（必须） 放入项目脚手架根目录，如果需要 permission.xml（非必须）文件则询问相关人员拿到，也放入根目录。通过源代码打包，打包命令：
 ```
 npm run deploy
 ```
+这个命令会在项目目录下生成一个 zip 包，zip 包的名字就是在初始化项目脚手架的时候询问的名字（可在package.json文件中修改相关信息）。
+4. 在刚才新建的应用，点击 进入开发环境 -> 应用包管理 -> 上传安装包 -> 接入管理 接入到测试环境，并通知测试部署赋权
+5. 测试部署成功之后可在今日校园客户端中打开。 amptest测试租户即是测试环境
 
-这个命令会在项目目录下生成一个 zip 包，zip 包的名字就是在初始化项目脚手架的时候询问的名字。
+## 特别注意
 
-需要在项目根目录下放置app_info.xml 和 permission.xml两个文件，否则将无法生成安装包
+**待应用通过测试确认没有问题之后，才可点击'发布到运行环境'。不要轻易发布**
+
