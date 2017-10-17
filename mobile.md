@@ -277,13 +277,9 @@ Simulator”即可打开一个iOS设备的模拟器，并且模拟器里面Safar
 1. 注册开发者账号 [campusphere开发者中心](http://www.campusphere.cn/appcenter)
 2. 注册新应用的信息，具体内容见下图
 ![](/assets/campusphere1.png)
-<br>
 ![](/assets/campusphere2.png)
-<br>
 ![](/assets/campusphere3.png)
-<br>
 新建成功之后产生应用ID，编辑当前版本，配置授权地址
-<br>
 ![](/assets/campusphere4.png)
 * 创建新版本，命名要求：swm + 应用名称的拼音缩写 + app，如：swmlxapp = 移动离校(swm代表学工移动，其他业务线可使用自己的规则)
 * 授权地址配置：/sys/funauthapp/qxgl.do?appName=ydyysl&appId=5082200864155944&min=1
