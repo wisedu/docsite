@@ -215,7 +215,7 @@ SDK.bh.cpdaily.getUserInfo( function(info){
 
 ### 5.3、SDK 文档
 
-如果想了解具体有哪些 SDK 可以调用，需要的参数，可查看详细API。[ SDK 文档](https://github.com/wisedu/bh-mobile-sdk/blob/master/doc/%E7%A7%BB%E5%8A%A8%E5%BC%80%E6%94%BE%E5%B9%B3%E5%8F%B0%E6%8E%A5%E5%8F%A3%E6%96%87%E6%A1%A3.doc)
+如果想了解具体有哪些 SDK 可以调用，需要的参数，可查看详细API。[ SDK 文档](http://static.cpdaily.com/jssdk/index.html#api-UI-__MampUiSettitletext)
 
 ## 6、代码调试
 
