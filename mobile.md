@@ -11,7 +11,7 @@
 ## 1、搭建脚手架
 
 ### 1.1、安装node环境
-Node 环境(Node >=4.0.0, npm >= 3.0.0)[下载地址](https://nodejs.org/zh-cn/)
+Node 环境(Node >=4.0.0, npm >= 3.0.0)[下载地址](https://nodejs.org/zh-cn/)<br>
 打开命令行界面，首先检查有没有安装 npm 命令 检查方法
 ```
 node -v
@@ -21,7 +21,7 @@ npm -v
 ```
 出现版本号即为安装成功（如下图所示）。
 
-![](/assets/Snip20170320_40.png)
+![](/assets/Snip20170320_40.png)<br>
 注：执行命令可将npm指向淘宝镜像以提升安装速度(npm -> cnpm)
 ```
 npm install -g cnpm --registry=https://registry.npm.taobao.org
@@ -184,7 +184,7 @@ vuex 涉及的概念比较多 (mutation, store, action, getter), 文件和文件
 ### 4.3、字体图标使用方法
 * 移动字体图标库(http://res.wisedu.com/fe_components/iconfont_mobile/demo_fontclass.html)
 
-字体图标cdn地址
+字体图标的cdn引入方式（已在脚手架中配置）
 ```html
 <link rel="stylesheet" href="http://res.wisedu.com/fe_components/iconfont_mobile/iconfont.css">
 ```
@@ -201,7 +201,7 @@ Hybrid SDK 是前端应用调用客户端原生能力的桥梁，是对原生能
 
 ### 5.2、SDK 引入方法
 
-在脚手架中已经集成了今日校园和部分微信的SDK，项目在实际移动环境中初始化成功之后会自动创建一个全局变量SDK，所以在组件内可直接通过SDK这个变量直接调用控制原生功能的方法即可。
+在脚手架中已经集成了今日校园和部分微信的SDK，项目在实际移动环境中初始化成功之后会自动创建一个全局变量SDK，所以在组件内可直接通过SDK这个变量直接调用控制原生功能的方法即可。<br>
 例：设置标题头
 ```
 SDK.setTitleText('我是标题')
@@ -215,7 +215,7 @@ SDK.bh.cpdaily.getUserInfo( function(info){
 
 ### 5.3、SDK 文档
 
-如果想了解具体有哪些 SDK 可以调用，需要的参数，可查看详细api[ SDK 文档](https://github.com/wisedu/bh-mobile-sdk/blob/master/doc/%E7%A7%BB%E5%8A%A8%E5%BC%80%E6%94%BE%E5%B9%B3%E5%8F%B0%E6%8E%A5%E5%8F%A3%E6%96%87%E6%A1%A3.doc)
+如果想了解具体有哪些 SDK 可以调用，需要的参数，可查看详细API。[ SDK 文档](https://github.com/wisedu/bh-mobile-sdk/blob/master/doc/%E7%A7%BB%E5%8A%A8%E5%BC%80%E6%94%BE%E5%B9%B3%E5%8F%B0%E6%8E%A5%E5%8F%A3%E6%96%87%E6%A1%A3.doc)
 
 ## 6、代码调试
 
@@ -234,7 +234,7 @@ mac:
 ```
 open -n /Applications/Google\ Chrome.app/ --args --disable-web-security  --user-data-dir=/Users/a123/Documents/MyChromeDevUserData 
 ```
-注：上述的'/Users/a123/Documents/MyChromeDevUserData'是在本地'文稿'下建的一个空目录
+注：上述的'/Users/a123/Documents/MyChromeDevUserData'是在本地'文稿'下建的一个空目录<br>
 windows:
 
 ```
@@ -256,28 +256,34 @@ Simulator”即可打开一个iOS设备的模拟器，并且模拟器里面Safar
 
 ### 6.3、应用内真机调试
 
-需要的材料（今日校园为例）：
+#### 需要的材料（今日校园为例）：
+
 1. 手机上装有测试版今日校园，[下载地址](http://www.pgyer.com/cpdaily)
 2. 今日校园的服务里有一个自己的可以打开的应用
 3. 电脑上装有抓包调试工具spy-debugger(https://github.com/wuchangming/spy-debugger)
-调试的步骤：
+#### 调试的步骤：
+
 1. 打开手机连上无线，设置 -> 无线网络 ->http代理 改为手动，设置服务器地址为开发的电脑的IP，端口号设为9888
 2. 打开电脑的命令行窗口，执行 spy-debugger 命令启动调试服务器（自动在浏览器打开一个窗口）
 3. 打开今日校园点进自己的应用即可开始页面调试或者请求抓包
 注：利用spy-debugger,其他类型的调试类似
 ## 7、打包上线
 
-目的：
+#### 目的：
 1. 通过手机访问今日校园客户端 -> 服务 找到你发布的应用，进行功能自测
 2. 应用开发 -> 应用测试 -> 应用上线（发布到现场）
-需要准备如下工作：
+#### 需要准备如下工作：
 
 1. 注册开发者账号 [campusphere开发者中心](http://www.campusphere.cn/appcenter)
 2. 注册新应用的信息，具体内容见下图
 ![](/assets/campusphere1.png)
+<br>
 ![](/assets/campusphere2.png)
+<br>
 ![](/assets/campusphere3.png)
+<br>
 新建成功之后产生应用ID，编辑当前版本，配置授权地址
+<br>
 ![](/assets/campusphere4.png)
 * 创建新版本，命名要求：swm + 应用名称的拼音缩写 + app，如：swmlxapp = 移动离校(swm代表学工移动，其他业务线可使用自己的规则)
 * 授权地址配置：/sys/funauthapp/qxgl.do?appName=ydyysl&appId=5082200864155944&min=1
@@ -286,7 +292,9 @@ Simulator”即可打开一个iOS设备的模拟器，并且模拟器里面Safar
 npm run deploy
 ```
 这个命令会在项目目录下生成一个 zip 包，zip 包的名字就是在初始化项目脚手架的时候询问的名字（可在package.json文件中修改相关信息）。
+<br>
 4. 在刚才新建的应用，点击 进入开发环境 -> 应用包管理 -> 上传安装包 -> 接入管理 接入到测试环境，并通知测试部署赋权
+<br>
 5. 测试部署成功之后可在今日校园客户端中打开。 amptest测试租户即是测试环境
 
 ## 特别注意
