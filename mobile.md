@@ -52,7 +52,10 @@ vue --version
 $ vue init wisedu/bh-vue2-mobile ${your_project}
 
 ```
-命令会在当前的文件夹下生成一个文件夹，这个文件夹就是我们的项目文件夹
+命令会在当前的文件夹下生成一个文件夹，这个文件夹就是我们的项目文件夹。  
+![](/assets/Snip20170320_42.png)  
+此时填写的配置项，等脚手架下载下来之后，都可在package.json文件中修改。  
+最后一步的 use native SDK（是否在脚手架中引入SDK） 除外。    
 
 ## 2、 运行项目
 
@@ -274,7 +277,7 @@ Simulator”即可打开一个iOS设备的模拟器，并且模拟器里面Safar
 2. 应用开发 -> 应用测试 -> 应用上线（发布到现场）
 #### 需要准备如下工作：
 
-1. 注册开发者账号 [campusphere开发者中心](http://www.campusphere.cn/appcenter)
+1. 登录 [campusphere开发者中心](http://www.campusphere.cn/appcenter)
 2. 注册新应用的信息，具体内容见下图
 ![](/assets/campusphere1.png)
 ![](/assets/campusphere2.png)
