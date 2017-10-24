@@ -49,7 +49,7 @@ vue --version
 ### 1.3、初始化脚手架
 
 ```
-$ vue init wisedu/bh-vue2-mobile ${your_project}
+vue init wisedu/bh-vue2-mobile yourProject
 
 ```
 命令会在当前的文件夹下生成一个文件夹，这个文件夹就是我们的项目文件夹。  
@@ -218,7 +218,7 @@ SDK.bh.cpdaily.getUserInfo( function(info){
 
 ### 5.3、SDK 文档
 
-如果想了解具体有哪些 SDK 可以调用，需要的参数，可查看详细API。[ SDK 文档](http://static.cpdaily.com/jssdk/index.html#api-UI-__MampUiSettitletext)
+如果想了解具体有哪些 SDK 可以调用，需要的参数，可查看详细API。[ SDK 文档](http://static.cpdaily.com/jssdk/index.html)
 
 ## 6、代码调试
 
@@ -263,13 +263,14 @@ Simulator”即可打开一个iOS设备的模拟器，并且模拟器里面Safar
 
 1. 手机上装有测试版今日校园，[下载地址](http://www.pgyer.com/cpdaily)
 2. 今日校园的服务里有一个自己的可以打开的应用
-3. 电脑上装有抓包调试工具spy-debugger(https://github.com/wuchangming/spy-debugger)
+3. 电脑上装有抓包调试工具spy-debugger(https://github.com/wuchangming/spy-debugger)    
+注：spy-debugger不可用cnpm安装
 #### 调试的步骤：
 
 1. 打开手机连上无线，设置 -> 无线网络 ->http代理 改为手动，设置服务器地址为开发的电脑的IP，端口号设为9888
 2. 打开电脑的命令行窗口，执行 spy-debugger 命令启动调试服务器（自动在浏览器打开一个窗口）
-3. 打开今日校园点进自己的应用即可开始页面调试或者请求抓包
-注：利用spy-debugger,其他类型的调试类似
+3. 打开今日校园点进自己的应用即可开始页面调试或者请求抓包  
+注：利用spy-debugger,其他类型的调试类似（spy-debugger不可用cnpm安装）
 ## 7、打包上线
 
 #### 目的：
