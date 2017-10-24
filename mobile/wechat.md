@@ -1,4 +1,4 @@
-## 微信企业号js-sdk调用
+## 微信js-sdk调用
 
 示例 [demo](http://res.wisedu.com:8888/demo/)
 
