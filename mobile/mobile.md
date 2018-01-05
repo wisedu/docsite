@@ -276,7 +276,7 @@ Simulator”即可打开一个iOS设备的模拟器，并且模拟器里面Safar
 #### 目的：
 1. 通过手机访问今日校园客户端 -> 服务 找到你发布的应用，进行功能自测
 2. 应用开发 -> 应用测试 -> 应用上线（发布到现场）
-#### 需要准备如下工作：
+### 7.1、老版本campusphere平台新建应用流程
 
 1. 登录 [campusphere开发者中心](http://www.campusphere.cn/appcenter)
 2. 注册新应用的信息，具体内容见下图
@@ -288,10 +288,30 @@ Simulator”即可打开一个iOS设备的模拟器，并且模拟器里面Safar
 * 创建新版本，命名要求：swm + 应用名称的拼音缩写 + app，如：swmlxapp = 移动离校(swm代表学工移动，其他业务线可使用自己的规则)
 * 授权地址配置：/sys/funauthapp/qxgl.do?appName=ydyysl&appId=5082200864155944&min=1
 3. 获取开发文件 app_info.xml（必须） 放入项目脚手架根目录，如果需要 permission.xml（非必须）文件则询问相关人员拿到，也放入根目录。通过源代码打包，打包命令：npm run deploy。这个命令会在项目目录下生成一个 zip 包，zip 包的名字就是在初始化项目脚手架的时候询问的名字（可在package.json文件中修改相关信息）。
-4. 在刚才新建的应用，点击 进入开发环境 -> 应用包管理 -> 上传安装包 -> 接入管理 接入到测试环境，并通知测试部署赋权
-5. 测试部署成功之后可在今日校园客户端中打开。 amptest测试租户即是测试环境
+4. 在刚才新建的应用，点击 进入开发环境 -> 应用包管理 -> 上传安装包 -> 接入管理 接入到测试环境，并通知测试部署授权上线
+5. 测试部署成功之后可在今日校园客户端中打开。 amptest测试租户即是学工测试环境
 
 ## 特别注意
 
 **待应用通过测试确认没有问题之后，才可点击'发布到运行环境'。不要轻易发布**
+### 7.2、新版本campusphere平台新建应用流程(此处以特例公共服务应用为例) 
+
+1. 登录 [campusphere_2.2开发者中心](http://www.campusphere.cn/appcenter_2.2/index.html)
+2. 注册新应用的信息，具体内容见下图
+![](/assets/ampusphere_2.2_1.png)
+![](/assets/ampusphere_2.2_2.png)
+![](/assets/ampusphere_2.2_3.png)
+![](/assets/ampusphere_2.2_4.png)crowdamp1
+* 创建新版本，命名要求：pubm + 应用名称的拼音缩写 + app，如：pubmcjcxapp = 移动成绩查询(pubm代表公共服务移动，其他业务线可使用自己的规则)
+* 授权地址配置：/sys/funauthapp/auth.do
+3. 获取开发文件 app_info.xml（必须） 放入项目脚手架根目录，并在该文件的package_info内添加(<emap_version>1.8.30.B106</emap_version>),用于自动部署。若不需要自动部署则不需要添加这段代码。
+![](/assets/app_info.png)
+4. permission.xml（必须）文件则询问相关人员拿到，也放入根目录。
+5. 通过源代码打包，打包命令：npm run deploy。这个命令会在项目目录下生成一个 zip 包，zip 包的名字就是在初始化项目脚手架的时候询问的名字（可在package.json文件中修改相关信息）。
+6. 在刚才新建的应用，点击 进入开发环境 -> 应用包管理 -> 上传安装包 -> 接入管理 接入到对应测试环境。
+7. 关于部署，分为两种；手动部署，需要到云工场的[应用管理平台](http://crowdamp.wisedu.com/manage/index.html)下载安装包并到服务器上部署
+![](/assets/crowdamp1.png) 
+![](/assets/crowdamp2.png) 
+自动部署，需要到公共服务的[emap在线设计](http://crowdamp.wisedu.com/publicapp/sys/emapol/*default/index.do#/bssj)去完成自动部署的操作
+8. 通知测试授权上线，测试部署成功之后可在今日校园客户端中打开， Crowd测试大学即是公共服务测试环境。
 
