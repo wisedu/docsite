@@ -303,15 +303,27 @@ Simulator”即可打开一个iOS设备的模拟器，并且模拟器里面Safar
 ![](/assets/ampusphere_2.2_3.png)
 ![](/assets/ampusphere_2.2_4.png)
 * 创建新版本，命名要求：pubm + 应用名称的拼音缩写 + app，如：pubmcjcxapp = 移动成绩查询(pubm代表公共服务移动，其他业务线可使用自己的规则)
-* 授权地址配置：/sys/funauthapp/auth.do
+* 授权地址配置：/sys/funauthapp/auth.do?min=1
 3. 获取开发文件 app_info.xml（必须） 放入项目脚手架根目录，并在该文件的package_info内添加(<emap_version>1.8.30.B106</emap_version>),用于自动部署。若不需要自动部署则不需要添加这段代码。
 ![](/assets/app_info.png)
 4. permission.xml（必须）文件则询问相关人员拿到，也放入根目录。
 5. 通过源代码打包，打包命令：npm run deploy。这个命令会在项目目录下生成一个 zip 包，zip 包的名字就是在初始化项目脚手架的时候询问的名字（可在package.json文件中修改相关信息）。
 6. 在刚才新建的应用，点击 进入开发环境 -> 应用包管理 -> 上传安装包 -> 接入管理 接入到对应测试环境。
-7. 关于部署，分为两种；手动部署，需要到云工场的[应用管理平台](http://crowdamp.wisedu.com/manage/index.html)下载安装包并到服务器上部署
+7. 关于部署，分为两种：手动部署和自动部署。<br>
+（1）手动部署，需要到云工场的[应用管理平台](http://crowdamp.wisedu.com/manage/index.html)下载安装包并到服务器上部署
 ![](/assets/crowdamp1.png) 
 ![](/assets/crowdamp2.png) 
-自动部署，需要到公共服务的[emap在线设计](http://crowdamp.wisedu.com/publicapp/sys/emapol/*default/index.do#/bssj)去完成自动部署的操作
+（2）自动部署，需要到公共服务的[emap在线设计](http://crowdamp.wisedu.com/publicapp/sys/emapol/*default/index.do#/fbxx)去完成自动部署的操作。共分两种情况：首次上线和升级上线。<br>
+-首次上线，是一个需要等待的事情，由于campusphere平台和emap在线设计平台的应用数据同步是在每天的零点进行。所以，在应用需要上线时需要在前一天先把应用创建好。注：只要新建应用就会同步不需要上传部署包和接入。
+![](/assets/emapol1.png)
+![](/assets/emapol2.png)
+**注意：目前在‘获取并启用’过后，对于后端项目来说服务会自动重启，不需要再做别的操作。如果单纯更新web项目，需要线下去手动重启下服务。后续会解决这个问题**
+-升级上线，不需要等待，在上传部署包之后，记得重新接入一下就好。自动部署流程如下：<br>
+首先到应用管理平台的系统管理->应用版本管理中心去做一下‘升级’操作
+![](/assets/emapol3.png)
+![](/assets/emapol4.png)
+![](/assets/emapol5.png)
+![](/assets/emapol6.png)
+**注意：目前在‘获取并启用’过后，对于后端项目来说服务会自动重启，不需要再做别的操作。如果单纯更新web项目，需要线下去手动重启下服务。后续会解决这个问题**
 8. 通知测试授权上线，测试部署成功之后可在今日校园客户端中打开， Crowd测试大学即是公共服务测试环境。
 
