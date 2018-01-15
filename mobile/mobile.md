@@ -303,7 +303,7 @@ Simulator”即可打开一个iOS设备的模拟器，并且模拟器里面Safar
 ![](/assets/ampusphere_2.2_3.png)
 ![](/assets/ampusphere_2.2_4.png)
 * 创建新版本，命名要求：pubm + 应用名称的拼音缩写 + app，如：pubmcjcxapp = 移动成绩查询(pubm代表公共服务移动，其他业务线可使用自己的规则)
-* 授权地址配置：/sys/funauthapp/auth.do?min=1
+* 授权地址配置：/sys/pubmcjcxapp/auth.do?min=1
 3. 获取开发文件 app_info.xml（必须） 放入项目脚手架根目录，并在该文件的package_info内添加(<emap_version>1.8.30.B106</emap_version>),用于自动部署。若不需要自动部署则不需要添加这段代码。
 ![](/assets/app_info.png)
 4. permission.xml（必须）文件则询问相关人员拿到，也放入根目录。
