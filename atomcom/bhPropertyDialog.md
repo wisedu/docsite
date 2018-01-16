@@ -2,7 +2,7 @@
 
 #### 示例
 
-[http://res.wisedu.com/examples/components-v1/bhPropertyDialog/bhPropertyDialog.html](http://res.wisedu.com/examples/components-v1/bhPropertyDialog/bhPropertyDialog.html)
+[https://res.wisedu.com/examples/components-v1/bhPropertyDialog/bhPropertyDialog.html](https://res.wisedu.com/examples/components-v1/bhPropertyDialog/bhPropertyDialog.html)
 
 *****
 #### API说明

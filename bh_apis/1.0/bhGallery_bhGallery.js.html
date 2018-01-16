@@ -106,9 +106,9 @@
     $.bhGallery = function(options) {
         Galleria = window.Galleria;
         if (Galleria === undefined) {
-            $.getScript('http://res.wisedu.com/bower_components/galleria/src/galleria.js').done(function() {
+            $.getScript('https://res.wisedu.com/bower_components/galleria/src/galleria.js').done(function() {
                 Galleria = window.Galleria;
-                $.getScript('http://res.wisedu.com/fe_components/galleria/standard/galleria.wisedu.js').done(function() {
+                $.getScript('https://res.wisedu.com/fe_components/galleria/standard/galleria.wisedu.js').done(function() {
                     if (Galleria === undefined) {
                         console.error('please include Galleria lib');
                         return;

@@ -52,7 +52,7 @@ RS-3387 高级查询和条件构造器组件树形菜单选择异常
 1. 添加全选反选项功能 http://jira.product.wisedu.com/browse/XG-3075
 1. 自定义显示列弹窗功能完善 http://jira.product.wisedu.com/browse/RS-3258 用例： http://demoapp.wisedu.com/emap/sys/student_app2/*default/index.do#/customColumn
 1. 【头像裁剪上传】组件不支持临时文件保存 http://jira.product.wisedu.com/browse/RES-254
-1. 大文本输入框需支持默认高度 http://jira.product.wisedu.com/browse/UED-403 用例： http://res.wisedu.com/examples/components-v1/bhTxtInput/bhTxtInput.html
+1. 大文本输入框需支持默认高度 http://jira.product.wisedu.com/browse/UED-403 用例： https://res.wisedu.com/examples/components-v1/bhTxtInput/bhTxtInput.html
 2. 表格列宽设计修改 http://jira.product.wisedu.com/browse/UED-462
 3. 自定义显示列迭代 http://jira.product.wisedu.com/browse/RES-259 用例：  http://demoapp.wisedu.com/emap/sys/student_app/*default/index.do#/xsxxddwh
 
@@ -73,7 +73,7 @@ bug：
 http://demoapp.wisedu.com/emap/sys/student_app2/*default/index.do#/filterQuery
 http://demoapp.wisedu.com/emap/sys/student_app2/*default/index.do#/emapQuery
 3. 表单只读和编辑混排填写提示 http://jira.product.wisedu.com/browse/RES-245 用例 http://demoapp.wisedu.com/emap/sys/student_app/*default/index.do#/tableForm 
-4. 新增进度条原子组件 http://jira.product.wisedu.com/browse/RES-234 用例 http://res.wisedu.com/examples/components-v1/bhProgressBar/bhProgressBar.html?min=1
+4. 新增进度条原子组件 http://jira.product.wisedu.com/browse/RES-234 用例 https://res.wisedu.com/examples/components-v1/bhProgressBar/bhProgressBar.html?min=1
 5. 条件构造器组件改造 http://jira.product.wisedu.com/browse/RES-248  人事综合查询
 6. 表格增加defaultParam参数 
 7. 前端组件1.2版本，新增emapForm 数字区间类型取值为小数的功能 http://jira.product.wisedu.com/browse/JW-1575
@@ -102,7 +102,7 @@ bug
 3. 模型配置允许给字段添加多个校验规则， 用,分隔  
 4. bh_choose组件需改造查询条件到querySetting http://jira.product.wisedu.com/browse/RES-233 用例：http://demoapp.wisedu.com/emap/sys/student_app/*default/index.do#/choose
 6. 上传下载组件自定义操作（数量，内容）支持 http://jira.product.wisedu.com/browse/RES-230 用例： http://demoapp.wisedu.com/emap/sys/student_app2/*default/index.do#/upload
-7. 文本域需在填写和只读时支持自适应文本高度，并设置最大高度，现添加参数autoHeight,默认false http://jira.product.wisedu.com/browse/RES-228 用例：http://res.wisedu.com/examples/components-v1/bhTxtInput/bhTxtInput.html
+7. 文本域需在填写和只读时支持自适应文本高度，并设置最大高度，现添加参数autoHeight,默认false http://jira.product.wisedu.com/browse/RES-228 用例：https://res.wisedu.com/examples/components-v1/bhTxtInput/bhTxtInput.html
 8. 高级搜索，在执行搜索前，增加beforeSearch回调，返回false则阻断搜索 http://jira.product.wisedu.com/browse/JW-1212 用例：http://demoapp.wisedu.com/emap/sys/student_app2/*default/index.do#/advancedQuery
 9. res 添加数据采集功能， 直接对接 emappagelog, 采集用户行为数据
 10. BH_UTILS.doAjax， 增加requestOption请求配置
@@ -278,7 +278,7 @@ bug:
 1. 填报开始、结束时间建议鼠标插入到文本中日期组件即显示 http://jira.product.wisedu.com/browse/RS-2433
 3. 提示弹窗需要支持异常码日志串行码展示 http://jira.product.wisedu.com/browse/RES-155
 4. 字符串截取新增更多 收起效果 http://jira.product.wisedu.com/browse/RES-163
-5.  dropDown组件支持根据浏览器边界自适应往上或往下弹出 http://jira.product.wisedu.com/browse/RES-164  用例： http://res.wisedu.com/examples/components-v1/bhDropdown/bhDropdown.htm
+5.  dropDown组件支持根据浏览器边界自适应往上或往下弹出 http://jira.product.wisedu.com/browse/RES-164  用例： https://res.wisedu.com/examples/components-v1/bhDropdown/bhDropdown.htm
 6.  上传组件排序功能 http://jira.product.wisedu.com/browse/RES-172
 
 bug： 

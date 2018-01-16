@@ -2,7 +2,7 @@
 
 
 ## 目前公司的res环境有如下几套：
-1. http://res.wisedu.com 这套为公司的RES开发环境地址，云内云外均可以访问；但其中包括未经测试的最新功能，也可能含有bug，使用这些功能时，存在风险。
+1. https://res.wisedu.com 这套为公司的RES开发环境地址，云内云外均可以访问；但其中包括未经测试的最新功能，也可能含有bug，使用这些功能时，存在风险。
 1. http://csres.wisedu.com 这套为公司内测试已发版的RES环境地址，云外可以访问，该内容是通过测试，已发版的代码，也是目前现场可用的最新版本的功能。
 1. http://cdnres.campusphere.cn 特别提醒，这套为仅针对 移动端 使用的RES服务器，云外可以访问，正常情况下即使在现场也不用修改该地址。
 
@@ -10,7 +10,7 @@
 ## 对各类人员而言：
 ### 产品线开发人员（以及测试人员）：
 1. 建议优先选择使用http://csres.wisedu.com ，且应当在现场实施人员可修改的配置文件中配置（而不可写死）；
-1. 虽然也可使用http://res.wisedu.com ，但务必注意此环境中包括未经测试的最新功能，也可能含有bug，因此转测试前、发布版本前要特别考虑此处是否改为引用http://csres.wisedu.com （如果不修改，请务必考虑可能存在此问题：已经发布了的版本，到了现场却发现csres网站、现场学校的res网站都没有这个功能，从而无法使用的问题）。
+1. 虽然也可使用https://res.wisedu.com ，但务必注意此环境中包括未经测试的最新功能，也可能含有bug，因此转测试前、发布版本前要特别考虑此处是否改为引用http://csres.wisedu.com （如果不修改，请务必考虑可能存在此问题：已经发布了的版本，到了现场却发现csres网站、现场学校的res网站都没有这个功能，从而无法使用的问题）。
 1. 如果有移动端，则移动端功能使用的RES地址为 http://cdnres.campusphere.cn ，正常情况下，现场不用修改该地址。
 
 ### 我司的工作区开发人员：
@@ -22,7 +22,7 @@
 1. 其中，如果有移动端，则移动端功能使用的RES地址为 http://cdnres.campusphere.cn ，正常情况下，现场不用修改该地址。
 
 ## 请各位务必注意保证，现场环境 \[_不可以_\] 连接以下地址：
-* http://res.wisedu.com 
+* https://res.wisedu.com 
 * http://csres.wisedu.com
 
 
@@ -31,7 +31,7 @@
 
 ## 前端读物
 
-请访问：[http://res.wisedu.com/FS/前端入门/](http://res.wisedu.com/FS/前端入门/)  
+请访问：[https://res.wisedu.com/FS/前端入门/](https://res.wisedu.com/FS/前端入门/)  
 文件前面的编号为难度等级
 
 从零学习前端开发：[https://zhuanlan.zhihu.com/p/22099626](https://zhuanlan.zhihu.com/p/22099626)  

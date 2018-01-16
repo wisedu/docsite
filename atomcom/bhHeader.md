@@ -2,7 +2,7 @@
 
 #### 示例
 
-[http://res.wisedu.com/examples/components-v1/bhHeader/bhHeader.html](http://res.wisedu.com/examples/components-v1/bhHeader/bhHeader.html)
+[https://res.wisedu.com/examples/components-v1/bhHeader/bhHeader.html](https://res.wisedu.com/examples/components-v1/bhHeader/bhHeader.html)
 
 *****
 #### API说明

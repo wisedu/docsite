@@ -51,7 +51,7 @@
       * [条件搜索](query/filterquery.md)
       * [高级搜索2](query/advance2.md)
       * [条件构造器](query/rulesconstructor.md)
-  * [bhVue组件](http://res.wisedu.com/FS/vue-doc/)
+  * [bhVue组件](https://res.wisedu.com/FS/vue-doc/)
   * [场景模板页](template.md)
   * [组件发布日志](changeLog.md)
   * [公有云Q&A](wecloud/qa.md)

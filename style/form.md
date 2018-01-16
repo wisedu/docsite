@@ -1,8 +1,8 @@
 # 表单样式
 
-<link rel="stylesheet" href="http://res.wisedu.com/fe_components/jqwidget/blue/bh-1.2.min.css">
-<link rel="stylesheet" href="http://res.wisedu.com/fe_components/jqwidget/blue/bh-scenes-1.2.min.css">
-<link rel="stylesheet" href="http://res.wisedu.com/fe_components/iconfont/iconfont.css">
+<link rel="stylesheet" href="https://res.wisedu.com/fe_components/jqwidget/blue/bh-1.2.min.css">
+<link rel="stylesheet" href="https://res.wisedu.com/fe_components/jqwidget/blue/bh-scenes-1.2.min.css">
+<link rel="stylesheet" href="https://res.wisedu.com/fe_components/iconfont/iconfont.css">
 
 <style>
 .book-summary{

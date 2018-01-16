@@ -185,11 +185,11 @@ vuex 涉及的概念比较多 (mutation, store, action, getter), 文件和文件
 * 文档地址 https://wisedu.github.io/bh-mint-ui2-doc/#!/zh-cn2
 
 ### 4.3、字体图标使用方法
-* 移动字体图标库(http://res.wisedu.com/fe_components/iconfont_mobile/demo_fontclass.html)
+* 移动字体图标库(https://res.wisedu.com/fe_components/iconfont_mobile/demo_fontclass.html)
 
 字体图标的cdn引入方式（已在脚手架中配置）
 ```html
-<link rel="stylesheet" href="http://res.wisedu.com/fe_components/iconfont_mobile/iconfont.css">
+<link rel="stylesheet" href="https://res.wisedu.com/fe_components/iconfont_mobile/iconfont.css">
 ```
 
 手机查看请扫码

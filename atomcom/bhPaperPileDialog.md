@@ -2,7 +2,7 @@
 
 #### 示例
 
-[http://res.wisedu.com/examples/components-v1/bhPaperPileDialog/bhPaperPileDialog.html](http://res.wisedu.com/examples/components-v1/bhPaperPileDialog/bhPaperPileDialog.html)
+[https://res.wisedu.com/examples/components-v1/bhPaperPileDialog/bhPaperPileDialog.html](https://res.wisedu.com/examples/components-v1/bhPaperPileDialog/bhPaperPileDialog.html)
 
 *****
 #### API说明
