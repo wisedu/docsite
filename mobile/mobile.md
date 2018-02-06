@@ -7,6 +7,7 @@
 * es6 开发基本知识 [es6 基本文档](http://es6.ruanyifeng.com/)
 * 移动门户[App](https://www.pgyer.com/VGkN)
 * 示例代码 <a href="assets/newOnlineConsultation.zip" target="_blank">newOnlineConsultation.zip</a>
+* 工具推荐使用 [vscode](https://code.visualstudio.com)
 
 ## 1、搭建脚手架
 
@@ -87,6 +88,10 @@ my-project
 ├── src //项目源代码，开发人员编写的源代码都在这个目录下
 │   └── components //页面级别的公用组件, 例如在某个项目里共同使用的用户信息展示, 某些共用的复杂弹窗等等
 │   └── pages //业务模块文件夹, 按照业务逻辑区分的业务模块文件夹
+│   │   ├─── GNMK1 //业务模块1文件夹
+│   │   │    └─── GNMK3.vue //业务文件
+│   │   ├─── GNMK2 //业务模块1文件夹
+│   │   └─── GNMK3 //业务模块1文件夹
 │   └── vuex //用于放置 vuex 相关的文件(mutation, store, action, getter)
 │   └── App.vue
 │   └── api.js //接口地址
