@@ -420,7 +420,7 @@ pb = padding bottom，表示底部内边距
 
 
 
-### 文字对其 & 居中
+### 文字对齐 & 居中
 
 * .bh-center-block 容器水平居中
 * .bh-text-center 文字水平居中
