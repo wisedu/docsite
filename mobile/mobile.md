@@ -6,7 +6,7 @@
 * Vue 的基本概念[vue文档](https://cn.vuejs.org/)
 * es6 开发基本知识 [es6 基本文档](http://es6.ruanyifeng.com/)
 * 移动门户[App](https://www.pgyer.com/VGkN)
-* 示例代码 <a href="assets/newOnlineConsultation.zip" target="_blank">newOnlineConsultation.zip</a>
+* 示例代码 <a href="../assets/newOnlineConsultation.zip" target="_blank">newOnlineConsultation.zip</a>
 * 工具推荐使用 [vscode](https://code.visualstudio.com)
 
 ## 1、搭建脚手架
