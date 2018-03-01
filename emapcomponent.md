@@ -1,5 +1,8 @@
 # emap组件
 
+### 全组件示例
+http://emap.wisedu.com/res/sys/student_app1.2/*default/index.do
+
 ### jsdoc文档
 
 ##### emap1.1文档
