@@ -24,15 +24,15 @@ bhVue组件是基于原子组件和emap组件封装的Vue组件
 
 ###原子组件
 
-jsdoc帮助文档：[https://res.wisedu.com/examples/components-v1/docs/black_hole/](https://res.wisedu.com/examples/components-v1/docs/black_hole/)
+jsdoc帮助文档：[http://res.wisedu.com/examples/components-v1/docs/black_hole/](http://res.wisedu.com/examples/components-v1/docs/black_hole/)
 
 ###emap组件
 
 jsdoc帮助文档：
 
-1.1：[https://res.wisedu.com/examples/components-v1/docs/emap/v1.1/](https://res.wisedu.com/examples/components-v1/docs/emap/v1.1/)
+1.1：[http://res.wisedu.com/examples/components-v1/docs/emap/v1.1/](http://res.wisedu.com/examples/components-v1/docs/emap/v1.1/)
 
-1.2：[https://res.wisedu.com/examples/components-v1/docs/emap/v1.2/](https://res.wisedu.com/examples/components-v1/docs/emap/v1.2/)
+1.2：[http://res.wisedu.com/examples/components-v1/docs/emap/v1.2/](http://res.wisedu.com/examples/components-v1/docs/emap/v1.2/)
 
 ###jQwidget
 

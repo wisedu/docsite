@@ -1,11 +1,11 @@
 # 样式组件
 
 
-<link rel="stylesheet" href="https://res.wisedu.com/fe_components/jqwidget/blue/bh-1.2.min.css">
-<link rel="stylesheet" href="https://res.wisedu.com/fe_components/jqwidget/blue/bh-scenes-1.2.min.css">
-<link rel="stylesheet" href="https://res.wisedu.com/fe_components/iconfont/iconfont.css">
-<script type="text/javascript" src="https://res.wisedu.com/bower_components/jquery/dist/jquery.min.js"></script>
-<script type="text/javascript" src="https://res.wisedu.com/fe_components/bh-1.2.min.js"></script>
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/jqwidget/blue/bh-1.2.min.css">
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/jqwidget/blue/bh-scenes-1.2.min.css">
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/iconfont/iconfont.css">
+<script type="text/javascript" src="http://res.wisedu.com/bower_components/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="http://res.wisedu.com/fe_components/bh-1.2.min.js"></script>
 
 <style>
 .book-summary{

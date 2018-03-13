@@ -1,6 +1,6 @@
 # PC样式
 
-<link rel="stylesheet" href="https://res.wisedu.com/fe_components/jqwidget/blue/bh-1.2.min.css">
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/jqwidget/blue/bh-1.2.min.css">
 <style>
 .book-summary{
 	font-size:14px;
@@ -20,14 +20,14 @@
 
 ### 字体图标库
 
-[字体图标库1](https://res.wisedu.com/fe_components/iconfont/demo.html)
+[字体图标库1](http://res.wisedu.com/fe_components/iconfont/demo.html)
 ```html
-<link rel="stylesheet" href="https://res.wisedu.com/fe_components/iconfont/iconfont.css">
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/iconfont/iconfont.css">
 ```
 
-[字体图标库2](https://res.wisedu.com/fe_components/iconfont_2.0/demo_fontclass.html)
+[字体图标库2](http://res.wisedu.com/fe_components/iconfont_2.0/demo_fontclass.html)
 ```html
-<link rel="stylesheet" href="https://res.wisedu.com/fe_components/iconfont_2.0/iconfont.css">
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/iconfont_2.0/iconfont.css">
 ```
 
 ### 如何获取
@@ -35,10 +35,10 @@
 引用如下文件
 
 ```html
-<link rel="stylesheet" href="https://res.wisedu.com/fe_components/jqwidget/blue/bh-1.2.min.css">
-<link rel="stylesheet" href="https://res.wisedu.com/fe_components/jqwidget/blue/bh-scenes-1.2.min.css">
-<link rel="stylesheet" href="https://res.wisedu.com/fe_components/iconfont/iconfont.css">
-<link rel="stylesheet" href="https://res.wisedu.com/fe_components/iconfont_2.0/iconfont.css">
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/jqwidget/blue/bh-1.2.min.css">
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/jqwidget/blue/bh-scenes-1.2.min.css">
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/iconfont/iconfont.css">
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/iconfont_2.0/iconfont.css">
 ```
 
 由于该样式是基于jQWidget组件作为基础，进行定制修改的，所以文件存放在jqwidget子目录中
@@ -81,12 +81,12 @@ yellow-fawn -->
 
 主题颜色的完整定义请参考：
 
-* [交互设计规范1.2](https://res.wisedu.com/ID/1.SPEC/PC/PC-SPEC-V1.1-16.05.12%40%E8%8D%86%E5%A4%A9%E9%AA%90/#g=1&p=____-type_color)
-* [平台门户颜色定义](https://res.wisedu.com/ID/2.CampuSphere/%E5%B9%B3%E5%8F%B0%E9%97%A8%E6%88%B7/Finish/PC-%E9%97%A8%E6%88%B7%E7%9A%AE%E8%82%A4%E9%85%8D%E7%BD%AE-V2.2-17.03.15%40%E8%8D%86%E5%A4%A9%E9%AA%90/#g=1&p=indigo-dark_____-_)
+* [交互设计规范1.2](http://res.wisedu.com/ID/1.SPEC/PC/PC-SPEC-V1.1-16.05.12%40%E8%8D%86%E5%A4%A9%E9%AA%90/#g=1&p=____-type_color)
+* [平台门户颜色定义](http://res.wisedu.com/ID/2.CampuSphere/%E5%B9%B3%E5%8F%B0%E9%97%A8%E6%88%B7/Finish/PC-%E9%97%A8%E6%88%B7%E7%9A%AE%E8%82%A4%E9%85%8D%E7%BD%AE-V2.2-17.03.15%40%E8%8D%86%E5%A4%A9%E9%AA%90/#g=1&p=indigo-dark_____-_)
 
 #### 皮肤定制工具
 
-https://res.wisedu.com:9090/custom/
+http://res.wisedu.com:9090/custom/
 
 
 ### UBASE框架集成

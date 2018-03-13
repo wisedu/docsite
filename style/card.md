@@ -1,8 +1,8 @@
 # 卡片
 
-<link rel="stylesheet" href="https://res.wisedu.com/fe_components/jqwidget/blue/bh-1.2.min.css">
-<link rel="stylesheet" href="https://res.wisedu.com/fe_components/jqwidget/blue/bh-scenes-1.2.min.css">
-<link rel="stylesheet" href="https://res.wisedu.com/fe_components/iconfont/iconfont.css">
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/jqwidget/blue/bh-1.2.min.css">
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/jqwidget/blue/bh-scenes-1.2.min.css">
+<link rel="stylesheet" href="http://res.wisedu.com/fe_components/iconfont/iconfont.css">
 
 <style>
 .book-summary{
@@ -56,7 +56,7 @@
 	<div class="bh-row bh-mv-24 bhclass">
 	    <div class="sc-panel-user-1 bh-mh-8">
 	        <div class="sc-panel-user-1-image">
-	            <img src="https://res.wisedu.com/scenes/public/images/demo/userPanel.jpg">
+	            <img src="http://res.wisedu.com/scenes/public/images/demo/userPanel.jpg">
 	        </div>
 	        <div class="sc-panel-user-1-container bh-animate-all bh-animate-fast">
 	            <div class="sc-panel-user-1-description">
@@ -75,7 +75,7 @@
 	    </div>
 	    <div class="sc-panel-user-1 sc-active bh-mh-8">
 	        <div class="sc-panel-user-1-image">
-	            <img src="https://res.wisedu.com/scenes/public/images/demo/userPanel.jpg">
+	            <img src="http://res.wisedu.com/scenes/public/images/demo/userPanel.jpg">
 	        </div>
 	        <div class="sc-panel-user-1-container bh-animate-all bh-animate-fast">
 	            <div class="sc-panel-user-1-description">
@@ -103,7 +103,7 @@
 <div class="sc-panel-user-1 bh-mh-8 sc-active">
     <!--左边照片-->
     <div class="sc-panel-user-1-image">
-        <img src="https://res.wisedu.com/scenes/public/images/demo/userPanel.jpg">
+        <img src="http://res.wisedu.com/scenes/public/images/demo/userPanel.jpg">
     </div>
     <!--中间内容-->
     <div class="sc-panel-user-1-container bh-animate-all bh-animate-fast">
@@ -134,7 +134,7 @@
         <!--事物卡片 操作项上滑 正常状态-->
         <div class="sc-panel-thing-1 bh-mh-8">
             <div class="sc-panel-thing-1-image">
-                <img src="https://res.wisedu.com/scenes/public/images/demo/user1.png">
+                <img src="http://res.wisedu.com/scenes/public/images/demo/user1.png">
             </div>
             <div class="sc-panel-thing-1-container bh-animate-all bh-animate-fast">
                 <div class="sc-panel-thing-1-description">
@@ -160,7 +160,7 @@
         <!--事物卡片 操作项上滑 正常状态-->
         <div class="sc-panel-thing-1 sc-active bh-mh-8">
             <div class="sc-panel-thing-1-image">
-                <img src="https://res.wisedu.com/scenes/public/images/demo/user2.png">
+                <img src="http://res.wisedu.com/scenes/public/images/demo/user2.png">
             </div>
             <div class="sc-panel-thing-1-container bh-animate-all bh-animate-fast">
                 <div class="sc-panel-thing-1-description">
@@ -194,7 +194,7 @@
 <div class="sc-panel-thing-1 bh-mh-8 sc-active">
 	<!--左边照片-->
     <div class="sc-panel-thing-1-image">
-        <img src="https://res.wisedu.com/scenes/public/images/demo/userPanel.jpg">
+        <img src="http://res.wisedu.com/scenes/public/images/demo/userPanel.jpg">
     </div>
     <!--中间内容-->
     <div class="sc-panel-thing-1-container bh-animate-all bh-animate-fast">
@@ -390,7 +390,7 @@
         </div>
         <section class="sc-panel-list-section sc-panel-list-prompt">
             <div>
-                <img src="https://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
+                <img src="http://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
                 <div class="bh-color-grey-3">最近没有任何校园活动</div>
             </div>
         </section>
@@ -407,7 +407,7 @@
     </div>
     <section class="sc-panel-list-section sc-panel-list-prompt">
         <div>
-            <img src="https://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
+            <img src="http://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
             <div class="bh-color-grey-3">最近没有任何校园活动</div>
         </div>
     </section>
@@ -427,14 +427,14 @@
                 <h3 class="bh-str-cut">个人年度计划总结PPT汇报演示个人年度计划总结PPT汇报演示</h3>
                 <div class="bh-color-grey-3">10月1日</div>
             </div>
-            <img class="sc-panel-list-section-right" src="https://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
+            <img class="sc-panel-list-section-right" src="http://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
         </section>
         <section class="sc-panel-list-section bh-pv-8 bh-ph-16">
             <div class="sc-panel-list-section-left">
                 <h3 class="bh-str-cut">个人年度计划总结PPT汇报演示个人年度计划总结PPT汇报演示</h3>
                 <div class="bh-color-grey-3">10月1日</div>
             </div>
-            <img class="sc-panel-list-section-right" src="https://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
+            <img class="sc-panel-list-section-right" src="http://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
         </section>
     </div>
 </p>
@@ -452,14 +452,14 @@
             <h3 class="bh-str-cut">个人年度计划总结PPT汇报演示个人年度计划总结PPT汇报演示</h3>
             <div class="bh-color-grey-3">10月1日</div>
         </div>
-        <img class="sc-panel-list-section-right" src="https://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
+        <img class="sc-panel-list-section-right" src="http://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
     </section>
     <section class="sc-panel-list-section bh-pv-8 bh-ph-16">
         <div class="sc-panel-list-section-left">
             <h3 class="bh-str-cut">个人年度计划总结PPT汇报演示个人年度计划总结PPT汇报演示</h3>
             <div class="bh-color-grey-3">10月1日</div>
         </div>
-        <img class="sc-panel-list-section-right" src="https://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
+        <img class="sc-panel-list-section-right" src="http://res.wisedu.com/fe_components/images/errorTip/unable_to_use_the_service.png">
     </section>
 </div>
 ```
