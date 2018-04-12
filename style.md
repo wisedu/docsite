@@ -84,9 +84,23 @@ yellow-fawn -->
 * [交互设计规范1.2](http://res.wisedu.com/ID/1.SPEC/PC/PC-SPEC-V1.1-16.05.12%40%E8%8D%86%E5%A4%A9%E9%AA%90/#g=1&p=____-type_color)
 * [平台门户颜色定义](http://res.wisedu.com/ID/2.CampuSphere/%E5%B9%B3%E5%8F%B0%E9%97%A8%E6%88%B7/Finish/PC-%E9%97%A8%E6%88%B7%E7%9A%AE%E8%82%A4%E9%85%8D%E7%BD%AE-V2.2-17.03.15%40%E8%8D%86%E5%A4%A9%E9%AA%90/#g=1&p=indigo-dark_____-_)
 
+
+可换肤的样式：[请点这里](http://res.wisedu.com/FS/docsite/style/global.html#颜色)
+
+
 #### 皮肤定制工具
 
 http://res.wisedu.com:9090/custom/
+
+
+### 平台换肤接口
+
+通过平台JSONP接口获取皮肤
+
+/jsonp/getUserSkin.json
+
+
+示例：http://ampdx.wisedu.com/jsonp/getUserSkin.json?amp_jsonp_callback=jQuery21104590702586970088_1523517816000&_=1523517816001
 
 
 ### UBASE框架集成
