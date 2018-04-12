@@ -99,6 +99,17 @@ http://res.wisedu.com:9090/custom/
 
 /jsonp/getUserSkin.json
 
+获取skinName
+```
+{
+    "skinName": "millennium",
+    "siteType": 1,
+    "hasLogin": true,
+    "contextPath": "",
+    "themeColor": "dark"
+}
+```
+
 
 示例：http://ampdx.wisedu.com/jsonp/getUserSkin.json?amp_jsonp_callback=jQuery21104590702586970088_1523517816000&_=1523517816001
 
