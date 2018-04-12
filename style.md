@@ -88,12 +88,7 @@ yellow-fawn -->
 可换肤的样式：[请点这里](http://res.wisedu.com/FS/docsite/style/global.html#颜色)
 
 
-#### 皮肤定制工具
-
-http://res.wisedu.com:9090/custom/
-
-
-### 平台换肤接口
+#### 平台换肤接口
 
 通过平台JSONP接口获取皮肤
 
@@ -112,6 +107,11 @@ http://res.wisedu.com:9090/custom/
 
 
 示例：http://ampdx.wisedu.com/jsonp/getUserSkin.json?amp_jsonp_callback=jQuery21104590702586970088_1523517816000&_=1523517816001
+
+
+#### 皮肤定制工具
+
+http://res.wisedu.com:9090/custom/
 
 
 ### UBASE框架集成
