@@ -85,7 +85,8 @@ yellow-fawn -->
 * [平台门户颜色定义](http://res.wisedu.com/ID/2.CampuSphere/%E5%B9%B3%E5%8F%B0%E9%97%A8%E6%88%B7/Finish/PC-%E9%97%A8%E6%88%B7%E7%9A%AE%E8%82%A4%E9%85%8D%E7%BD%AE-V2.2-17.03.15%40%E8%8D%86%E5%A4%A9%E9%AA%90/#g=1&p=indigo-dark_____-_)
 
 
-`可换肤的样式：` [请点这里](http://res.wisedu.com/FS/docsite/style/global.html#颜色)
+#### 可换肤的样式
+[请点这里](http://res.wisedu.com/FS/docsite/style/global.html#颜色)
 
 
 #### 平台换肤接口
