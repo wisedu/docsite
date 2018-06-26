@@ -223,7 +223,7 @@ SDK.bh.cpdaily.getUserInfo( function(info){
 
 ### 5.3、SDK 文档
 
-如果想了解具体有哪些 SDK 可以调用，需要的参数，可查看详细API。[ SDK 文档](http://static.cpdaily.com/jssdk/index.html)
+如果想了解具体有哪些 SDK 可以调用，需要的参数，可查看详细API。[ SDK 文档](http://img.cpdaily.com/jssdk/index.html)
 
 ## 6、代码调试
 
