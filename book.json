@@ -1,12 +1,8 @@
 {   
     "plugins": [
-        "duoshuo","github","anchors","expandable-chapters","baidu-wis","github-buttons","-sharing","tbfed-pagefooter","sectionx"
+        "github","anchors","expandable-chapters","baidu-wis","github-buttons","-sharing","tbfed-pagefooter","sectionx"
     ],
     "pluginsConfig": {
-        "duoshuo": {
-            "short_name": "res",
-            "theme": "default"
-        },
         "github": {
             "url": "https://github.com/wisedu"
         },
