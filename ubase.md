@@ -152,14 +152,16 @@ initialize: function() {
     “sqsh”对应文件地址 → modules/sqsh （申请审核）
 
     “sqsh/cg”对应文件地址 → modules/sqsh/cg （出国申请审核）
-    
+
 2. 同类别路由（即前缀）设置不允许出现混用现象，如：
+
     “申请审核”、“校办申请审核”、“出国申请审核”、“回国申请审核”
-以上同类别模块路由可设置为：
-    “sqsh”、“sqshxb”、“sqshcg”、“sqshhg”
-        或者
-    “sqsh”、“sqsh/xb”、“sqsh/cg”、“sqsh/hg”
-    禁止同一类别模块，既有全名分类又有二级分类混用现象出现，如：“sqsh”、“sqsh/xb”、“sqshcg”、“sqsh/hg”
+
+    以上同类别模块路由可设置为：
+
+    “sqsh”、“sqshxb”、“sqshcg”、“sqshhg” 或者 “sqsh”、“sqsh/xb”、“sqsh/cg”、“sqsh/hg”
+
+    **禁止同一类别模块，既有全名分类又有二级分类混用现象出现**，如：“sqsh”、“sqsh/xb”、“sqshcg”、“sqsh/hg”
 
 ## 子页面
 
